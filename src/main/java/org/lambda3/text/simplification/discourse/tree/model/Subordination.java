@@ -45,8 +45,8 @@ public class Subordination extends DiscourseTree {
         this.signalPhrase = signalPhrase;
         this.superordinationIsLeft = superordinationIsLeft;
 
-        this.leftConstituent = new Leaf(Leaf.Type.DEFAULT, "tmp", "tmp");
-        this.rightConstituent = new Leaf(Leaf.Type.DEFAULT, "tmp", "tmp");
+        this.leftConstituent = new Leaf("tmp", "tmp");
+        this.rightConstituent = new Leaf("tmp", "tmp");
         replaceLeftConstituent(leftConstituent);
         replaceRightConstituent(rightConstituent);
     }
@@ -100,6 +100,8 @@ public class Subordination extends DiscourseTree {
     public DiscourseTree getSubordination() {
         return (superordinationIsLeft) ? rightConstituent : leftConstituent;
     }
+
+    // VISUALIZATION ///////////////////////////////////////////////////////////////////////////////////////////////////
 
     @Override
     public List<String> getPTPCaption() {

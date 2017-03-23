@@ -40,9 +40,6 @@
     </scm>
 
     <properties>
-
-        <simplification.version>5.0.0</simplification.version>
-
         <corenlp.version>3.7.0</corenlp.version>
         <logback.version>1.1.8</logback.version>
 
@@ -55,13 +52,6 @@
     </properties>
 
     <dependencies>
-
-        <!-- Sentence Simplification -->
-        <dependency>
-            <groupId>org.lambda3.text.simplification</groupId>
-            <artifactId>sentence-simplification</artifactId>
-            <version>${simplification.version}</version>
-        </dependency>
 
         <!-- Stanford NLP -->
         <dependency>

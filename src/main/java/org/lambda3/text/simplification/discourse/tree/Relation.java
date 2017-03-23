@@ -29,8 +29,8 @@ public enum Relation {
     // default relations
     UNKNOWN_COORDINATION, // the default for coordination
     UNKNOWN_SUBORDINATION, // the default for subordination
-    UNKNOWN_SENT_SIM, // the default for sentence simplification
 
+    // rst inspired
     BACKGROUND,
     CAUSE,
     CONDITION,
@@ -47,11 +47,7 @@ public enum Relation {
     // special relations
     INTRA_SENTENTIAL_ATTRIBUTION,
     JOINT_NP_LIST,
-    JOINT_NP_DISJUNCTION,
-
-    // sentence simplification
-    TIME,
-    LOCATION;
+    JOINT_NP_DISJUNCTION;
 
     static {
         TEMPORAL_AFTER.reverseRelation = TEMPORAL_BEFORE;

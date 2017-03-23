@@ -1,6 +1,6 @@
 /*
  * ==========================License-Start=============================
- * DiscourseSimplification : SContext
+ * DiscourseSimplification : DiscourseExtractor
  *
  * Copyright © 2017 Lambda³
  *
@@ -20,59 +20,58 @@
  * ==========================License-End==============================
  */
 
-package org.lambda3.text.simplification.discourse.sentence_simplification.element;
+package org.lambda3.text.simplification.discourse.relation_extraction;
 
 import org.lambda3.text.simplification.discourse.tree.Relation;
 import org.lambda3.text.simplification.discourse.utils.PrettyTreePrinter;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
-
 /**
  *
  */
-public class SContext implements PrettyTreePrinter.Node {
-    private final String text;
-    private final int sentenceIndex;
+public class ElementRelation implements PrettyTreePrinter.Edge {
+    private final Element target;
     private final Relation relation;
+    private final boolean commutative;
 
-    public SContext(String text, int sentenceIndex, Relation relation) {
-        this.text = text;
-        this.sentenceIndex = sentenceIndex;
+    public ElementRelation(Element target, Relation relation, boolean commutative) {
+        this.target = target;
         this.relation = relation;
+        this.commutative = commutative;
     }
 
-    public String getText() {
-        return text;
-    }
-
-    public int getSentenceIndex() {
-        return sentenceIndex;
+    public Element getTarget() {
+        return target;
     }
 
     public Relation getRelation() {
         return relation;
     }
 
-    @Override
-    public List<String> getPTPCaption() {
-        return Collections.singletonList("'" + text + "'");
-    }
-
-    @Override
-    public List<PrettyTreePrinter.Edge> getPTPEdges() {
-        return new ArrayList<>();
+    public boolean isCommutative() {
+        return commutative;
     }
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof SContext)) return false;
-        SContext sContext = (SContext) o;
-        return getSentenceIndex() == sContext.getSentenceIndex() &&
-                Objects.equals(getText(), sContext.getText()) &&
-                getRelation() == sContext.getRelation();
+        return ((o instanceof ElementRelation)
+                && (((ElementRelation) o).target.equals(target))
+                && (((ElementRelation) o).relation.equals(relation)));
+    }
+
+    // VISUALIZATION ///////////////////////////////////////////////////////////////////////////////////////////////////
+
+    @Override
+    public String getPTPCaption() {
+        return relation.toString();
+    }
+
+    @Override
+    public PrettyTreePrinter.Node getPTPChild() {
+        return target;
+    }
+
+    @Override
+    public boolean followPTPChild() {
+        return (!commutative);
     }
 }

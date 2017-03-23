@@ -26,11 +26,11 @@ import edu.stanford.nlp.ling.Word;
 import edu.stanford.nlp.trees.Tree;
 import edu.stanford.nlp.trees.tregex.TregexMatcher;
 import edu.stanford.nlp.trees.tregex.TregexPattern;
-import org.lambda3.text.simplification.discourse.tree.Relation;
-import org.lambda3.text.simplification.discourse.tree.classification.SignalPhraseClassifier;
 import org.lambda3.text.simplification.discourse.tree.extraction.Extraction;
 import org.lambda3.text.simplification.discourse.tree.extraction.ExtractionRule;
 import org.lambda3.text.simplification.discourse.tree.extraction.model.CoordinationExtraction;
+import org.lambda3.text.simplification.discourse.tree.extraction.utils.ListNPSplitter;
+import org.lambda3.text.simplification.discourse.tree.extraction.utils.TregexUtils;
 import org.lambda3.text.simplification.discourse.tree.model.Leaf;
 import org.lambda3.text.simplification.discourse.utils.parseTree.ParseTreeExtractionUtils;
 import org.lambda3.text.simplification.discourse.utils.words.WordsUtils;
@@ -43,56 +43,37 @@ import java.util.Optional;
 /**
  *
  */
-public class SharedNPCoordinationExtractor extends ExtractionRule {
-    private static final SignalPhraseClassifier CLASSIFIER = new SignalPhraseClassifier();
+public class ListNPExtractor1 extends ExtractionRule {
 
     @Override
     public Optional<Extraction> extract(Tree parseTree) {
 
-        TregexPattern p = TregexPattern.compile("ROOT <<: (S < (NP $.. (VP <+(VP) (VP > VP=vp $.. VP))))");
+        TregexPattern p = TregexPattern.compile("ROOT <<: (S < (NP=np $.. VP))");
         TregexMatcher matcher = p.matcher(parseTree);
 
         while (matcher.findAt(parseTree)) {
-            List<Tree> siblings = getSiblings(matcher.getNode("vp"), Arrays.asList("VP"));
+            Optional<ListNPSplitter.Result> r = ListNPSplitter.split(matcher.getNode("np"));
+            if (r.isPresent()) {
 
-            // constituents
-            List<Word> precedingWords = ParseTreeExtractionUtils.getPrecedingWords(parseTree, siblings.get(0), false);
-            List<Word> followingWords = ParseTreeExtractionUtils.getFollowingWords(parseTree, siblings.get(siblings.size() - 1), false);
+                // constituents
+                List<Word> precedingWords = ParseTreeExtractionUtils.getPrecedingWords(parseTree, matcher.getNode("np"), false);
+                List<Word> followingWords = ParseTreeExtractionUtils.getFollowingWords(parseTree, matcher.getNode("np"), false);
 
-            List<Leaf> constituents = new ArrayList<>();
-            for (Tree sibling : siblings) {
-                List<Word> words = new ArrayList<Word>();
-                words.addAll(precedingWords);
-                words.addAll(ParseTreeExtractionUtils.getContainingWords(sibling));
-                words.addAll(followingWords);
+                List<Leaf> constituents = new ArrayList<>();
+                for (List<Word> element : r.get().getElementsWords()) {
+                    List<Word> words = new ArrayList<Word>();
+                    words.addAll(precedingWords);
+                    words.addAll(element);
+                    words.addAll(followingWords);
 
-                Leaf constituent = new Leaf(getClass().getSimpleName(), WordsUtils.wordsToProperSentenceString(words));
-                constituents.add(constituent);
-            }
-
-            if (constituents.size() == 2) {
-
-                // relation
-                List<Word> signalPhraseWords = ParseTreeExtractionUtils.getWordsInBetween(parseTree, siblings.get(0), siblings.get(siblings.size() - 1), false, false);
-                Relation relation = CLASSIFIER.classifyGeneral(signalPhraseWords).orElse(Relation.UNKNOWN_COORDINATION);
+                    Leaf constituent = new Leaf(getClass().getSimpleName(), WordsUtils.wordsToProperSentenceString(words));
+                    constituent.dontAllowSplit();
+                    constituents.add(constituent);
+                }
 
                 Extraction res = new CoordinationExtraction(
                         getClass().getSimpleName(),
-                        relation,
-                        signalPhraseWords,
-                        constituents.get(0),
-                        constituents.get(constituents.size() - 1)
-                );
-
-                return Optional.of(res);
-            } else {
-
-                // relation
-                Relation relation = Relation.UNKNOWN_COORDINATION;
-
-                Extraction res = new CoordinationExtraction(
-                        getClass().getSimpleName(),
-                        relation,
+                        r.get().getRelation(),
                         constituents
                 );
 
@@ -102,5 +83,4 @@ public class SharedNPCoordinationExtractor extends ExtractionRule {
 
         return Optional.empty();
     }
-
 }

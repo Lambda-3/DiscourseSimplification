@@ -25,8 +25,12 @@ package org.lambda3.text.simplification.discourse.tree.extraction.utils;
 import edu.stanford.nlp.ling.Word;
 import edu.stanford.nlp.trees.Tree;
 import org.lambda3.text.simplification.discourse.tree.Relation;
+import org.lambda3.text.simplification.discourse.utils.parseTree.ParseTreeExtractionUtils;
+import org.slf4j.LoggerFactory;
 
+import javax.swing.text.html.Option;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -35,49 +39,6 @@ import java.util.stream.Collectors;
  *
  */
 public class ListNPSplitter {
-
-    public static Optional<Result> split(Tree np) {
-
-        // representation
-        String representation = np.getChildrenAsList().stream().map(c -> (c.value().equals("CC")) ? c.yieldWords().get(0).value() : c.value()).collect(Collectors.joining(""));
-
-        final String LIST_CONJUNCTION_PATTERN = "^(NP|,)*NP(NP|,)*(and(NP|,)*NP(NP|,)*)+$";
-        final String LIST_DISJUNCTION_PATTERN = "^(NP|,)*NP(NP|,)*(or(NP|,)*NP(NP|,)*)+$";
-        if (representation.matches(LIST_CONJUNCTION_PATTERN) || representation.matches(LIST_DISJUNCTION_PATTERN)) {
-            Relation relation = representation.matches(LIST_CONJUNCTION_PATTERN) ? Relation.JOINT_NP_LIST : Relation.JOINT_NP_DISJUNCTION;
-
-            // get last CC index
-            int lastCCIdx = 0;
-            for (int i = np.getChildrenAsList().size() - 1; i >= 0; i--) {
-                Tree child = np.getChildrenAsList().get(i);
-                if (child.value().equals("CC")) {
-                    lastCCIdx = i;
-                    break;
-                }
-            }
-
-            // extract
-            List<List<Word>> elementsWords = new ArrayList<>();
-            boolean foundFirstNPAfterCC = false;
-            for (int i = 0; i < np.getChildrenAsList().size(); i++) {
-                Tree child = np.getChildrenAsList().get(i);
-
-                if (foundFirstNPAfterCC) {
-                    elementsWords.get(elementsWords.size() - 1).addAll(child.yieldWords());
-                } else if (child.value().equals("NP")) {
-                    elementsWords.add(child.yieldWords());
-                    if (i > lastCCIdx) {
-                        foundFirstNPAfterCC = true;
-                    }
-                }
-            }
-
-            return Optional.of(new Result(elementsWords, relation));
-        }
-
-        return Optional.empty();
-    }
-
     public static class Result {
         private final List<List<Word>> elementsWords;
         private final Relation relation;
@@ -96,4 +57,123 @@ public class ListNPSplitter {
         }
     }
 
+    private interface ILeafChecker {
+        boolean check(Tree anchorTree, Tree leaf);
+    }
+
+    private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(ListNPSplitter.class);
+
+    private static class ConjunctionLeafChecker implements ILeafChecker {
+
+        @Override
+        public boolean check(Tree anchorTree, Tree leaf) {
+            return ((leaf.yieldWords().get(0).value().equals("and")) && (leaf.parent(anchorTree) != null) && (leaf.parent(anchorTree).value().equals("CC")));
+        }
+    }
+
+    private static class DisjunctionLeafChecker implements ILeafChecker {
+
+        @Override
+        public boolean check(Tree anchorTree, Tree leaf) {
+            return ((leaf.yieldWords().get(0).value().equals("or")) && (leaf.parent(anchorTree) != null) && (leaf.parent(anchorTree).value().equals("CC")));
+        }
+    }
+
+    private static class SeparatorLeafChecker implements ILeafChecker {
+
+        @Override
+        public boolean check(Tree anchorTree, Tree leaf) {
+            return ((leaf.parent(anchorTree) != null) && (leaf.parent(anchorTree).value().equals(",")));
+        }
+    }
+
+    private static boolean checkElementLeaves(Tree anchorTree, List<Tree> leaves) {
+        Optional<Tree> spanningTree = ParseTreeExtractionUtils.findSpanningTree(anchorTree, leaves.get(0), leaves.get(leaves.size() - 1));
+        return (spanningTree.isPresent()) && ((spanningTree.get().value().equals("NP")) || (spanningTree.get().value().equals("NNP")));
+
+    }
+
+    private static List<List<Tree>> splitLeaves(Tree anchorTree, List<Tree> leaves, ILeafChecker leafChecker, boolean removeEmpty) {
+        List<List<Tree>> res = new ArrayList<>();
+        List<Tree> currElement = new ArrayList<>();
+        for (Tree leaf : leaves) {
+            if (leafChecker.check(anchorTree, leaf)) {
+                if ((currElement.size() > 0) || (!removeEmpty))
+                    res.add(currElement);
+                currElement = new ArrayList<>();
+            } else {
+                currElement.add(leaf);
+            }
+        }
+        if ((currElement.size() > 0) || (!removeEmpty))
+            res.add(currElement);
+
+        return res;
+    }
+
+    private static List<Tree> findLeaves(Tree anchorTree, List<Tree> leaves, ILeafChecker leafChecker, boolean reversed) {
+        List<Tree> res = leaves.stream().filter(l -> leafChecker.check(anchorTree, l)).collect(Collectors.toList());
+        if (reversed) {
+            Collections.reverse(res);
+        }
+        return res;
+    }
+
+    private static Optional<Result> check(Tree np, ILeafChecker cdChecker, ILeafChecker separatorChecker, Relation relation) {
+
+        for (Tree cdLeaf : findLeaves(np, ParseTreeExtractionUtils.getContainingLeaves(np), cdChecker, true)) {
+            boolean valid = true;
+            List<Tree> beforeLeaves = ParseTreeExtractionUtils.getPrecedingLeaves(np, cdLeaf, false);
+            List<Tree> afterLeaves = ParseTreeExtractionUtils.getFollowingLeaves(np, cdLeaf, false);
+
+            List<List<Tree>> beforeElements = splitLeaves(np, beforeLeaves, separatorChecker, true);
+            List<Tree> afterElement = afterLeaves;
+
+            // check before elements
+            if (beforeElements.size() > 0) {
+                for (List<Tree> beforeElement : beforeElements) {
+                    if (!checkElementLeaves(np, beforeElement)) {
+                        valid = false;
+                        break;
+                    }
+                }
+            }
+
+            // check after element
+            if (afterElement.size() > 0) {
+                if (!checkElementLeaves(np, afterElement)) {
+                    valid = false;
+                }
+            } else {
+                valid = false;
+            }
+
+            if (valid) {
+                List<List<Word>> elementsWords = new ArrayList<>();
+                elementsWords.addAll(beforeElements.stream().map(ls -> ls.stream().map(l -> l.yieldWords().get(0)).collect(Collectors.toList())).collect(Collectors.toList()));
+                elementsWords.add(afterElement.stream().map(l -> l.yieldWords().get(0)).collect(Collectors.toList()));
+
+                return Optional.of(new Result(elementsWords, relation));
+            }
+        }
+
+        return Optional.empty();
+    }
+
+    public static Optional<Result> split(Tree np) {
+
+        // check for conjunction
+        Optional<Result> r = check(np, new ConjunctionLeafChecker(), new SeparatorLeafChecker(), Relation.JOINT_LIST);
+        if (r.isPresent()) {
+            return r;
+        }
+
+        // check for disjunction
+        r = check(np, new DisjunctionLeafChecker(), new SeparatorLeafChecker(), Relation.JOINT_DISJUNCTION);
+        if (r.isPresent()) {
+            return r;
+        }
+
+        return Optional.empty();
+    }
 }

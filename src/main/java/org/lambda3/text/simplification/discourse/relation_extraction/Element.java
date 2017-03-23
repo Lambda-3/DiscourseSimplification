@@ -1,6 +1,6 @@
 /*
  * ==========================License-Start=============================
- * DiscourseSimplification : Leaf
+ * DiscourseSimplification : DiscourseExtractor
  *
  * Copyright © 2017 Lambda³
  *
@@ -20,42 +20,39 @@
  * ==========================License-End==============================
  */
 
-package org.lambda3.text.simplification.discourse.tree.model;
+package org.lambda3.text.simplification.discourse.relation_extraction;
 
 import org.lambda3.text.simplification.discourse.utils.PrettyTreePrinter;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  *
  */
-public class Leaf extends DiscourseTree {
+public class Element implements PrettyTreePrinter.Node {
     private final String text;
-    private boolean properSentence; // specifies whether text is a proper sentence
-    private String rephrasedText; // optional
-    private boolean allowSplit; // true, if extraction-rules will be applied on the text
+    private final boolean properSentence; // specifies whether text is a proper sentence
+    private final String rephrasedText; // optional
+    private final int sentenceIdx;
+    private final int contextLayer;
+    private final List<ElementRelation> relations;
 
-    public Leaf(String extractionRule, String text) {
-        super(extractionRule);
+    public Element(String text, boolean properSentence, String rephrasedText, int sentenceIdx, int contextLayer) {
         this.text = text;
-        this.properSentence = true;
-        this.rephrasedText = null;
-        this.allowSplit = true;
-    }
-
-    public void setProperSentence(boolean properSentence) {
         this.properSentence = properSentence;
-    }
-
-    public void setRephrasedText(String rephrasedText) {
         this.rephrasedText = rephrasedText;
+        this.sentenceIdx = sentenceIdx;
+        this.contextLayer = contextLayer;
+        this.relations = new ArrayList<>();
     }
 
-    public void dontAllowSplit() {
-        this.allowSplit = false;
+    public void addRelation(ElementRelation relation) {
+        if (!relations.contains(relation)) {
+            relations.add(relation);
+        }
     }
 
     public String getText() {
@@ -74,25 +71,34 @@ public class Leaf extends DiscourseTree {
         }
     }
 
-    public Optional<String> getRephrasedText() {
-        return Optional.ofNullable(rephrasedText);
+    public int getSentenceIdx() {
+        return sentenceIdx;
     }
 
-    public boolean isAllowSplit() {
-        return allowSplit;
+    public int getContextLayer() {
+        return contextLayer;
+    }
+
+    public List<ElementRelation> getRelations() {
+        return relations;
     }
 
     // VISUALIZATION ///////////////////////////////////////////////////////////////////////////////////////////////////
 
     @Override
+    public String toString() {
+        return PrettyTreePrinter.prettyPrint(this, 25);
+    }
+
+    @Override
     public List<String> getPTPCaption() {
         String rephrasedStr = (rephrasedText != null)? " ('" + rephrasedText + "')" : "";
 
-        return Collections.singletonList("'" + text + "'" + rephrasedStr + " [p:" + properSentence + "][s:" + allowSplit + "]");
+        return Collections.singletonList("'" + text + "'" + rephrasedStr + " [p:" + properSentence + "]");
     }
 
     @Override
     public List<PrettyTreePrinter.Edge> getPTPEdges() {
-        return new ArrayList<>();
+        return relations.stream().collect(Collectors.toList());
     }
 }

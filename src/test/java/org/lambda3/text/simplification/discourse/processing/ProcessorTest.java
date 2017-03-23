@@ -22,15 +22,8 @@
 
 package org.lambda3.text.simplification.discourse.processing;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import org.lambda3.text.simplification.discourse.sentence_simplification.element.DCore;
-import org.lambda3.text.simplification.discourse.sentence_simplification.element.SContext;
-import org.lambda3.text.simplification.discourse.sentence_simplification.relation.DCoreRelation;
-import org.lambda3.text.simplification.discourse.tree.Relation;
-
-import java.util.Arrays;
-import java.util.List;
+import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 /**
  *
@@ -40,29 +33,31 @@ class ProcessorTest {
     @Test
     void processSingleSentence() {
 
-        String text = "Bernhard is working on a project for PACE but he also works for MARIO.";
-
-        DCore first = new DCore("Bernhard is working on a project for PACE .", 0, "Bernhard is working on a project for PACE .");
-        DCore second = new DCore("he also works .", 0, "He also works for MARIO .");
-
-        first.addDCoreRelation(new DCoreRelation(
-                Relation.CONTRAST, second
-        ));
-
-        second.addDCoreRelation(new DCoreRelation(
-                Relation.CONTRAST, first
-        ));
-        second.addSContext(new SContext(
-                "This is for MARIO .", 0, Relation.UNKNOWN_SENT_SIM
-        ));
-
-        final List<DCore> expected = Arrays.asList(first, second);
-
-
-        Processor p = new Processor();
-        final List<DCore> actual = p.process(text, Processor.ProcessingType.SEPARATE);
-
-        Assertions.assertIterableEquals(expected, actual);
+        //TODO implement test
+//        String text = "Bernhard is working on a project for PACE but he also works for MARIO.";
+//
+//        Core first = new Core("Bernhard is working on a project for PACE .", 0, "Bernhard is working on a project for PACE .");
+//        Core second = new Core("he also works .", 0, "He also works for MARIO .");
+//
+//        first.addDCoreRelation(new CoreRelation(
+//                Relation.CONTRAST, second
+//        ));
+//
+//        second.addDCoreRelation(new CoreRelation(
+//                Relation.CONTRAST, first
+//        ));
+//        second.addSContext(new Context(
+//                "This is for MARIO .", 0, Relation.UNKNOWN_SENT_SIM
+//        ));
+//
+//        final List<Core> expected = Arrays.asList(first, second);
+//
+//
+//        Processor p = new Processor();
+//        final List<Core> actual = p.process(text, Processor.ProcessingType.SEPARATE);
+//
+//        Assertions.assertIterableEquals(expected, actual);
+        throw new NotImplementedException();
 
     }
 

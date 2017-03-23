@@ -151,6 +151,8 @@ public abstract class DiscourseTree implements PrettyTreePrinter.Node {
         return sentenceIdx;
     }
 
+    // VISUALIZATION ///////////////////////////////////////////////////////////////////////////////////////////////////
+
     @Override
     public String toString() {
         return PrettyTreePrinter.prettyPrint(this, false);

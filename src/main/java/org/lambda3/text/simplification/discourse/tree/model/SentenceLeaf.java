@@ -28,7 +28,7 @@ package org.lambda3.text.simplification.discourse.tree.model;
 public class SentenceLeaf extends Leaf {
 
     public SentenceLeaf(String sentence, int sentenceIdx) {
-        super(Type.DEFAULT, "SENTENCE", sentence);
+        super("SENTENCE", sentence);
         this.setRecursiveUnsetSentenceIdx(sentenceIdx);
     }
 }

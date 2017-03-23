@@ -43,192 +43,59 @@ public class PrettyTreePrinter {
 
     // INTERFACES & CLASSES ////////////////////////////////////////////////////////////////////////////////////////////
 
-    private static String trimText(String text, Integer maxTextLen) {
-        final String SUFFIX = "...";
-
-        if ((maxTextLen != null) && (text.length() > maxTextLen)) {
-            if (maxTextLen < SUFFIX.length()) {
-                throw new IllegalArgumentException("maxTextLen should have at least the length: " + SUFFIX.length());
-            }
-
-            return text.substring(0, maxTextLen - SUFFIX.length()) + SUFFIX;
-        } else {
-            return text;
-        }
+    public interface Node {
+        List<String> getPTPCaption();
+        List<Edge> getPTPEdges();
     }
 
-    private static int getBottomDepth(Node node, boolean follow) {
-        if ((!follow) || (node.getPTPEdges().size() <= 0)) {
-            return 0;
-        } else {
-            OptionalInt max = node.getPTPEdges().stream().mapToInt(e -> getBottomDepth(e.getPTPChild(), e.followPTPChild())).max();
-            return max.orElse(-1) + 1;
-        }
+    public interface Edge {
+        String getPTPCaption();
+        Node getPTPChild();
+        boolean followPTPChild();
     }
 
-    private static String getEdgeIndent(int size, String edgeCaption, boolean lastChild) {
-        String front = (lastChild) ? "└─" : "├─";
-        String back = "─> ";
-
-        String middle = trimText(edgeCaption, size - front.length() - back.length());
-
-        boolean right = true;
-        while (front.length() + middle.length() + back.length() < size) {
-            middle = (right) ? middle + "─" : "─" + middle;
-            right = !right;
-        }
-
-        return front + middle + back;
+    public interface GNode extends Node {
+        NodeShape getPTPNodeShape();
+        List<NodeStyle> getPTPNodeStyles();
+        String getPTPColor();
+        String getPTPFillColor();
     }
 
-    private static String getIndent(int size, boolean lastChild) {
-        StringBuilder res = new StringBuilder((lastChild) ? " " : "|");
-        while (res.length() < size) {
-            res.append(" ");
-        }
-
-        return res.toString();
+    public interface GEdge extends Edge {
+        EdgeShape getPTPEdgeShape();
+        List<EdgeStyle> getPTPEdgeStyles();
+        String getPTPColor();
     }
 
-    private static List<String> prettyPrintRec(Node node, boolean follow, boolean reversed, int size) {
-        List<String> res = new ArrayList<>();
+    public static class DefaultEdge implements Edge {
+        private final String caption;
+        private final Node child;
+        private final boolean followPTPChild;
 
-        int bottomDepth = getBottomDepth(node, follow);
-
-        // this node
-        res.addAll(node.getPTPCaption());
-
-        // edges
-        if (follow) {
-
-            ListIterator<Edge> iter = (reversed) ? node.getPTPEdges().listIterator(node.getPTPEdges().size()) : node.getPTPEdges().listIterator();
-            while ((reversed) ? iter.hasPrevious() : iter.hasNext()) {
-                Edge edge = (reversed) ? iter.previous() : iter.next();
-                boolean endChild = ((reversed) ? !iter.hasPrevious() : !iter.hasNext());
-                int indentSize = (bottomDepth - getBottomDepth(edge.getPTPChild(), edge.followPTPChild())) * size;
-
-                boolean firstChildLine = true;
-                for (String childLine : prettyPrintRec(edge.getPTPChild(), edge.followPTPChild(), reversed, size)) {
-                    if (firstChildLine) {
-                        res.add(getEdgeIndent(indentSize, edge.getPTPCaption(), endChild) + childLine);
-                        firstChildLine = false;
-                    } else {
-                        res.add(getIndent(indentSize, endChild) + childLine);
-                    }
-                }
-            }
+        public DefaultEdge(String caption, Node child, boolean followPTPChild) {
+            this.caption = caption;
+            this.child = child;
+            this.followPTPChild = followPTPChild;
         }
 
-        return res;
+        @Override
+        public String getPTPCaption() {
+            return caption;
+        }
+
+        @Override
+        public Node getPTPChild() {
+            return child;
+        }
+
+        @Override
+        public boolean followPTPChild() {
+            return followPTPChild;
+        }
+
     }
 
     // GRAPHICAL ENUMS /////////////////////////////////////////////////////////////////////////////////////////////////
-
-    public static String prettyPrint(Node node, boolean reversed, int size) {
-        return prettyPrintRec(node, true, reversed, size).stream().collect(Collectors.joining("\n"));
-    }
-
-    public static String prettyPrint(Node node, boolean reversed) {
-        return prettyPrint(node, reversed, 10);
-    }
-
-    public static String prettyPrint(Node node, int size) {
-        return prettyPrint(node, false, size);
-    }
-
-    public static String prettyPrint(Node node) {
-        return prettyPrintRec(node, true, false, 10).stream().collect(Collectors.joining("\n"));
-    }
-
-    private static long addDotLineRec(Node node, boolean follow, StringBuilder strb, HashMap<Node, Long> idMap) {
-
-        long id;
-        if (idMap.containsKey(node)) {
-            id = idMap.get(node);
-        } else {
-            id = idMap.size();
-            idMap.put(node, id);
-        }
-
-        NodeShape nodeShape = (node instanceof GNode) ? ((GNode) node).getPTPNodeShape() : DEFAULT_NODE_SHAPE;
-        List<NodeStyle> nodeStyles = (node instanceof GNode) ? ((GNode) node).getPTPNodeStyles() : DEFAULT_NODE_STYLES;
-        String nodeColor = (node instanceof GNode) ? ((GNode) node).getPTPFillColor() : DEFAULT_NODE_COLOR;
-        String nodeFillColor = (node instanceof GNode) ? ((GNode) node).getPTPFillColor() : DEFAULT_NODE_FILLCOLOR;
-        String nodeLabel = node.getPTPCaption().stream().collect(Collectors.joining("\n"));
-        nodeLabel = nodeLabel.replaceAll("\\n", "\\\\n");
-
-        // this node
-        String nodeLine = String.format("\"%d\" [shape=\"%s\", style=\"%s\", color=\"%s\", fillcolor=\"%s\", label=\"%s\"];",
-                id,
-                nodeShape,
-                nodeStyles.stream().map(Enum::name).collect(Collectors.joining(",")),
-                nodeColor,
-                nodeFillColor,
-                nodeLabel
-        );
-        strb.append(DOT_INDENT).append(nodeLine).append("\n");
-
-        // edges
-        if (follow) {
-
-            for (Edge edge : node.getPTPEdges()) {
-
-                // child (recursion)
-                long childId = addDotLineRec(edge.getPTPChild(), edge.followPTPChild(), strb, idMap);
-
-                EdgeShape edgeShape = (edge instanceof GEdge) ? ((GEdge) edge).getPTPEdgeShape() : DEFAULT_EDGE_SHAPE;
-                List<EdgeStyle> edgeStyles = (edge instanceof GEdge) ? ((GEdge) edge).getPTPEdgeStyles() : DEFAULT_EDGE_STYLES;
-                String edgeColor = (edge instanceof GEdge) ? ((GEdge) edge).getPTPColor() : DEFAULT_EDGE_COLOR;
-                String edgeLabel = edge.getPTPCaption();
-                edgeLabel = edgeLabel.replaceAll("\\n", "\\\\n");
-
-                String edgeLine = String.format("\"%s\" -> \"%s\" [shape=\"%s\", style=\"%s\", color=\"%s\", label=\"%s\"];",
-                        id,
-                        childId,
-                        edgeShape,
-                        edgeStyles.stream().map(Enum::name).collect(Collectors.joining(",")),
-                        edgeColor,
-                        edgeLabel
-                );
-                strb.append(DOT_INDENT).append(edgeLine).append("\n");
-            }
-        }
-
-        return id;
-    }
-
-    // GENERAL FUNCTIONS ///////////////////////////////////////////////////////////////////////////////////////////////
-
-    public static String visualize(Node node, String graphName, String title) {
-        StringBuilder strb = new StringBuilder();
-        strb.append(String.format("digraph %s {", graphName)).append("\n");
-
-        if (title != null) {
-            strb.append(DOT_INDENT + "labelloc=\"t\";" + "\n");
-            strb.append(DOT_INDENT).append(String.format("label=\"%s\";", title)).append("\n");
-        }
-
-        HashMap<Node, Long> idMap = new HashMap<>();
-        addDotLineRec(node, true, strb, idMap);
-
-        List<Long> leafIDs = idMap.keySet().stream().filter(n -> n.getPTPEdges().size() <= 0).map(idMap::get).collect(Collectors.toList());
-        String sameRankLine = String.format("{rank = same; %s};", leafIDs.stream().map(i -> "\"" + i + "\"").collect(Collectors.joining("; ")));
-        strb.append(DOT_INDENT).append(sameRankLine).append("\n");
-
-        strb.append("}");
-        return strb.toString();
-    }
-
-    // TEXTUAL REPRESENTATION //////////////////////////////////////////////////////////////////////////////////////////
-
-    public static void visualizeToFile(Node node, String graphName, String title, String filepath) throws IOException {
-        String str = visualize(node, graphName, title);
-
-        BufferedWriter writer;
-        writer = new BufferedWriter(new FileWriter(filepath));
-        writer.write(str);
-        writer.close();
-    }
 
     public enum NodeShape {
         box,
@@ -305,65 +172,189 @@ public class PrettyTreePrinter {
         none
     }
 
-    public interface Node {
-        List<String> getPTPCaption();
+    // GENERAL FUNCTIONS ///////////////////////////////////////////////////////////////////////////////////////////////
 
-        List<Edge> getPTPEdges();
+    private static String trimText(String text, Integer maxTextLen) {
+        final String SUFFIX = "...";
+
+        if ((maxTextLen != null) && (text.length() > maxTextLen)) {
+            if (maxTextLen < SUFFIX.length()) {
+                throw new IllegalArgumentException("maxTextLen should have at least the length: " + SUFFIX.length());
+            }
+
+            return text.substring(0, maxTextLen - SUFFIX.length()) + SUFFIX;
+        } else {
+            return text;
+        }
     }
 
-    public interface Edge {
-        String getPTPCaption();
+    // TEXTUAL REPRESENTATION //////////////////////////////////////////////////////////////////////////////////////////
 
-        Node getPTPChild();
+    private static int getBottomDepth(Node node, boolean follow) {
+        if ((!follow) || (node.getPTPEdges().size() <= 0)) {
+            return 0;
+        } else {
+            return node.getPTPEdges().stream().mapToInt(e -> getBottomDepth(e.getPTPChild(), e.followPTPChild())).max().getAsInt() + 1;
+        }
+    }
 
-        boolean followPTPChild();
+    private static String getEdgeIndent(int size, String edgeCaption, boolean lastChild) {
+        String front = (lastChild)? "└─" : "├─";
+        String back = "─> ";
+
+        String middle = trimText(edgeCaption, size - front.length() - back.length());
+
+        boolean right = true;
+        while (front.length() + middle.length() + back.length() < size) {
+            middle = (right)? middle + "─" : "─" + middle;
+            right = !right;
+        }
+
+        return front + middle + back;
+    }
+
+    private static String getIndent(int size, boolean lastChild) {
+        String res = (lastChild)? " " : "|";
+        while (res.length() < size) {
+            res = res + " ";
+        }
+
+        return res;
+    }
+
+    private static List<String> prettyPrintRec(Node node, boolean follow, boolean reversed, int size) {
+        List<String> res = new ArrayList<String>();
+
+        int bottomDepth = getBottomDepth(node, follow);
+
+        // this node
+        res.addAll(node.getPTPCaption());
+
+        // edges
+        if (follow) {
+
+            ListIterator<Edge> iter = (reversed) ? node.getPTPEdges().listIterator(node.getPTPEdges().size()) : node.getPTPEdges().listIterator();
+            while ((reversed) ? iter.hasPrevious() : iter.hasNext()) {
+                Edge edge = (reversed) ? iter.previous() : iter.next();
+                boolean endChild = ((reversed) ? !iter.hasPrevious() : !iter.hasNext());
+                int indentSize = (bottomDepth - getBottomDepth(edge.getPTPChild(), edge.followPTPChild())) * size;
+
+                boolean firstChildLine = true;
+                for (String childLine : prettyPrintRec(edge.getPTPChild(), edge.followPTPChild(), reversed, size)) {
+                    if (firstChildLine) {
+                        res.add(getEdgeIndent(indentSize, edge.getPTPCaption(), endChild) + childLine);
+                        firstChildLine = false;
+                    } else {
+                        res.add(getIndent(indentSize, endChild) + childLine);
+                    }
+                }
+            }
+        }
+
+        return res;
+    }
+
+    public static String prettyPrint(Node node, boolean reversed, int size) {
+        return prettyPrintRec(node, true, reversed, size).stream().collect(Collectors.joining("\n"));
+    }
+
+    public static String prettyPrint(Node node, boolean reversed) {
+        return prettyPrint(node, reversed, 10);
+    }
+
+    public static String prettyPrint(Node node, int size) {
+        return prettyPrint(node, false, size);
+    }
+
+    public static String prettyPrint(Node node) {
+        return prettyPrintRec(node, true, false, 10).stream().collect(Collectors.joining("\n"));
     }
 
     // GRAPHICAL REPRESENTATION ////////////////////////////////////////////////////////////////////////////////////////
 
-    public interface GNode extends Node {
-        NodeShape getPTPNodeShape();
+    private static long addDotLineRec(Node node, boolean follow, StringBuilder strb, HashMap<Node, Long> idMap) {
 
-        List<NodeStyle> getPTPNodeStyles();
+        long id;
+        if (idMap.containsKey(node)) {
+            id = idMap.get(node);
+        } else {
+            id = idMap.size();
+            idMap.put(node, id);
+        }
 
-        String getPTPColor();
+        NodeShape nodeShape = (node instanceof GNode)? ((GNode)node).getPTPNodeShape() : DEFAULT_NODE_SHAPE;
+        List<NodeStyle> nodeStyles = (node instanceof GNode)? ((GNode)node).getPTPNodeStyles() : DEFAULT_NODE_STYLES;
+        String nodeColor = (node instanceof GNode)? ((GNode)node).getPTPFillColor() : DEFAULT_NODE_COLOR;
+        String nodeFillColor = (node instanceof GNode)? ((GNode)node).getPTPFillColor() : DEFAULT_NODE_FILLCOLOR;
+        String nodeLabel = node.getPTPCaption().stream().collect(Collectors.joining("\n"));
+        nodeLabel = nodeLabel.replaceAll("\\n", "\\\\n");
 
-        String getPTPFillColor();
+        // this node
+        String nodeLine = String.format("\"%d\" [shape=\"%s\", style=\"%s\", color=\"%s\", fillcolor=\"%s\", label=\"%s\"];",
+                id,
+                nodeShape,
+                nodeStyles.stream().map(s -> s.name()).collect(Collectors.joining(",")),
+                nodeColor,
+                nodeFillColor,
+                nodeLabel
+        );
+        strb.append(DOT_INDENT + nodeLine + "\n");
+
+        // edges
+        if (follow) {
+
+            for (Edge edge : node.getPTPEdges()) {
+
+                // child (recursion)
+                long childId = addDotLineRec(edge.getPTPChild(), edge.followPTPChild(), strb, idMap);
+
+                EdgeShape edgeShape = (edge instanceof GEdge) ? ((GEdge) edge).getPTPEdgeShape() : DEFAULT_EDGE_SHAPE;
+                List<EdgeStyle> edgeStyles = (edge instanceof GEdge) ? ((GEdge) edge).getPTPEdgeStyles() : DEFAULT_EDGE_STYLES;
+                String edgeColor = (edge instanceof GEdge) ? ((GEdge) edge).getPTPColor() : DEFAULT_EDGE_COLOR;
+                String edgeLabel = edge.getPTPCaption();
+                edgeLabel = edgeLabel.replaceAll("\\n", "\\\\n");
+
+                String edgeLine = String.format("\"%s\" -> \"%s\" [shape=\"%s\", style=\"%s\", color=\"%s\", label=\"%s\"];",
+                        id,
+                        childId,
+                        edgeShape,
+                        edgeStyles.stream().map(s -> s.name()).collect(Collectors.joining(",")),
+                        edgeColor,
+                        edgeLabel
+                );
+                strb.append(DOT_INDENT + edgeLine + "\n");
+            }
+        }
+
+        return id;
     }
 
-    public interface GEdge extends Edge {
-        EdgeShape getPTPEdgeShape();
+    public static String visualize(Node node, String graphName, String title) {
+        StringBuilder strb = new StringBuilder();
+        strb.append(String.format("digraph %s {", graphName) + "\n");
 
-        List<EdgeStyle> getPTPEdgeStyles();
+        if (title != null) {
+            strb.append(DOT_INDENT + "labelloc=\"t\";" + "\n");
+            strb.append(DOT_INDENT + String.format("label=\"%s\";", title) + "\n");
+        }
 
-        String getPTPColor();
+        HashMap<Node, Long> idMap = new HashMap<>();
+        addDotLineRec(node, true, strb, idMap);
+
+        List<Long> leafIDs = idMap.keySet().stream().filter(n -> n.getPTPEdges().size() <= 0).map(n -> idMap.get(n)).collect(Collectors.toList());
+        String sameRankLine = String.format("{rank = same; %s};", leafIDs.stream().map(i -> "\"" + i + "\"").collect(Collectors.joining("; ")));
+        strb.append(DOT_INDENT + sameRankLine + "\n");
+
+        strb.append("}");
+        return strb.toString();
     }
 
-    public static class DefaultEdge implements Edge {
-        private final String caption;
-        private final Node child;
-        private final boolean followPTPChild;
+    public static void visualizeToFile(Node node, String graphName, String title, String filepath) throws IOException {
+        String str = visualize(node, graphName, title);
 
-        public DefaultEdge(String caption, Node child, boolean followPTPChild) {
-            this.caption = caption;
-            this.child = child;
-            this.followPTPChild = followPTPChild;
-        }
-
-        @Override
-        public String getPTPCaption() {
-            return caption;
-        }
-
-        @Override
-        public Node getPTPChild() {
-            return child;
-        }
-
-        @Override
-        public boolean followPTPChild() {
-            return followPTPChild;
-        }
-
+        BufferedWriter writer;
+        writer = new BufferedWriter(new FileWriter(filepath));
+        writer.write(str);
+        writer.close();
     }
 }

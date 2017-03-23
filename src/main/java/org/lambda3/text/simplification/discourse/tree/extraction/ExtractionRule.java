@@ -27,7 +27,9 @@ import edu.stanford.nlp.trees.Tree;
 import edu.stanford.nlp.trees.tregex.TregexMatcher;
 import edu.stanford.nlp.trees.tregex.TregexPattern;
 import org.lambda3.text.simplification.discourse.utils.parseTree.ParseTreeException;
+import org.lambda3.text.simplification.discourse.utils.parseTree.ParseTreeExtractionUtils;
 import org.lambda3.text.simplification.discourse.utils.parseTree.ParseTreeParser;
+import org.lambda3.text.simplification.discourse.utils.parseTree.ParseTreeVisualizer;
 import org.lambda3.text.simplification.discourse.utils.words.WordsUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,25 +40,45 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 public abstract class ExtractionRule {
-    protected final Logger logger = LoggerFactory.getLogger(getClass());
-    protected final TregexPattern pattern;
+    protected static final Logger LOGGER = LoggerFactory.getLogger(ExtractionRule.class);
 
-    public ExtractionRule(String pattern) {
-        this.pattern = TregexPattern.compile(pattern);
+    protected enum Tense {
+        PRESENT,
+        PAST
     }
 
-    protected static boolean isInfinitival(Tree clauseParseTree) {
-        TregexPattern p = TregexPattern.compile(clauseParseTree.value() + " <<, VP <<, /(T|t)o/");
-        TregexMatcher matcher = p.matcher(clauseParseTree);
-
-        return (matcher.findAt(clauseParseTree));
+    protected enum Number {
+        SINGULAR,
+        PLURAL
     }
+
+    public abstract Optional<Extraction> extract(Tree parseTree);
 
     protected static List<Tree> getSiblings(Tree parseTree, List<String> tags) {
         return parseTree.getChildrenAsList().stream().filter(c -> tags.contains(c.value())).collect(Collectors.toList());
     }
 
-    private static Tense getTense(Tree vp) {
+    protected static Number getNumber(Tree np) {
+        Number res = Number.SINGULAR;
+
+        // find plural forms
+        TregexPattern p = TregexPattern.compile("NNS|NNPS");
+        TregexMatcher matcher = p.matcher(np);
+        if (matcher.find()) {
+            res = Number.PLURAL;
+        }
+
+        // find and
+        p = TregexPattern.compile("CC <<: and");
+        matcher = p.matcher(np);
+        if (matcher.find()) {
+            res = Number.PLURAL;
+        }
+
+        return res;
+    }
+
+    protected static Tense getTense(Tree vp) {
         Tense res = Tense.PRESENT;
 
         // find past tense
@@ -71,7 +93,7 @@ public abstract class ExtractionRule {
     }
 
     private static List<Word> appendWordsFromTree(List<Word> words, Tree tree) {
-        List<Word> res = new ArrayList<>();
+        List<Word> res = new ArrayList<Word>();
         res.addAll(words);
 
         TregexPattern p = TregexPattern.compile(tree.value() + " <<, NNP|NNPS");
@@ -143,11 +165,74 @@ public abstract class ExtractionRule {
         return res;
     }
 
-    public abstract Optional<Extraction> extract(Tree parseTree);
+    protected static List<Word> getRephrasedParticipalS(Tree np, Tree vp, Tree s, Tree vbgn) {
+        Number number = getNumber(np);
+        Tense tense = getTense(vp);
 
-    protected enum Tense {
-        PRESENT,
-        PAST
+        TregexPattern p = TregexPattern.compile(vbgn.value() + " <<: (having . (been . VBN=vbn))");
+        TregexPattern p2 = TregexPattern.compile(vbgn.value() + " <<: (having . VBN=vbn)");
+        TregexPattern p3 = TregexPattern.compile(vbgn.value() + " <<: (being . VBN=vbn)");
+
+        TregexMatcher matcher = p.matcher(s);
+        if (matcher.findAt(s)) {
+            List<Word> res = new ArrayList<>();
+
+            res.add(new Word((number.equals(Number.SINGULAR))? "has" : "have"));
+            res.add(new Word("been"));
+            List<Word> next = ParseTreeExtractionUtils.getFollowingWords(s, matcher.getNode("vbn"), true);
+            if (next.size() > 0) {
+                next.set(0, WordsUtils.lowercaseWord(next.get(0)));
+            }
+            res.addAll(next);
+
+            return res;
+        }
+
+        matcher = p2.matcher(s);
+        if (matcher.findAt(s)) {
+            List<Word> res = new ArrayList<>();
+
+            res.add(new Word((number.equals(Number.SINGULAR))? "has" : "have"));
+            List<Word> next = ParseTreeExtractionUtils.getFollowingWords(s, matcher.getNode("vbn"), true);
+            if (next.size() > 0) {
+                next.set(0, WordsUtils.lowercaseWord(next.get(0)));
+            }
+            res.addAll(next);
+
+            return res;
+        }
+
+        matcher = p3.matcher(s);
+        if (matcher.findAt(s)) {
+            List<Word> res = new ArrayList<>();
+            if (tense.equals(Tense.PRESENT)) {
+                res.add(new Word((number.equals(Number.SINGULAR)) ? "is" : "are"));
+            } else {
+                res.add(new Word((number.equals(Number.SINGULAR)) ? "was" : "were"));
+            }
+            List<Word> next = ParseTreeExtractionUtils.getFollowingWords(s, matcher.getNode("vbn"), true);
+            if (next.size() > 0) {
+                next.set(0, WordsUtils.lowercaseWord(next.get(0)));
+            }
+            res.addAll(next);
+
+            return res;
+        }
+
+        // default
+        List<Word> res = new ArrayList<>();
+        if (tense.equals(Tense.PRESENT)) {
+            res.add(new Word((number.equals(Number.SINGULAR)) ? "is" : "are"));
+        } else {
+            res.add(new Word((number.equals(Number.SINGULAR)) ? "was" : "were"));
+        }
+        List<Word> next = ParseTreeExtractionUtils.getFollowingWords(s, vbgn, true);
+        if (next.size() > 0) {
+            next.set(0, WordsUtils.lowercaseWord(next.get(0)));
+        }
+        res.addAll(next);
+
+        return res;
     }
 
 }

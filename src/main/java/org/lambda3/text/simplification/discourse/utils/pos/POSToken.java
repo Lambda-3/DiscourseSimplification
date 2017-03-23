@@ -1,6 +1,6 @@
 /*
  * ==========================License-Start=============================
- * DiscourseSimplification : RightSubordinateEnablementExtractor
+ * DiscourseSimplification : ParseTreeExtractionUtils
  *
  * Copyright © 2017 Lambda³
  *
@@ -20,14 +20,35 @@
  * ==========================License-End==============================
  */
 
-package org.lambda3.text.simplification.discourse.tree.extraction.rules;
+package org.lambda3.text.simplification.discourse.utils.pos;
 
 /**
  *
  */
-public class RightSubordinateEnablementExtractor extends SubordinationEnablementExtractor {
+public class POSToken {
+    private final int index;
+    private final String text;
+    private final String pos;
 
-    public RightSubordinateEnablementExtractor() {
-        super("ROOT <<: (S < (NP $.. (VP=vp <+(VP) (NP|PP $.. (S=s)))))");
+    public POSToken(int index, String text, String pos) {
+        this.index = index;
+        this.text = text;
+        this.pos = pos;
+    }
+
+    public int getIndex() {
+        return index;
+    }
+
+    public String getText() {
+        return text;
+    }
+
+    public String getPos() {
+        return pos;
+    }
+
+    public String toString() {
+        return "(" + index + ": " + pos + ", '" + text + "')";
     }
 }

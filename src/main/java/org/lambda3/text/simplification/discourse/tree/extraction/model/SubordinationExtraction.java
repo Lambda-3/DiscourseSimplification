@@ -39,22 +39,18 @@ public class SubordinationExtraction extends Extraction {
     private final String extractionRule;
     private final Relation relation;
     private final String signalPhrase; // optional
-    private final String leftConstituent;
-    private final String rightConstituent;
+    private final Leaf leftConstituentLeaf;
+    private final Leaf rightConstituentLeaf;
     private final boolean superordinationIsLeft;
-    private final Leaf.Type leftConstituentType;
-    private final Leaf.Type rightConstituentType;
 
     // binary
-    public SubordinationExtraction(String extractionRule, Relation relation, List<Word> signalPhraseWords, List<Word> leftConstituentWords, List<Word> rightConstituentWords, boolean superordinationIsLeft, Leaf.Type leftConstituentType, Leaf.Type rightConstituentType) {
+    public SubordinationExtraction(String extractionRule, Relation relation, List<Word> signalPhraseWords, Leaf leftConstituentLeaf, Leaf rightConstituentLeaf, boolean superordinationIsLeft) {
         this.extractionRule = extractionRule;
         this.relation = relation;
         this.signalPhrase = (signalPhraseWords != null) ? WordsUtils.wordsToString(signalPhraseWords) : null;
-        this.leftConstituent = WordsUtils.wordsToProperSentenceString(leftConstituentWords);
-        this.rightConstituent = WordsUtils.wordsToProperSentenceString(rightConstituentWords);
+        this.leftConstituentLeaf = leftConstituentLeaf;
+        this.rightConstituentLeaf = rightConstituentLeaf;
         this.superordinationIsLeft = superordinationIsLeft;
-        this.leftConstituentType = leftConstituentType;
-        this.rightConstituentType = rightConstituentType;
     }
 
     public DiscourseTree convert() {
@@ -62,8 +58,8 @@ public class SubordinationExtraction extends Extraction {
                 extractionRule,
                 relation,
                 signalPhrase,
-                new Leaf(leftConstituentType, extractionRule, leftConstituent),
-                new Leaf(rightConstituentType, extractionRule, rightConstituent),
+                leftConstituentLeaf,
+                rightConstituentLeaf,
                 superordinationIsLeft
         );
     }

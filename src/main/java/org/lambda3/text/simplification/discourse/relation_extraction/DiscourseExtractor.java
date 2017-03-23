@@ -22,10 +22,6 @@
 
 package org.lambda3.text.simplification.discourse.relation_extraction;
 
-import org.lambda3.text.simplification.discourse.relation_extraction.element.DiscourseContext;
-import org.lambda3.text.simplification.discourse.relation_extraction.element.DiscourseCore;
-import org.lambda3.text.simplification.discourse.relation_extraction.relation.DiscourseCoreContextRelation;
-import org.lambda3.text.simplification.discourse.relation_extraction.relation.DiscourseCoreCoreRelation;
 import org.lambda3.text.simplification.discourse.tree.Relation;
 import org.lambda3.text.simplification.discourse.tree.model.Coordination;
 import org.lambda3.text.simplification.discourse.tree.model.DiscourseTree;
@@ -34,82 +30,49 @@ import org.lambda3.text.simplification.discourse.tree.model.Subordination;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- * Created by Matthias on 08.12.16.
+ *
  */
 public class DiscourseExtractor {
     private static final List<Relation> IGNORED_RELATIONS = Arrays.asList(
             Relation.UNKNOWN_COORDINATION
     );
     private final Logger logger = LoggerFactory.getLogger(getClass());
-    private LinkedHashMap<Leaf, DiscourseCore> processedCores;
-    private LinkedHashMap<Leaf, DiscourseContext> processedContexts;
+
+    private LinkedHashMap<Leaf, Element> processedLeaves;
 
     public DiscourseExtractor() {
-        this.processedCores = new LinkedHashMap<Leaf, DiscourseCore>();
-        this.processedContexts = new LinkedHashMap<Leaf, DiscourseContext>();
+        this.processedLeaves = new LinkedHashMap<Leaf, Element>();
     }
 
-    public List<DiscourseCore> extract(DiscourseTree discourseTree) {
-        this.processedCores = new LinkedHashMap<Leaf, DiscourseCore>();
-        this.processedContexts = new LinkedHashMap<Leaf, DiscourseContext>();
+    public List<Element> extract(DiscourseTree discourseTree) {
+        this.processedLeaves = new LinkedHashMap<Leaf, Element>();
 
-        extractRec(discourseTree);
+        extractRec(discourseTree, 0);
 
-        return processedCores.values().stream().collect(Collectors.toList());
+        return processedLeaves.values().stream().collect(Collectors.toList());
     }
 
-    // should be called on a superordinate node
-    private List<DiscourseCore> getCores(DiscourseTree node) {
-        List<DiscourseCore> res = new ArrayList<DiscourseCore>();
-
-        for (Leaf leaf : node.getNucleusPathLeaves()) {
-            DiscourseCore core;
-            if (processedCores.containsKey(leaf)) {
-                core = processedCores.get(leaf);
-            } else {
-                core = new DiscourseCore(leaf.getText(), leaf.getSentenceIdx());
-                processedCores.put(leaf, core);
-            }
-            res.add(core);
-        }
-
-        return res;
-    }
-
-    // should be called on a subordinate node
-    private List<DiscourseContext> getContexts(DiscourseTree node) {
-        List<DiscourseContext> res = new ArrayList<DiscourseContext>();
-
-        for (Leaf leaf : node.getNucleusPathLeaves()) {
-            DiscourseContext context;
-            if (processedContexts.containsKey(leaf)) {
-                context = processedContexts.get(leaf);
-            } else {
-                context = new DiscourseContext(leaf.getText(), leaf.getSentenceIdx());
-                if (leaf.getType().equals(Leaf.Type.SENT_SIM_CONTEXT)) {
-                    context.setSentSimContext();
-                }
-                processedContexts.put(leaf, context);
-
-            }
-            res.add(context);
-        }
-
-        return res;
-    }
-
-    // only visit nucleus nodes, do not handle References
-    private void extractRec(DiscourseTree node) {
+    private void extractRec(DiscourseTree node, int contextLayer) {
 
         if (node instanceof Leaf) {
-            getCores(node);
+            Leaf leaf = (Leaf)node;
+
+            // create new element
+            Element element = new Element(
+                    leaf.getText(),
+                    leaf.isProperSentence(),
+                    leaf.getRephrasedText().orElse(null),
+                    leaf.getSentenceIdx(),
+                    contextLayer
+            );
+
+            processedLeaves.put(leaf, element);
         }
 
         if (node instanceof Coordination) {
@@ -117,21 +80,21 @@ public class DiscourseExtractor {
 
             // recursion
             for (DiscourseTree child : coordination.getCoordinations()) {
-                extractRec(child);
+                extractRec(child, contextLayer);
             }
 
-            // add core relations
+            // set relations
             if (!IGNORED_RELATIONS.contains(coordination.getRelation())) {
                 for (DiscourseTree child : coordination.getCoordinations()) {
-                    List<DiscourseCore> childCores = getCores(child);
+                    List<Element> childNElements = child.getNucleusPathLeaves().stream().map(n -> processedLeaves.get(n)).collect(Collectors.toList());
 
                     // forward direction
                     for (DiscourseTree sibling : coordination.getOtherFollowingCoordinations(child)) {
-                        List<DiscourseCore> siblingCores = getCores(sibling);
+                        List<Element> siblingNElements = sibling.getNucleusPathLeaves().stream().map(n -> processedLeaves.get(n)).collect(Collectors.toList());
 
-                        for (DiscourseCore childCore : childCores) {
-                            for (DiscourseCore siblingCore : siblingCores) {
-                                childCore.addCoreRelation(new DiscourseCoreCoreRelation(coordination.getRelation(), siblingCore));
+                        for (Element childNElement : childNElements) {
+                            for (Element siblingNElement : siblingNElements) {
+                                childNElement.addRelation(new ElementRelation(siblingNElement, coordination.getRelation(), true));
                             }
                         }
                     }
@@ -139,16 +102,15 @@ public class DiscourseExtractor {
                     // reverse direction
                     if (coordination.getRelation().getReverseRelation().isPresent()) {
                         for (DiscourseTree sibling : coordination.getOtherPrecedingCoordinations(child)) {
-                            List<DiscourseCore> siblingCores = getCores(sibling);
+                            List<Element> siblingNElements = sibling.getNucleusPathLeaves().stream().map(n -> processedLeaves.get(n)).collect(Collectors.toList());
 
-                            for (DiscourseCore childCore : childCores) {
-                                for (DiscourseCore siblingCore : siblingCores) {
-                                    childCore.addCoreRelation(new DiscourseCoreCoreRelation(coordination.getRelation().getReverseRelation().get(), siblingCore));
+                            for (Element childNElement : childNElements) {
+                                for (Element siblingNElement : siblingNElements) {
+                                    childNElement.addRelation(new ElementRelation(siblingNElement, coordination.getRelation().getReverseRelation().get(), true));
                                 }
                             }
                         }
                     }
-
                 }
             }
         }
@@ -157,16 +119,17 @@ public class DiscourseExtractor {
             Subordination subordination = (Subordination) node;
 
             // recursion
-            extractRec(subordination.getSuperordination());
+            extractRec(subordination.getSuperordination(), contextLayer);
+            extractRec(subordination.getSubordination(), contextLayer + 1);
 
-            // add context relations
+            // add relations
             if (!IGNORED_RELATIONS.contains(subordination.getRelation())) {
-                List<DiscourseCore> cores = getCores(subordination.getSuperordination());
-                List<DiscourseContext> contexts = getContexts(subordination.getSubordination());
+                List<Element> superordinationNElements = subordination.getSuperordination().getNucleusPathLeaves().stream().map(n -> processedLeaves.get(n)).collect(Collectors.toList());
+                List<Element> subordinationNElements = subordination.getSubordination().getNucleusPathLeaves().stream().map(n -> processedLeaves.get(n)).collect(Collectors.toList());
 
-                for (DiscourseCore core : cores) {
-                    for (DiscourseContext context : contexts) {
-                        core.addContextRelation(new DiscourseCoreContextRelation(subordination.getRelation(), context));
+                for (Element superordinationNElement : superordinationNElements) {
+                    for (Element subordinationNElement : subordinationNElements) {
+                        superordinationNElement.addRelation(new ElementRelation(subordinationNElement, subordination.getRelation(), false));
                     }
                 }
             }

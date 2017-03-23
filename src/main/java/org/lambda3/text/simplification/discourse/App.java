@@ -22,8 +22,8 @@
 
 package org.lambda3.text.simplification.discourse;
 
+import org.lambda3.text.simplification.discourse.processing.OutSentence;
 import org.lambda3.text.simplification.discourse.processing.Processor;
-import org.lambda3.text.simplification.discourse.sentence_simplification.element.DCore;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
@@ -38,10 +38,9 @@ public class App {
     private static final Processor PROCESSOR = new Processor();
 
     public static void main(String[] args) throws IOException {
-        List<DCore> cores = PROCESSOR.process(new File("input.txt"), Processor.ProcessingType.WHOLE);
-//        List<DCore> cores = PROCESSOR.process("The whole text...", Processor.ProcessingType.WHOLE);
-//        List<DCore> cores = PROCESSOR.processWikipediaArticles(Arrays.asList("Barack_Obama"), Processor.ProcessingType.WHOLE);
+
+        List<OutSentence> sentences = PROCESSOR.process(new File("input.txt"), Processor.ProcessingType.WHOLE);
+//        List<OutSentence> sentences = PROCESSOR.process("The text", Processor.ProcessingType.WHOLE);
 
     }
-
 }

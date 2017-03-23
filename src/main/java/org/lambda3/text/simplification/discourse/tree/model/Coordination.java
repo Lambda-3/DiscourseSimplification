@@ -117,6 +117,8 @@ public class Coordination extends DiscourseTree {
         return res;
     }
 
+    // VISUALIZATION ///////////////////////////////////////////////////////////////////////////////////////////////////
+
     @Override
     public List<String> getPTPCaption() {
         String signalPhraseStr = (signalPhrase != null) ? "'" + signalPhrase + "'" : "NULL";

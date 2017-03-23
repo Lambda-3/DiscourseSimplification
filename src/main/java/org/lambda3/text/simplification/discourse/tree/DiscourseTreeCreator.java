@@ -50,17 +50,22 @@ public class DiscourseTreeCreator {
     static {
         rules = new ArrayList<>();
 
-        rules.add(new ReferenceExtractorForContainingWords());
-        rules.add(new ReferenceExtractorForPrecedingWords());
+        rules.add(new ReferenceExtractor1());
+        rules.add(new ReferenceExtractor2());
         rules.add(new CoordinationExtractor());
         rules.add(new SharedNPCoordinationExtractor());
-        rules.add(new SubordinationExtractor());
-        rules.add(new IntraSententialSubordinationExtraction());
-        rules.add(new RightSubordinateEnablementExtractor());
-        rules.add(new LeftSubordinateEnablementExtractor());
+        rules.add(new SharedNPPremodParticipalExtractor());
+        rules.add(new SharedNPPostmodParticipalExtractor());
+        rules.add(new Subordination1EnablementExtractor());
+        rules.add(new Subordination1Extractor());
+        rules.add(new Subordination2EnablementExtractor());
+        rules.add(new Subordination2IntraSententialAttributionExtractor());
+        rules.add(new Subordination2Extractor());
+        rules.add(new Subordination3EnablementExtractor());
+        rules.add(new Subordination4EnablementExtractor());
 
-        rules.add(new ListNPExtractor("ROOT <<: (S < (NP=np < (NP $.. NP) $.. VP))"));
-        rules.add(new ListNPExtractor("ROOT <<: (S < (NP $.. (VP << (NP=np < (NP $.. NP)))))"));
+        rules.add(new ListNPExtractor1());
+        rules.add(new ListNPExtractor2());
     }
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
@@ -168,15 +173,15 @@ public class DiscourseTreeCreator {
             logger.debug(leaf.toString());
         }
 
-        if ((leaf.getType().equals(Leaf.Type.TERMINAL)) || (leaf.getType().equals(Leaf.Type.SENT_SIM_CONTEXT))) {
-            logger.debug("Leaf will not be split.");
+        if (!leaf.isAllowSplit()) {
+            logger.debug("Leaf will not be check.");
             return Optional.empty();
         }
 
         // try to generate parseTree
         Tree parseTree;
         try {
-            parseTree = ParseTreeParser.parse(leaf.getText());
+            parseTree = ParseTreeParser.parse(leaf.preferRephrasedText());
         } catch (ParseTreeException e) {
             logger.error("Failed to generate parse tree");
 
