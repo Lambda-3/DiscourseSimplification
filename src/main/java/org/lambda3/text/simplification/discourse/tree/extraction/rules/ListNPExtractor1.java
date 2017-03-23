@@ -30,13 +30,11 @@ import org.lambda3.text.simplification.discourse.tree.extraction.Extraction;
 import org.lambda3.text.simplification.discourse.tree.extraction.ExtractionRule;
 import org.lambda3.text.simplification.discourse.tree.extraction.model.CoordinationExtraction;
 import org.lambda3.text.simplification.discourse.tree.extraction.utils.ListNPSplitter;
-import org.lambda3.text.simplification.discourse.tree.extraction.utils.TregexUtils;
 import org.lambda3.text.simplification.discourse.tree.model.Leaf;
 import org.lambda3.text.simplification.discourse.utils.parseTree.ParseTreeExtractionUtils;
 import org.lambda3.text.simplification.discourse.utils.words.WordsUtils;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
@@ -52,13 +50,45 @@ public class ListNPExtractor1 extends ExtractionRule {
         TregexMatcher matcher = p.matcher(parseTree);
 
         while (matcher.findAt(parseTree)) {
-            Optional<ListNPSplitter.Result> r = ListNPSplitter.split(matcher.getNode("np"));
+
+            List<Word> precedingWords = ParseTreeExtractionUtils.getPrecedingWords(parseTree, matcher.getNode("np"), false);
+            List<Word> followingWords = ParseTreeExtractionUtils.getFollowingWords(parseTree, matcher.getNode("np"), false);
+
+            Optional<ListNPSplitter.Result> r = ListNPSplitter.splitInitList(matcher.getNode("np"));
+            if (r.isPresent()) {
+
+                // the left constituent
+                List<Word> leftConstituentWords = new ArrayList<>();
+                leftConstituentWords.addAll(precedingWords);
+                leftConstituentWords.addAll(r.get().getElementsWords().get(0));
+                leftConstituentWords.addAll(followingWords);
+
+                Leaf leftConstituent = new Leaf(getClass().getSimpleName(), WordsUtils.wordsToProperSentenceString(leftConstituentWords));
+                leftConstituent.dontAllowSplit();
+
+                // the right constituent
+                List<Word> rightConstituentWords = new ArrayList<>();
+                rightConstituentWords.addAll(precedingWords);
+                rightConstituentWords.addAll(r.get().getElementsWords().get(1));
+                rightConstituentWords.addAll(followingWords);
+
+                Leaf rightConstituent = new Leaf(getClass().getSimpleName(), WordsUtils.wordsToProperSentenceString(rightConstituentWords));
+
+                Extraction res = new CoordinationExtraction(
+                        getClass().getSimpleName(),
+                        r.get().getRelation(),
+                        null,
+                        leftConstituent,
+                        rightConstituent
+                );
+
+                return Optional.of(res);
+            }
+
+            r = ListNPSplitter.splitList(matcher.getNode("np"));
             if (r.isPresent()) {
 
                 // constituents
-                List<Word> precedingWords = ParseTreeExtractionUtils.getPrecedingWords(parseTree, matcher.getNode("np"), false);
-                List<Word> followingWords = ParseTreeExtractionUtils.getFollowingWords(parseTree, matcher.getNode("np"), false);
-
                 List<Leaf> constituents = new ArrayList<>();
                 for (List<Word> element : r.get().getElementsWords()) {
                     List<Word> words = new ArrayList<Word>();

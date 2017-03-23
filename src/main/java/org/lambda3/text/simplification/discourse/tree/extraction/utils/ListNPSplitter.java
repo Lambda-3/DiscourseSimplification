@@ -24,6 +24,8 @@ package org.lambda3.text.simplification.discourse.tree.extraction.utils;
 
 import edu.stanford.nlp.ling.Word;
 import edu.stanford.nlp.trees.Tree;
+import edu.stanford.nlp.trees.tregex.TregexMatcher;
+import edu.stanford.nlp.trees.tregex.TregexPattern;
 import org.lambda3.text.simplification.discourse.tree.Relation;
 import org.lambda3.text.simplification.discourse.utils.parseTree.ParseTreeExtractionUtils;
 import org.slf4j.LoggerFactory;
@@ -160,7 +162,22 @@ public class ListNPSplitter {
         return Optional.empty();
     }
 
-    public static Optional<Result> split(Tree np) {
+    public static Optional<Result> splitInitList(Tree np) {
+        TregexPattern p = TregexPattern.compile(np.value() + " <<, (NP . (/:/=colon))");
+        TregexMatcher matcher = p.matcher(np);
+
+        while (matcher.findAt(np)) {
+            List<List<Word>> elementsWords = new ArrayList<>();
+            elementsWords.add(ParseTreeExtractionUtils.getPrecedingWords(np, matcher.getNode("colon"), false));
+            elementsWords.add(ParseTreeExtractionUtils.getFollowingWords(np, matcher.getNode("colon"), false));
+
+            return Optional.of(new Result(elementsWords, Relation.JOINT_NP_LIST));
+        }
+
+        return Optional.empty();
+    }
+
+    public static Optional<Result> splitList(Tree np) {
 
         // check for conjunction
         Optional<Result> r = check(np, new ConjunctionLeafChecker(), new SeparatorLeafChecker(), Relation.JOINT_NP_LIST);
