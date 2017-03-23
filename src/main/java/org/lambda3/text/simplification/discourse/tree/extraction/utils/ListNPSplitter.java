@@ -163,13 +163,13 @@ public class ListNPSplitter {
     public static Optional<Result> split(Tree np) {
 
         // check for conjunction
-        Optional<Result> r = check(np, new ConjunctionLeafChecker(), new SeparatorLeafChecker(), Relation.JOINT_LIST);
+        Optional<Result> r = check(np, new ConjunctionLeafChecker(), new SeparatorLeafChecker(), Relation.JOINT_NP_LIST);
         if (r.isPresent()) {
             return r;
         }
 
         // check for disjunction
-        r = check(np, new DisjunctionLeafChecker(), new SeparatorLeafChecker(), Relation.JOINT_DISJUNCTION);
+        r = check(np, new DisjunctionLeafChecker(), new SeparatorLeafChecker(), Relation.JOINT_NP_DISJUNCTION);
         if (r.isPresent()) {
             return r;
         }
