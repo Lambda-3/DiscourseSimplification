@@ -55,19 +55,20 @@ public class DiscourseTreeCreator {
         rules.add(new ReferenceExtractor1());
         rules.add(new ReferenceExtractor2());
         rules.add(new CoordinationExtractor());
-        rules.add(new SharedNPPostCoordinationExtractor());
 
-        rules.add(new SharedNPPreParticipalExtractor());
-        rules.add(new SharedNPPostParticipalExtractor());
-
+        rules.add(new EnablementPreExtractor());
         rules.add(new SubordinationPreEnablementExtractor());
+        rules.add(new SharedNPPreParticipalExtractor());
         rules.add(new SubordinationPreExtractor());
+
+        rules.add(new EnablementPostExtractor());
         rules.add(new SubordinationPostEnablementExtractor());
+        rules.add(new SharedNPPostCoordinationExtractor());
+        rules.add(new SharedNPPostParticipalExtractor());
         rules.add(new SubordinationPostISAExtractor());
         rules.add(new SubordinationPostExtractor());
-        rules.add(new EnablementPostExtractor());
-        rules.add(new EnablementPreExtractor());
 
+        // should be applied last (because of they dont allow further splitting)
         rules.add(new PreListNPExtractor());
         rules.add(new PostListNPExtractor());
     }
