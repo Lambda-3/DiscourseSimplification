@@ -27,6 +27,7 @@ import edu.stanford.nlp.trees.Tree;
 import edu.stanford.nlp.trees.tregex.TregexMatcher;
 import edu.stanford.nlp.trees.tregex.TregexPattern;
 import org.lambda3.text.simplification.discourse.tree.Relation;
+import org.lambda3.text.simplification.discourse.tree.classification.SignalPhraseClassifier;
 import org.lambda3.text.simplification.discourse.tree.extraction.Extraction;
 import org.lambda3.text.simplification.discourse.tree.extraction.ExtractionRule;
 import org.lambda3.text.simplification.discourse.tree.extraction.model.SubordinationExtraction;
@@ -41,34 +42,33 @@ import java.util.Optional;
 /**
  *
  */
-public class Subordination4EnablementExtractor extends ExtractionRule {
+public class SubordinationPostISAExtractor extends ExtractionRule {
 
     @Override
     public Optional<Extraction> extract(Tree parseTree) {
-
-        TregexPattern p = TregexPattern.compile("ROOT <<: (S < (S=s <<, (VP <<, /(T|t)o/) $.. (NP $.. VP=vp)))");
+        TregexPattern p = TregexPattern.compile("ROOT <<: (S < (NP $.. (VP <+(VP) (SBAR=sbar <<, /that/ < (S=s)))))");
         TregexMatcher matcher = p.matcher(parseTree);
 
         while (matcher.findAt(parseTree)) {
 
-            // the left, subordinate constituent
-            List<Word> leftConstituentWords = ParseTreeExtractionUtils.getContainingWords(matcher.getNode("s"));
+            // the left, !subordinate! constituent
+            List<Word> leftConstituentWords = new ArrayList<>();
+            leftConstituentWords.addAll(ParseTreeExtractionUtils.getPrecedingWords(parseTree, matcher.getNode("sbar"), false));
+            leftConstituentWords.addAll(ParseTreeExtractionUtils.getFollowingWords(parseTree, matcher.getNode("sbar"), false));
             Leaf leftConstituent = new Leaf(getClass().getSimpleName(), WordsUtils.wordsToProperSentenceString(leftConstituentWords));
 
             // rephrase
             leftConstituent.setProperSentence(false);
-            List<Word> rephrasedWords = rephraseEnablement(matcher.getNode("s"), matcher.getNode("vp"));
+            List<Word> rephrasedWords = rephraseIntraSententialAttribution(leftConstituentWords);
             leftConstituent.setRephrasedText(WordsUtils.wordsToProperSentenceString(rephrasedWords));
             leftConstituent.dontAllowSplit();
 
-            // the right, superordinate constituent
-            List<Word> rightConstituentWords = new ArrayList<>();
-            rightConstituentWords.addAll(ParseTreeExtractionUtils.getPrecedingWords(parseTree, matcher.getNode("s"), false));
-            rightConstituentWords.addAll(ParseTreeExtractionUtils.getFollowingWords(parseTree, matcher.getNode("s"), false));
+            // the right, !superordinate! constituent
+            List<Word> rightConstituentWords = ParseTreeExtractionUtils.getContainingWords(matcher.getNode("s"));
             Leaf rightConstituent = new Leaf(getClass().getSimpleName(), WordsUtils.wordsToProperSentenceString(rightConstituentWords));
 
             // relation
-            Relation relation = Relation.ENABLEMENT;
+            Relation relation = Relation.INTRA_SENTENTIAL_ATTRIBUTION;
 
             Extraction res = new SubordinationExtraction(
                     getClass().getSimpleName(),

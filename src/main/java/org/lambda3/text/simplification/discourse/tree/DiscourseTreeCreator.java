@@ -30,6 +30,8 @@ import org.lambda3.text.simplification.discourse.tree.extraction.model.RefCoordi
 import org.lambda3.text.simplification.discourse.tree.extraction.model.RefSubordinationExtraction;
 import org.lambda3.text.simplification.discourse.tree.extraction.model.SubordinationExtraction;
 import org.lambda3.text.simplification.discourse.tree.extraction.rules.*;
+import org.lambda3.text.simplification.discourse.tree.extraction.rules.ListNP.PreListNPExtractor;
+import org.lambda3.text.simplification.discourse.tree.extraction.rules.ListNP.PostListNPExtractor;
 import org.lambda3.text.simplification.discourse.tree.model.*;
 import org.lambda3.text.simplification.discourse.utils.parseTree.ParseTreeException;
 import org.lambda3.text.simplification.discourse.utils.parseTree.ParseTreeParser;
@@ -53,19 +55,21 @@ public class DiscourseTreeCreator {
         rules.add(new ReferenceExtractor1());
         rules.add(new ReferenceExtractor2());
         rules.add(new CoordinationExtractor());
-        rules.add(new SharedNPCoordinationExtractor());
-        rules.add(new SharedNPPremodParticipalExtractor());
-        rules.add(new SharedNPPostmodParticipalExtractor());
-        rules.add(new Subordination1EnablementExtractor());
-        rules.add(new Subordination1Extractor());
-        rules.add(new Subordination2EnablementExtractor());
-        rules.add(new Subordination2IntraSententialAttributionExtractor());
-        rules.add(new Subordination2Extractor());
-        rules.add(new Subordination3EnablementExtractor());
-        rules.add(new Subordination4EnablementExtractor());
+        rules.add(new SharedNPPostCoordinationExtractor());
 
-        rules.add(new ListNPExtractor1());
-        rules.add(new ListNPExtractor2());
+        rules.add(new SharedNPPreParticipalExtractor());
+        rules.add(new SharedNPPostParticipalExtractor());
+
+        rules.add(new SubordinationPreEnablementExtractor());
+        rules.add(new SubordinationPreExtractor());
+        rules.add(new SubordinationPostEnablementExtractor());
+        rules.add(new SubordinationPostISAExtractor());
+        rules.add(new SubordinationPostExtractor());
+        rules.add(new EnablementPostExtractor());
+        rules.add(new EnablementPreExtractor());
+
+        rules.add(new PreListNPExtractor());
+        rules.add(new PostListNPExtractor());
     }
 
     private final Logger logger = LoggerFactory.getLogger(getClass());

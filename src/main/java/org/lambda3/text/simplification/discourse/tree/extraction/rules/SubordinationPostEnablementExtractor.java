@@ -27,7 +27,6 @@ import edu.stanford.nlp.trees.Tree;
 import edu.stanford.nlp.trees.tregex.TregexMatcher;
 import edu.stanford.nlp.trees.tregex.TregexPattern;
 import org.lambda3.text.simplification.discourse.tree.Relation;
-import org.lambda3.text.simplification.discourse.tree.classification.SignalPhraseClassifier;
 import org.lambda3.text.simplification.discourse.tree.extraction.Extraction;
 import org.lambda3.text.simplification.discourse.tree.extraction.ExtractionRule;
 import org.lambda3.text.simplification.discourse.tree.extraction.model.SubordinationExtraction;
@@ -42,12 +41,11 @@ import java.util.Optional;
 /**
  *
  */
-public class Subordination2Extractor extends ExtractionRule {
-    private static final SignalPhraseClassifier CLASSIFIER = new SignalPhraseClassifier();
+public class SubordinationPostEnablementExtractor extends ExtractionRule {
 
     @Override
     public Optional<Extraction> extract(Tree parseTree) {
-        TregexPattern p = TregexPattern.compile("ROOT <<: (S < (NP $.. (VP <+(VP) (SBAR=sbar < (S=s < (NP $.. VP))))))");
+        TregexPattern p = TregexPattern.compile("ROOT <<: (S < (NP $.. (VP=vp <+(VP) (SBAR=sbar < (S=s <<, (VP <<, /(T|t)o/))))))");
         TregexMatcher matcher = p.matcher(parseTree);
 
         while (matcher.findAt(parseTree)) {
@@ -62,15 +60,19 @@ public class Subordination2Extractor extends ExtractionRule {
             List<Word> rightConstituentWords = ParseTreeExtractionUtils.getContainingWords(matcher.getNode("s"));
             Leaf rightConstituent = new Leaf(getClass().getSimpleName(), WordsUtils.wordsToProperSentenceString(rightConstituentWords));
 
-            // relation
-            List<Word> signalPhraseWords = ParseTreeExtractionUtils.getPrecedingWords(matcher.getNode("sbar"), matcher.getNode("s"), false);
-            Relation relation = CLASSIFIER.classifyGeneral(signalPhraseWords).orElse(Relation.UNKNOWN_SUBORDINATION);
+            // rephrase
+            rightConstituent.setProperSentence(false);
+            List<Word> rephrasedWords = rephraseEnablement(matcher.getNode("s"), matcher.getNode("vp"));
+            rightConstituent.setRephrasedText(WordsUtils.wordsToProperSentenceString(rephrasedWords));
+            rightConstituent.dontAllowSplit();
 
-            //TODO not always extract?
+            // relation
+            Relation relation = Relation.ENABLEMENT;
+
             Extraction res = new SubordinationExtraction(
                     getClass().getSimpleName(),
                     relation,
-                    signalPhraseWords,
+                    null,
                     leftConstituent, // the superordinate constituent
                     rightConstituent, // the subordinate constituent
                     true

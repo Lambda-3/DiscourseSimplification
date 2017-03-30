@@ -42,7 +42,7 @@ import java.util.Optional;
 /**
  *
  */
-public class SharedNPPremodParticipalExtractor extends ExtractionRule {
+public class SharedNPPreParticipalExtractor extends ExtractionRule {
     private static final SignalPhraseClassifier CLASSIFIER = new SignalPhraseClassifier();
 
     @Override

@@ -41,30 +41,31 @@ import java.util.Optional;
 /**
  *
  */
-public class Subordination1EnablementExtractor extends ExtractionRule {
+public class EnablementPostExtractor extends ExtractionRule {
 
     @Override
     public Optional<Extraction> extract(Tree parseTree) {
-        TregexPattern p = TregexPattern.compile("ROOT <<: (S < (SBAR=sbar < (S=s <<, (VP <<, /(T|t)o/)) $.. (NP $.. VP=vp)))");
+
+        TregexPattern p = TregexPattern.compile("ROOT <<: (S < (NP $.. (VP=vp <+(VP) (NP|PP $.. (S=s <<, (VP <<, /(T|t)o/))))))");
         TregexMatcher matcher = p.matcher(parseTree);
 
         while (matcher.findAt(parseTree)) {
 
-            // the left, subordinate constituent
-            List<Word> leftConstituentWords = ParseTreeExtractionUtils.getContainingWords(matcher.getNode("s"));
+            // the left, superordinate constituent
+            List<Word> leftConstituentWords = new ArrayList<>();
+            leftConstituentWords.addAll(ParseTreeExtractionUtils.getPrecedingWords(parseTree, matcher.getNode("s"), false));
+            leftConstituentWords.addAll(ParseTreeExtractionUtils.getFollowingWords(parseTree, matcher.getNode("s"), false));
             Leaf leftConstituent = new Leaf(getClass().getSimpleName(), WordsUtils.wordsToProperSentenceString(leftConstituentWords));
 
-            // rephrase
-            leftConstituent.setProperSentence(false);
-            List<Word> rephrasedWords = rephraseEnablement(matcher.getNode("s"), matcher.getNode("vp"));
-            leftConstituent.setRephrasedText(WordsUtils.wordsToProperSentenceString(rephrasedWords));
-            leftConstituent.dontAllowSplit();
-
-            // the right, superordinate constituent
-            List<Word> rightConstituentWords = new ArrayList<>();
-            rightConstituentWords.addAll(ParseTreeExtractionUtils.getPrecedingWords(parseTree, matcher.getNode("sbar"), false));
-            rightConstituentWords.addAll(ParseTreeExtractionUtils.getFollowingWords(parseTree, matcher.getNode("sbar"), false));
+            // the right, subordinate constituent
+            List<Word> rightConstituentWords = ParseTreeExtractionUtils.getContainingWords(matcher.getNode("s"));
             Leaf rightConstituent = new Leaf(getClass().getSimpleName(), WordsUtils.wordsToProperSentenceString(rightConstituentWords));
+
+            // rephrase
+            rightConstituent.setProperSentence(false);
+            List<Word> rephrasedWords = rephraseEnablement(matcher.getNode("s"), matcher.getNode("vp"));
+            rightConstituent.setRephrasedText(WordsUtils.wordsToProperSentenceString(rephrasedWords));
+            rightConstituent.dontAllowSplit();
 
             // relation
             Relation relation = Relation.ENABLEMENT;
@@ -73,9 +74,9 @@ public class Subordination1EnablementExtractor extends ExtractionRule {
                     getClass().getSimpleName(),
                     relation,
                     null,
-                    leftConstituent, // the subordinate constituent
-                    rightConstituent, // the superordinate constituent
-                    false
+                    leftConstituent, // the superordinate constituent
+                    rightConstituent, // the subordinate constituent
+                    true
             );
 
             return Optional.of(res);

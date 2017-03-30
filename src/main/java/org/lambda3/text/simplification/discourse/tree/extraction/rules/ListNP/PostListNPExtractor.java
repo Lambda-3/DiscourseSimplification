@@ -25,9 +25,9 @@ package org.lambda3.text.simplification.discourse.tree.extraction.rules.ListNP;
 /**
  *
  */
-public class ListNPExtractor1 extends ListNPExtractor {
+public class PostListNPExtractor extends ListNPExtractor {
 
-    public ListNPExtractor1() {
-        super("ROOT <<: (S < (NP=np $.. VP))");
+    public PostListNPExtractor() {
+        super("ROOT <<: (S < (NP $.. (VP << (NP=np))))");
     }
 }
