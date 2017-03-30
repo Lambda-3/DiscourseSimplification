@@ -200,29 +200,33 @@ public class ListNPSplitter {
     }
 
     public static Optional<Result> splitList(Tree anchorTree, Tree np) {
+        boolean containsSemicolon = ParseTreeExtractionUtils.findLeaves(np, ParseTreeExtractionUtils.getContainingLeaves(np), new ValueLeafChecker(";"), false).size() > 0;
+        if (containsSemicolon) {
 
-        // check for conjunction with elements separated by ;
-        Optional<Result> r = check(anchorTree, np, new ConjunctionLeafChecker("and"), new ValueLeafChecker(";"), Relation.JOINT_NP_LIST);
-        if (r.isPresent()) {
-            return r;
-        }
+            // check for conjunction with elements separated by ;
+            Optional<Result> r = check(anchorTree, np, new ConjunctionLeafChecker("and"), new ValueLeafChecker(";"), Relation.JOINT_NP_LIST);
+            if (r.isPresent()) {
+                return r;
+            }
 
-        // check for disjunction with elements separated by ;
-        r = check(anchorTree, np, new ConjunctionLeafChecker("or"), new ValueLeafChecker(";"), Relation.JOINT_NP_DISJUNCTION);
-        if (r.isPresent()) {
-            return r;
-        }
+            // check for disjunction with elements separated by ;
+            r = check(anchorTree, np, new ConjunctionLeafChecker("or"), new ValueLeafChecker(";"), Relation.JOINT_NP_DISJUNCTION);
+            if (r.isPresent()) {
+                return r;
+            }
+        } else {
 
-        // check for conjunction with elements separated by ,
-        r = check(anchorTree, np, new ConjunctionLeafChecker("and"), new ValueLeafChecker(","), Relation.JOINT_NP_LIST);
-        if (r.isPresent()) {
-            return r;
-        }
+            // check for conjunction with elements separated by ,
+            Optional<Result> r = check(anchorTree, np, new ConjunctionLeafChecker("and"), new ValueLeafChecker(","), Relation.JOINT_NP_LIST);
+            if (r.isPresent()) {
+                return r;
+            }
 
-        // check for disjunction with elements separated by ,
-        r = check(anchorTree, np, new ConjunctionLeafChecker("or"), new ValueLeafChecker(","), Relation.JOINT_NP_DISJUNCTION);
-        if (r.isPresent()) {
-            return r;
+            // check for disjunction with elements separated by ,
+            r = check(anchorTree, np, new ConjunctionLeafChecker("or"), new ValueLeafChecker(","), Relation.JOINT_NP_DISJUNCTION);
+            if (r.isPresent()) {
+                return r;
+            }
         }
 
         return Optional.empty();
