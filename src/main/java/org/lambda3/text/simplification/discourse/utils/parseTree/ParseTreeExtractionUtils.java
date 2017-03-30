@@ -29,11 +29,17 @@ import org.lambda3.text.simplification.discourse.utils.ner.NERExtractionUtils;
 import org.lambda3.text.simplification.discourse.utils.ner.NERString;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
 public class ParseTreeExtractionUtils {
+
+    public interface INodeChecker {
+        boolean check(Tree anchorTree, Tree node);
+    }
+
 
     public static List<Integer> getLeafNumbers(Tree anchorTree, Tree node) {
         List<Integer> res = new ArrayList<>();
@@ -85,30 +91,37 @@ public class ParseTreeExtractionUtils {
         return true;
     }
 
-    public static Optional<Tree> findSpanningTree(Tree anchorTree, Tree firstLeaf, Tree lastLeaf) {
-        return findSpanningTreeRec(anchorTree, anchorTree, firstLeaf, lastLeaf);
+
+
+
+    public static List<Word> leavesToWords(List<Tree> leaves) {
+        return leaves.stream().map(l -> l.yieldWords().get(0)).collect(Collectors.toList());
     }
 
-    private static Optional<Tree> findSpanningTreeRec(Tree anchorTree, Tree currTree, Tree firstLeaf, Tree lastLeaf) {
-        int firstNumber = firstLeaf.nodeNumber(anchorTree);
-        int lastNumber = lastLeaf.nodeNumber(anchorTree);
-        int currFirstNumber = getFirstLeaf(currTree).nodeNumber(anchorTree);
-        int currLastNumber = getLastLeaf(currTree).nodeNumber(anchorTree);
-        if (((currFirstNumber <= firstNumber) && (firstNumber <= currLastNumber)) && ((currFirstNumber <= lastNumber) && (lastNumber <= currLastNumber))) {
-            if ((currFirstNumber == firstNumber) && (lastNumber == currLastNumber)) {
-                return Optional.of(currTree);
+    public static List<List<Tree>> splitLeaves(Tree anchorTree, List<Tree> leaves, INodeChecker leafChecker, boolean removeEmpty) {
+        List<List<Tree>> res = new ArrayList<>();
+        List<Tree> currElement = new ArrayList<>();
+        for (Tree leaf : leaves) {
+            if (leafChecker.check(anchorTree, leaf)) {
+                if ((currElement.size() > 0) || (!removeEmpty))
+                    res.add(currElement);
+                currElement = new ArrayList<>();
             } else {
-                // recursion
-                for (Tree child : currTree.getChildrenAsList()) {
-                    Optional<Tree> cr = findSpanningTreeRec(anchorTree, child, firstLeaf, lastLeaf);
-                    if (cr.isPresent()) {
-                        return Optional.of(cr.get());
-                    }
-                }
+                currElement.add(leaf);
             }
         }
+        if ((currElement.size() > 0) || (!removeEmpty))
+            res.add(currElement);
 
-        return Optional.empty();
+        return res;
+    }
+
+    public static List<Tree> findLeaves(Tree anchorTree, List<Tree> leaves, INodeChecker leafChecker, boolean reversed) {
+        List<Tree> res = leaves.stream().filter(l -> leafChecker.check(anchorTree, l)).collect(Collectors.toList());
+        if (reversed) {
+            Collections.reverse(res);
+        }
+        return res;
     }
 
     public static Tree getFirstLeaf(Tree tree) {
@@ -129,6 +142,13 @@ public class ParseTreeExtractionUtils {
 
     public static List<Tree> getLeavesInBetween(Tree anchorTree, Tree leftNode, Tree rightNode, boolean includeLeft, boolean includeRight) {
         List<Tree> res = new ArrayList<>();
+
+        if (leftNode == null) {
+            leftNode = getFirstLeaf(anchorTree);
+        }
+        if (rightNode == null) {
+            rightNode = getLastLeaf(anchorTree);
+        }
 
         int startLeafNumber = (includeLeft) ? getFirstLeaf(leftNode).nodeNumber(anchorTree) : getLastLeaf(leftNode).nodeNumber(anchorTree) + 1;
         int endLeafNumber = (includeRight) ? getLastLeaf(rightNode).nodeNumber(anchorTree) : getFirstLeaf(rightNode).nodeNumber(anchorTree) - 1;
@@ -159,20 +179,44 @@ public class ParseTreeExtractionUtils {
     }
 
     public static List<Word> getWordsInBetween(Tree anchorTree, Tree leftNode, Tree rightNode, boolean includeLeft, boolean includeRight) {
-        return getLeavesInBetween(anchorTree, leftNode, rightNode, includeLeft, includeRight).stream().map(
-                t -> t.yieldWords().get(0)
-        ).collect(Collectors.toList());
+        return leavesToWords(getLeavesInBetween(anchorTree, leftNode, rightNode, includeLeft, includeRight));
     }
 
     public static List<Word> getPrecedingWords(Tree anchorTree, Tree node, boolean include) {
-        return getWordsInBetween(anchorTree, getFirstLeaf(anchorTree), node, true, include);
+        return leavesToWords(getPrecedingLeaves(anchorTree, node, include));
     }
 
     public static List<Word> getFollowingWords(Tree anchorTree, Tree node, boolean include) {
-        return getWordsInBetween(anchorTree, node, getLastLeaf(anchorTree), include, true);
+        return leavesToWords(getFollowingLeaves(anchorTree, node, include));
     }
 
     public static List<Word> getContainingWords(Tree node) {
-        return node.yieldWords();
+        return leavesToWords(getContainingLeaves(node));
+    }
+
+    public static Optional<Tree> findSpanningTree(Tree anchorTree, Tree firstLeaf, Tree lastLeaf) {
+        return findSpanningTreeRec(anchorTree, anchorTree, firstLeaf, lastLeaf);
+    }
+
+    private static Optional<Tree> findSpanningTreeRec(Tree anchorTree, Tree currTree, Tree firstLeaf, Tree lastLeaf) {
+        int firstNumber = firstLeaf.nodeNumber(anchorTree);
+        int lastNumber = lastLeaf.nodeNumber(anchorTree);
+        int currFirstNumber = getFirstLeaf(currTree).nodeNumber(anchorTree);
+        int currLastNumber = getLastLeaf(currTree).nodeNumber(anchorTree);
+        if (((currFirstNumber <= firstNumber) && (firstNumber <= currLastNumber)) && ((currFirstNumber <= lastNumber) && (lastNumber <= currLastNumber))) {
+            if ((currFirstNumber == firstNumber) && (lastNumber == currLastNumber)) {
+                return Optional.of(currTree);
+            } else {
+                // recursion
+                for (Tree child : currTree.getChildrenAsList()) {
+                    Optional<Tree> cr = findSpanningTreeRec(anchorTree, child, firstLeaf, lastLeaf);
+                    if (cr.isPresent()) {
+                        return Optional.of(cr.get());
+                    }
+                }
+            }
+        }
+
+        return Optional.empty();
     }
 }
