@@ -40,7 +40,12 @@ import java.util.stream.Collectors;
  */
 public class DiscourseExtractor {
     private static final List<Relation> IGNORED_RELATIONS = Arrays.asList(
-            Relation.UNKNOWN_COORDINATION
+            Relation.UNKNOWN_COORDINATION,
+            Relation.JOINT_LIST,
+            Relation.JOINT_DISJUNCTION,
+            Relation.JOINT_NP_LIST,
+            Relation.JOINT_NP_DISJUNCTION
+
     );
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
