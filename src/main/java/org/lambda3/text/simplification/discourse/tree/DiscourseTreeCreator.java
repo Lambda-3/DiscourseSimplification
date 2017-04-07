@@ -66,9 +66,10 @@ public class DiscourseTreeCreator {
         rules.add(new SharedNPPostCoordinationExtractor());
         rules.add(new SharedNPPostParticipalExtractor());
         rules.add(new SubordinationPostISAExtractor());
+        rules.add(new SubordinationPostISAExtractor2());
         rules.add(new SubordinationPostExtractor());
 
-        // should be applied last (because of they dont allow further splitting)
+        // should be applied last (because they dont allow further splitting)
         rules.add(new PreListNPExtractor());
         rules.add(new PostListNPExtractor());
     }
