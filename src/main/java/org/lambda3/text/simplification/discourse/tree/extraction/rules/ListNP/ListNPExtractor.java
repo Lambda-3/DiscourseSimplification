@@ -66,7 +66,6 @@ public abstract class ListNPExtractor extends ExtractionRule {
                 List<Leaf> constituents = new ArrayList<>();
 
                 if (r.get().getIntroductionWords().isPresent()) {
-                    LOGGER.info("XXX: {}", r.get().getIntroductionWords().get());
                     List<Word> words = new ArrayList<Word>();
                     words.addAll(precedingWords);
                     words.addAll(r.get().getIntroductionWords().get());
