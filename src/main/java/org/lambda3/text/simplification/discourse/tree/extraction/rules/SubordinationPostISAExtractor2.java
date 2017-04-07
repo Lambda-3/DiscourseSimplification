@@ -69,7 +69,7 @@ public class SubordinationPostISAExtractor2 extends ExtractionRule {
             Leaf rightConstituent = new Leaf(getClass().getSimpleName(), WordsUtils.wordsToProperSentenceString(rightConstituentWords));
 
             // relation
-            Relation relation = Relation.INTRA_SENTENTIAL_ATTRIBUTION;
+            Relation relation = Relation.INTRA_SENT_ATTR;
 
             Extraction res = new SubordinationExtraction(
                     getClass().getSimpleName(),

@@ -45,7 +45,7 @@ public enum Relation {
     TEMPORAL_SEQUENCE,
 
     // special relations
-    INTRA_SENTENTIAL_ATTRIBUTION,
+    INTRA_SENT_ATTR,
     JOINT_NP_LIST,
     JOINT_NP_DISJUNCTION;
 

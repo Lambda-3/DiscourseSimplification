@@ -27,7 +27,6 @@ import edu.stanford.nlp.trees.Tree;
 import edu.stanford.nlp.trees.tregex.TregexMatcher;
 import edu.stanford.nlp.trees.tregex.TregexPattern;
 import org.lambda3.text.simplification.discourse.tree.Relation;
-import org.lambda3.text.simplification.discourse.tree.classification.SignalPhraseClassifier;
 import org.lambda3.text.simplification.discourse.tree.extraction.Extraction;
 import org.lambda3.text.simplification.discourse.tree.extraction.ExtractionRule;
 import org.lambda3.text.simplification.discourse.tree.extraction.model.SubordinationExtraction;
@@ -68,7 +67,7 @@ public class SubordinationPostISAExtractor extends ExtractionRule {
             Leaf rightConstituent = new Leaf(getClass().getSimpleName(), WordsUtils.wordsToProperSentenceString(rightConstituentWords));
 
             // relation
-            Relation relation = Relation.INTRA_SENTENTIAL_ATTRIBUTION;
+            Relation relation = Relation.INTRA_SENT_ATTR;
 
             Extraction res = new SubordinationExtraction(
                     getClass().getSimpleName(),
