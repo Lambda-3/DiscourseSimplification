@@ -22,8 +22,10 @@
 
 package org.lambda3.text.simplification.discourse.processing;
 
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
+
+import java.util.List;
 
 /**
  *
@@ -32,33 +34,18 @@ class ProcessorTest {
 
     @Test
     void processSingleSentence() {
+        Processor p = new Processor();
 
-        //TODO implement test
-//        String text = "Bernhard is working on a project for PACE but he also works for MARIO.";
-//
-//        Core first = new Core("Bernhard is working on a project for PACE .", 0, "Bernhard is working on a project for PACE .");
-//        Core second = new Core("he also works .", 0, "He also works for MARIO .");
-//
-//        first.addDCoreRelation(new CoreRelation(
-//                Relation.CONTRAST, second
-//        ));
-//
-//        second.addDCoreRelation(new CoreRelation(
-//                Relation.CONTRAST, first
-//        ));
-//        second.addSContext(new Context(
-//                "This is for MARIO .", 0, Relation.UNKNOWN_SENT_SIM
-//        ));
-//
-//        final List<Core> expected = Arrays.asList(first, second);
-//
-//
-//        Processor p = new Processor();
-//        final List<Core> actual = p.process(text, Processor.ProcessingType.SEPARATE);
-//
-//        Assertions.assertIterableEquals(expected, actual);
-        throw new NotImplementedException();
+        String text = "Peter went to Paris because he likes the city.";
+        List<OutSentence> res = p.process(text, Processor.ProcessingType.WHOLE);
 
+        Assertions.assertEquals(1, res.size());
+        OutSentence sent = res.get(0);
+
+        Assertions.assertEquals(2, sent.getElements().size());
+
+        Assertions.assertEquals("Peter went to Paris .", sent.getElements().get(0).getText());
+        Assertions.assertEquals("He likes the city .", sent.getElements().get(1).getText());
     }
 
 }

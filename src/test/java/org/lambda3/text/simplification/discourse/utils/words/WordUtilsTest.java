@@ -20,7 +20,7 @@
  * ==========================License-End==============================
  */
 
-package org.lambda3.text.simplification.discourse.utils;
+package org.lambda3.text.simplification.discourse.utils.words;
 
 import edu.stanford.nlp.ling.Word;
 import org.junit.jupiter.api.Assertions;
@@ -33,7 +33,7 @@ import java.util.List;
 /**
  *
  */
-class ExtractionUtilsTest {
+class WordUtilsTest {
 
     @Test
     void wordsToProperSentence() throws Exception {
