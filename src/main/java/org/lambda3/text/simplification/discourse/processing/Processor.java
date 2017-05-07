@@ -23,9 +23,7 @@
 package org.lambda3.text.simplification.discourse.processing;
 
 import org.lambda3.text.simplification.discourse.relation_extraction.DiscourseExtractor;
-import org.lambda3.text.simplification.discourse.relation_extraction.element.DiscourseCore;
-import org.lambda3.text.simplification.discourse.sentence_simplification.Simplifier;
-import org.lambda3.text.simplification.discourse.sentence_simplification.element.DCore;
+import org.lambda3.text.simplification.discourse.relation_extraction.Element;
 import org.lambda3.text.simplification.discourse.tree.DiscourseTreeCreator;
 import org.lambda3.text.simplification.discourse.utils.sentences.SentencesUtils;
 import org.slf4j.Logger;
@@ -43,20 +41,19 @@ import java.util.Optional;
 public class Processor {
     private final static DiscourseTreeCreator DISCOURSE_TREE_CREATOR = new DiscourseTreeCreator();
     private final static DiscourseExtractor DISCOURSE_EXTRACTOR = new DiscourseExtractor();
-    private final static Simplifier SIMPLIFIER = new Simplifier();
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
-    public List<DCore> process(File file, ProcessingType type) throws FileNotFoundException {
+    public List<OutSentence> process(File file, ProcessingType type) throws FileNotFoundException {
         List<String> sentences = SentencesUtils.splitIntoSentencesFromFile(file);
         return process(sentences, type);
     }
 
-    public List<DCore> process(String text, ProcessingType type) {
+    public List<OutSentence> process(String text, ProcessingType type) {
         List<String> sentences = SentencesUtils.splitIntoSentences(text);
         return process(sentences, type);
     }
 
-    public List<DCore> process(List<String> sentences, ProcessingType type) {
+    public List<OutSentence> process(List<String> sentences, ProcessingType type) {
         if (type.equals(ProcessingType.SEPARATE)) {
             return processSeparate(sentences);
         } else if (type.equals(ProcessingType.WHOLE)) {
@@ -66,18 +63,38 @@ public class Processor {
         }
     }
 
+    private List<OutSentence> createSentences(List<String> sentences, List<Element> elements) {
+        List<OutSentence> res = new ArrayList<>();
+        int idx = 0;
+        for (String sentence : sentences) {
+            res.add(new OutSentence(idx, sentence));
+            idx += 1;
+        }
+
+        // assign elements to sentences
+        for (Element element : elements) {
+            if ((0 <= element.getSentenceIdx()) && (element.getSentenceIdx() < res.size())) {
+                res.get(element.getSentenceIdx()).addElement(element);
+            } else {
+                logger.error("Sentence-Index is out of range.");
+            }
+        }
+
+        return res;
+    }
+
     // creates one discourse tree over all sentences (investigates intra-sentential and inter-sentential relations)
-    private List<DCore> processWhole(List<String> sentences) {
-        List<DCore> res = new ArrayList<>();
+    private List<OutSentence> processWhole(List<String> sentences) {
 
         // Step 1) create document discourse tree
-        logger.info("Step 1) Create document discourse tree");
+        logger.info("### STEP 1) CREATE DOCUMENT DISCOURSE TREE ###");
+
         DISCOURSE_TREE_CREATOR.reset();
 
         int idx = 0;
         for (String sentence : sentences) {
-            logger.info("### Processing sentence ###");
-            logger.info(sentence);
+            logger.info("# Processing sentence {}/{} #", (idx + 1), sentences.size());
+            logger.info("'" + sentence + "'");
 
             // extend discourse tree
             DISCOURSE_TREE_CREATOR.addSentence(sentence, idx);
@@ -93,38 +110,39 @@ public class Processor {
             ++idx;
         }
 
-        // Step 2) extract discourse cores
-        logger.info("Step 2) extract discourse cores");
+        // Step 2) extract elements
+        logger.info("### STEP 2) EXTRACT ELEMENTS ###");
 
-        List<DiscourseCore> discourseCores = DISCOURSE_EXTRACTOR.extract(DISCOURSE_TREE_CREATOR.getDiscourseTree());
+        List<Element> elements = DISCOURSE_EXTRACTOR.extract(DISCOURSE_TREE_CREATOR.getDiscourseTree());
         if (logger.isDebugEnabled()) {
-            discourseCores.forEach(x -> logger.debug(x.toString()));
+            elements.stream().filter(e -> e.getContextLayer() == 0).forEach(x -> logger.debug(x.toString()));
         }
 
-        // Step 3) generate output format
-        logger.info("Step 3) Generate output format");
+        // Finalize) create sentences
+        logger.info("### FINALIZE) CREATE SENTENCES ###");
 
-        List<DCore> dCores = SIMPLIFIER.simplify(discourseCores);
-        res.addAll(dCores);
-
-        if (logger.isInfoEnabled()) {
-            dCores.forEach(core -> logger.info(core.toString()));
+        List<OutSentence> outSentences = createSentences(sentences, elements);
+        if (logger.isDebugEnabled()) {
+            outSentences.forEach(x -> logger.debug(x.toString()));
         }
 
-        return res;
+        logger.info("### FINISHED");
+
+        return outSentences;
     }
 
     // creates discourse trees for each individual sentence (investigates intra-sentential relations only)
-    private List<DCore> processSeparate(List<String> sentences) {
-        List<DCore> res = new ArrayList<>();
+    private List<OutSentence> processSeparate(List<String> sentences) {
+        List<Element> cores = new ArrayList<>();
 
         int idx = 0;
         for (String sentence : sentences) {
-            logger.info("### Processing sentence ###");
+            logger.info("# Processing sentence {}/{} #", (idx + 1), sentences.size());
             logger.info("'" + sentence + "'");
 
             // Step 1) create sentence discourse tree
-            logger.debug("Step 1) Create sentence discourse tree");
+            logger.debug("### Step 1) CREATE SENTENCE DISCOURSE TREE ###");
+
             DISCOURSE_TREE_CREATOR.reset();
             DISCOURSE_TREE_CREATOR.addSentence(sentence, idx);
             DISCOURSE_TREE_CREATOR.update();
@@ -132,28 +150,30 @@ public class Processor {
                 logger.debug(DISCOURSE_TREE_CREATOR.getDiscourseTree().toString());
             }
 
-            // Step 2) extract discourse cores
-            logger.debug("Step 2) extract discourse cores");
+            // Step 2) extract elements
+            logger.debug("### STEP 2) EXTRACT ELEMENTS ###");
 
-            List<DiscourseCore> discourseCores = DISCOURSE_EXTRACTOR.extract(DISCOURSE_TREE_CREATOR.getDiscourseTree());
+            List<Element> es = DISCOURSE_EXTRACTOR.extract(DISCOURSE_TREE_CREATOR.getDiscourseTree());
             if (logger.isDebugEnabled()) {
-                discourseCores.forEach(x -> logger.debug(x.toString()));
+                es.stream().filter(e -> e.getContextLayer() == 0).forEach(x -> logger.debug(x.toString()));
             }
 
-            // Step 3) generate output format
-            logger.debug("Step 3) generate output format");
-
-            List<DCore> dCores = SIMPLIFIER.simplify(discourseCores);
-            res.addAll(dCores);
-
-            if (logger.isInfoEnabled()) {
-                dCores.forEach(core -> logger.info(core.toString()));
-            }
+            cores.addAll(es);
 
             ++idx;
         }
 
-        return res;
+        // Finalize) create sentences
+        logger.info("### FINALIZE) CREATE SENTENCES ###");
+
+        List<OutSentence> outSentences = createSentences(sentences, cores);
+        if (logger.isDebugEnabled()) {
+            outSentences.forEach(x -> logger.debug(x.toString()));
+        }
+
+        logger.info("### FINISHED");
+
+        return outSentences;
     }
 
     public enum ProcessingType {

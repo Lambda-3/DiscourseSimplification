@@ -26,7 +26,7 @@
 
     <groupId>org.lambda3.text.simplification</groupId>
     <artifactId>discourse-simplification</artifactId>
-    <version>5.0.0</version>
+    <version>6.0.0-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <name>Discourse Simplification</name>
@@ -40,9 +40,6 @@
     </scm>
 
     <properties>
-
-        <simplification.version>5.0.0</simplification.version>
-
         <corenlp.version>3.7.0</corenlp.version>
         <logback.version>1.1.8</logback.version>
 
@@ -55,13 +52,6 @@
     </properties>
 
     <dependencies>
-
-        <!-- Sentence Simplification -->
-        <dependency>
-            <groupId>org.lambda3.text.simplification</groupId>
-            <artifactId>sentence-simplification</artifactId>
-            <version>${simplification.version}</version>
-        </dependency>
 
         <!-- Stanford NLP -->
         <dependency>
@@ -168,6 +158,22 @@
                         </goals>
                     </execution>
                 </executions>
+            </plugin>
+            <plugin>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>2.19</version>
+                <dependencies>
+                    <dependency>
+                        <groupId>org.junit.platform</groupId>
+                        <artifactId>junit-platform-surefire-provider</artifactId>
+                        <version>${junit.platform.version}</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>org.junit.jupiter</groupId>
+                        <artifactId>junit-jupiter-engine</artifactId>
+                        <version>${junit.jupiter.version}</version>
+                    </dependency>
+                </dependencies>
             </plugin>
         </plugins>
     </build>

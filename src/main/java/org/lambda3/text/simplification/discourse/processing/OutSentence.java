@@ -1,6 +1,6 @@
 /*
  * ==========================License-Start=============================
- * DiscourseSimplification : DiscourseContext
+ * DiscourseSimplification : Leaf
  *
  * Copyright © 2017 Lambda³
  *
@@ -20,52 +20,54 @@
  * ==========================License-End==============================
  */
 
-package org.lambda3.text.simplification.discourse.relation_extraction.element;
+package org.lambda3.text.simplification.discourse.processing;
 
+import org.lambda3.text.simplification.discourse.relation_extraction.Element;
 import org.lambda3.text.simplification.discourse.utils.PrettyTreePrinter;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  *
  */
-public class DiscourseContext implements PrettyTreePrinter.Node {
-    private final String text;
+public class OutSentence {
     private final int sentenceIdx;
-    private boolean sentSimContext;
+    private final String originalSentence;
+    private final List<Element> elements;
 
-    public DiscourseContext(String text, int sentenceIdx) {
-        this.text = text;
+    public OutSentence(int sentenceIdx, String originalSentence) {
         this.sentenceIdx = sentenceIdx;
-        this.sentSimContext = false;
+        this.originalSentence = originalSentence;
+        this.elements = new ArrayList<>();
     }
 
-    public void setSentSimContext() {
-        this.sentSimContext = true;
-    }
-
-    public String getText() {
-        return text;
+    public void addElement(Element element) {
+        if (!elements.contains(element)) {
+            elements.add(element);
+        }
     }
 
     public int getSentenceIdx() {
         return sentenceIdx;
     }
 
-    public boolean isSentSimContext() {
-        return sentSimContext;
+    public String getOriginalSentence() {
+        return originalSentence;
+    }
+
+    public List<Element> getElements() {
+        return elements;
+    }
+
+    public List<Element> getRootElements() {
+        return elements.stream().filter(e -> e.getContextLayer() == 0).collect(Collectors.toList());
     }
 
     @Override
-    public List<String> getPTPCaption() {
-        String sentSimContextStr = (sentSimContext) ? " [s-context]" : "";
-        return Collections.singletonList("'" + text + "'" + sentSimContextStr);
-    }
-
-    @Override
-    public List<PrettyTreePrinter.Edge> getPTPEdges() {
-        return new ArrayList<>();
+    public String toString() {
+        return "Sentence: '" + originalSentence + "'\n\n" + getRootElements().stream().map(e -> e.toString()).collect(Collectors.joining("\n"));
     }
 }

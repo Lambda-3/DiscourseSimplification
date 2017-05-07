@@ -1,6 +1,6 @@
 /*
  * ==========================License-Start=============================
- * DiscourseSimplification : ListNPExtractor
+ * DiscourseSimplification : ExtractionRule
  *
  * Copyright © 2017 Lambda³
  *
@@ -20,70 +20,82 @@
  * ==========================License-End==============================
  */
 
-package org.lambda3.text.simplification.discourse.tree.extraction.rules;
+package org.lambda3.text.simplification.discourse.tree.extraction.rules.ListNP;
 
 import edu.stanford.nlp.ling.Word;
 import edu.stanford.nlp.trees.Tree;
+import edu.stanford.nlp.trees.tregex.TregexMatcher;
+import edu.stanford.nlp.trees.tregex.TregexPattern;
 import org.lambda3.text.simplification.discourse.tree.extraction.Extraction;
 import org.lambda3.text.simplification.discourse.tree.extraction.ExtractionRule;
 import org.lambda3.text.simplification.discourse.tree.extraction.model.CoordinationExtraction;
 import org.lambda3.text.simplification.discourse.tree.extraction.utils.ListNPSplitter;
-import org.lambda3.text.simplification.discourse.tree.extraction.utils.TregexUtils;
 import org.lambda3.text.simplification.discourse.tree.model.Leaf;
 import org.lambda3.text.simplification.discourse.utils.parseTree.ParseTreeExtractionUtils;
+import org.lambda3.text.simplification.discourse.utils.words.WordsUtils;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
 /**
  *
  */
-public class ListNPExtractor extends ExtractionRule {
+public abstract class ListNPExtractor extends ExtractionRule {
+    private final String pattern;
 
     public ListNPExtractor(String pattern) {
-        super(pattern);
+        this.pattern = pattern;
     }
 
     @Override
     public Optional<Extraction> extract(Tree parseTree) {
 
-        List<TregexUtils.MyMatch> matches = TregexUtils.sortedFindAt(parseTree, pattern, Collections.singletonList("np"));
-        if (matches.size() > 0) {
-            TregexUtils.MyMatch match = matches.get(0);
+        TregexPattern p = TregexPattern.compile(pattern);
+        TregexMatcher matcher = p.matcher(parseTree);
 
-            Optional<ListNPSplitter.Result> r = ListNPSplitter.split(match.getNode("np"));
+        while (matcher.findAt(parseTree)) {
+
+            Optional<ListNPSplitter.Result> r = ListNPSplitter.splitList(parseTree, matcher.getNode("np"));
             if (r.isPresent()) {
 
                 // constituents
-                List<Word> precedingWords = ParseTreeExtractionUtils.getPrecedingWords(parseTree, match.getNode("np"), false);
-                List<Word> followingWords = ParseTreeExtractionUtils.getFollowingWords(parseTree, match.getNode("np"), false);
-                List<List<Word>> constituentsWords = new ArrayList<>();
+                List<Word> precedingWords = ParseTreeExtractionUtils.getPrecedingWords(parseTree, matcher.getNode("np"), false);
+                List<Word> followingWords = ParseTreeExtractionUtils.getFollowingWords(parseTree, matcher.getNode("np"), false);
 
+                List<Leaf> constituents = new ArrayList<>();
 
-                for (List<Word> element : r.get().getElementsWords()) {
-                    List<Word> constituentWords = new ArrayList<>();
+                if (r.get().getIntroductionWords().isPresent()) {
+                    List<Word> words = new ArrayList<Word>();
+                    words.addAll(precedingWords);
+                    words.addAll(r.get().getIntroductionWords().get());
+                    words.addAll(followingWords);
 
-                    constituentWords.addAll(precedingWords);
-                    constituentWords.addAll(element);
-                    constituentWords.addAll(followingWords);
-
-                    constituentsWords.add(constituentWords);
+                    Leaf constituent = new Leaf(getClass().getSimpleName(), WordsUtils.wordsToProperSentenceString(words));
+                    constituent.dontAllowSplit();
+                    constituents.add(constituent);
                 }
 
-                // result
+                for (List<Word> element : r.get().getElementsWords()) {
+                    List<Word> words = new ArrayList<Word>();
+                    words.addAll(precedingWords);
+                    words.addAll(element);
+                    words.addAll(followingWords);
+
+                    Leaf constituent = new Leaf(getClass().getSimpleName(), WordsUtils.wordsToProperSentenceString(words));
+                    constituent.dontAllowSplit();
+                    constituents.add(constituent);
+                }
+
                 Extraction res = new CoordinationExtraction(
                         getClass().getSimpleName(),
                         r.get().getRelation(),
-                        constituentsWords,
-                        Leaf.Type.TERMINAL
+                        constituents
                 );
 
                 return Optional.of(res);
             }
         }
-
 
         return Optional.empty();
     }

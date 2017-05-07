@@ -37,6 +37,8 @@ public class Invalidation extends DiscourseTree {
         super("");
     }
 
+    // VISUALIZATION ///////////////////////////////////////////////////////////////////////////////////////////////////
+
     @Override
     public List<String> getPTPCaption() {
         return Collections.singletonList("INVALIDATED");

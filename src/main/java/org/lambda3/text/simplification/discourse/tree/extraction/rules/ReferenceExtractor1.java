@@ -1,6 +1,6 @@
 /*
  * ==========================License-Start=============================
- * DiscourseSimplification : ReferenceExtractorForContainingWords
+ * DiscourseSimplification : ExtractionRule
  *
  * Copyright © 2017 Lambda³
  *
@@ -25,6 +25,7 @@ package org.lambda3.text.simplification.discourse.tree.extraction.rules;
 import edu.stanford.nlp.ling.Word;
 import edu.stanford.nlp.trees.Tree;
 import edu.stanford.nlp.trees.tregex.TregexMatcher;
+import edu.stanford.nlp.trees.tregex.TregexPattern;
 import org.lambda3.text.simplification.discourse.tree.Relation;
 import org.lambda3.text.simplification.discourse.tree.classification.SignalPhraseClassifier;
 import org.lambda3.text.simplification.discourse.tree.extraction.Extraction;
@@ -32,6 +33,7 @@ import org.lambda3.text.simplification.discourse.tree.extraction.ExtractionRule;
 import org.lambda3.text.simplification.discourse.tree.extraction.model.RefCoordinationExtraction;
 import org.lambda3.text.simplification.discourse.tree.model.Leaf;
 import org.lambda3.text.simplification.discourse.utils.parseTree.ParseTreeExtractionUtils;
+import org.lambda3.text.simplification.discourse.utils.words.WordsUtils;
 
 import java.util.List;
 import java.util.Optional;
@@ -39,33 +41,31 @@ import java.util.Optional;
 /**
  *
  */
-public class ReferenceExtractorForContainingWords extends ExtractionRule {
-
-    public ReferenceExtractorForContainingWords() {
-        super("ROOT <<: S <<, (__=node >1 S <<: (__=leaf !< __))");
-    }
-
+public class ReferenceExtractor1 extends ExtractionRule {
+    private static final SignalPhraseClassifier CLASSIFIER = new SignalPhraseClassifier();
 
     @Override
     public Optional<Extraction> extract(Tree parseTree) {
 
-        TregexMatcher matcher = pattern.matcher(parseTree);
+        TregexPattern p = TregexPattern.compile("ROOT <<: S <<, (__=node >1 S <<: (__=leaf !< __))");
+        TregexMatcher matcher = p.matcher(parseTree);
 
         if (matcher.findAt(parseTree)) {
             List<Word> signalPhraseWords = ParseTreeExtractionUtils.getContainingWords(matcher.getNode("leaf"));
 
             // the right constituent
-            List<Word> rightConstituentWords = ParseTreeExtractionUtils.getFollowingWords(parseTree, matcher.getNode("node"), false);
+            List<Word> words = ParseTreeExtractionUtils.getFollowingWords(parseTree, matcher.getNode("node"), false);
+            Leaf rightConstituent = new Leaf(getClass().getSimpleName(), WordsUtils.wordsToProperSentenceString(words));
 
-            // result
-            Optional<Relation> relation = SignalPhraseClassifier.classifyGeneral(signalPhraseWords);
+            // relation
+            Optional<Relation> relation = CLASSIFIER.classifyGeneral(signalPhraseWords);
+
             if (relation.isPresent()) {
                 Extraction res = new RefCoordinationExtraction(
                         getClass().getSimpleName(),
                         relation.get(),
                         signalPhraseWords,
-                        rightConstituentWords,
-                        Leaf.Type.DEFAULT
+                        rightConstituent
                 );
 
                 return Optional.of(res);

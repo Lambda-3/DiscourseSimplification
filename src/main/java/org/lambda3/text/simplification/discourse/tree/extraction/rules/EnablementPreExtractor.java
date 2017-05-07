@@ -1,6 +1,6 @@
 /*
  * ==========================License-Start=============================
- * DiscourseSimplification : SubordinationExtractor
+ * DiscourseSimplification : ExtractionRule
  *
  * Copyright © 2017 Lambda³
  *
@@ -25,73 +25,63 @@ package org.lambda3.text.simplification.discourse.tree.extraction.rules;
 import edu.stanford.nlp.ling.Word;
 import edu.stanford.nlp.trees.Tree;
 import edu.stanford.nlp.trees.tregex.TregexMatcher;
+import edu.stanford.nlp.trees.tregex.TregexPattern;
 import org.lambda3.text.simplification.discourse.tree.Relation;
-import org.lambda3.text.simplification.discourse.tree.classification.SignalPhraseClassifier;
 import org.lambda3.text.simplification.discourse.tree.extraction.Extraction;
 import org.lambda3.text.simplification.discourse.tree.extraction.ExtractionRule;
 import org.lambda3.text.simplification.discourse.tree.extraction.model.SubordinationExtraction;
 import org.lambda3.text.simplification.discourse.tree.model.Leaf;
 import org.lambda3.text.simplification.discourse.utils.parseTree.ParseTreeExtractionUtils;
+import org.lambda3.text.simplification.discourse.utils.words.WordsUtils;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-public class SubordinationExtractor extends ExtractionRule {
-
-    SubordinationExtractor(String pattern) {
-        super(pattern);
-    }
-
-    public SubordinationExtractor() {
-        this("ROOT <<: (S < (SBAR=sbar < (S=s) $.. (NP $.. VP=vp)))");
-    }
+/**
+ *
+ */
+public class EnablementPreExtractor extends ExtractionRule {
 
     @Override
     public Optional<Extraction> extract(Tree parseTree) {
 
-        TregexMatcher matcher = pattern.matcher(parseTree);
+        TregexPattern p = TregexPattern.compile("ROOT <<: (S < (S=s <<, (VP <<, /(T|t)o/) $.. (NP $.. VP=vp)))");
+        TregexMatcher matcher = p.matcher(parseTree);
 
-        if (matcher.findAt(parseTree)) {
-            List<Word> signalPhraseWords = ParseTreeExtractionUtils.getPrecedingWords(matcher.getNode("sbar"), matcher.getNode("s"), false);
+        while (matcher.findAt(parseTree)) {
 
             // the left, subordinate constituent
             List<Word> leftConstituentWords = ParseTreeExtractionUtils.getContainingWords(matcher.getNode("s"));
+            Leaf leftConstituent = new Leaf(getClass().getSimpleName(), WordsUtils.wordsToProperSentenceString(leftConstituentWords));
+
+            // rephrase
+            leftConstituent.setProperSentence(false);
+            List<Word> rephrasedWords = rephraseEnablement(matcher.getNode("s"), matcher.getNode("vp"));
+            leftConstituent.setRephrasedText(WordsUtils.wordsToProperSentenceString(rephrasedWords));
+            leftConstituent.dontAllowSplit();
 
             // the right, superordinate constituent
             List<Word> rightConstituentWords = new ArrayList<>();
-            rightConstituentWords.addAll(ParseTreeExtractionUtils.getPrecedingWords(parseTree, matcher.getNode("sbar"), false));
-            rightConstituentWords.addAll(ParseTreeExtractionUtils.getFollowingWords(parseTree, matcher.getNode("sbar"), false));
+            rightConstituentWords.addAll(ParseTreeExtractionUtils.getPrecedingWords(parseTree, matcher.getNode("s"), false));
+            rightConstituentWords.addAll(ParseTreeExtractionUtils.getFollowingWords(parseTree, matcher.getNode("s"), false));
+            Leaf rightConstituent = new Leaf(getClass().getSimpleName(), WordsUtils.wordsToProperSentenceString(rightConstituentWords));
 
-            // result
-            Optional<Relation> relation = Optional.empty();
-            Leaf.Type leftConstituentType = Leaf.Type.DEFAULT;
-            Leaf.Type rightConstituentType = Leaf.Type.DEFAULT;
+            // relation
+            Relation relation = Relation.ENABLEMENT;
 
-            // enablement
-            if (isInfinitival(matcher.getNode("s"))) {
-                relation = Optional.of(Relation.ENABLEMENT);
-                leftConstituentWords = rephraseEnablement(matcher.getNode("s"), matcher.getNode("vp"));
-                leftConstituentType = Leaf.Type.SENT_SIM_CONTEXT;
-            }
-
-            // general
-            if (!relation.isPresent()) {
-                relation = SignalPhraseClassifier.classifyGeneral(signalPhraseWords);
-            }
-
-            return Optional.of(new SubordinationExtraction(
+            Extraction res = new SubordinationExtraction(
                     getClass().getSimpleName(),
-                    relation.orElse(Relation.UNKNOWN_SUBORDINATION),
-                    signalPhraseWords,
-                    leftConstituentWords, // the subordinate constituent
-                    rightConstituentWords, // the superordinate constituent
-                    false,
-                    leftConstituentType,
-                    rightConstituentType));
+                    relation,
+                    null,
+                    leftConstituent, // the subordinate constituent
+                    rightConstituent, // the superordinate constituent
+                    false
+            );
+
+            return Optional.of(res);
         }
 
         return Optional.empty();
     }
-
 }

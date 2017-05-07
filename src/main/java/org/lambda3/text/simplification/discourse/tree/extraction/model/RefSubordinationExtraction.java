@@ -40,18 +40,16 @@ public class RefSubordinationExtraction extends Extraction {
     private final String extractionRule;
     private final Relation relation;
     private final String signalPhrase; // optional
-    private final String rightConstituent;
+    private final Leaf rightConstituentLeaf;
     private final boolean superordinationIsLeft;
-    private final Leaf.Type rightConstituentType;
 
     // binary
-    public RefSubordinationExtraction(String extractionRule, Relation relation, List<Word> signalPhraseWords, List<Word> rightConstituentWords, boolean superordinationIsLeft, Leaf.Type rightConstituentType) {
+    public RefSubordinationExtraction(String extractionRule, Relation relation, List<Word> signalPhraseWords, Leaf rightConstituentLeaf, boolean superordinationIsLeft) {
         this.extractionRule = extractionRule;
         this.relation = relation;
         this.signalPhrase = (signalPhraseWords != null) ? WordsUtils.wordsToString(signalPhraseWords) : null;
-        this.rightConstituent = WordsUtils.wordsToProperSentenceString(rightConstituentWords);
+        this.rightConstituentLeaf = rightConstituentLeaf;
         this.superordinationIsLeft = superordinationIsLeft;
-        this.rightConstituentType = rightConstituentType;
     }
 
     public Optional<DiscourseTree> convert(Leaf currChild) {
@@ -67,8 +65,8 @@ public class RefSubordinationExtraction extends Extraction {
                     extractionRule,
                     relation,
                     signalPhrase,
-                    new Leaf(Leaf.Type.DEFAULT, extractionRule, "tmp"),
-                    new Leaf(rightConstituentType, extractionRule, rightConstituent),
+                    new Leaf(extractionRule, "tmp"), // tmp
+                    rightConstituentLeaf,
                     superordinationIsLeft
             );
             res.replaceLeftConstituent(prevNode.get()); // set prev node as a reference

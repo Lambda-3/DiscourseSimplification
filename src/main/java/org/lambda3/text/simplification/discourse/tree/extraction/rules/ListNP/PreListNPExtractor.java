@@ -1,6 +1,6 @@
 /*
  * ==========================License-Start=============================
- * DiscourseSimplification : LeftSubordinateEnablementExtractor
+ * DiscourseSimplification : ExtractionRule
  *
  * Copyright © 2017 Lambda³
  *
@@ -20,14 +20,14 @@
  * ==========================License-End==============================
  */
 
-package org.lambda3.text.simplification.discourse.tree.extraction.rules;
+package org.lambda3.text.simplification.discourse.tree.extraction.rules.ListNP;
 
 /**
  *
  */
-public class LeftSubordinateEnablementExtractor extends SubordinationEnablementExtractor {
+public class PreListNPExtractor extends ListNPExtractor {
 
-    public LeftSubordinateEnablementExtractor() {
-        super("ROOT <<: (S < (S=s $.. (NP $.. VP=vp)))");
+    public PreListNPExtractor() {
+        super("ROOT <<: (S < (NP=np $.. VP))");
     }
 }

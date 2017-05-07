@@ -41,16 +41,14 @@ public class RefCoordinationExtraction extends Extraction {
     private final String extractionRule;
     private final Relation relation;
     private final String signalPhrase; // optional
-    private final String rightCoordination;
-    private final Leaf.Type rightCoordinationType;
+    private final Leaf rightCoordinationLeaf;
 
     // binary
-    public RefCoordinationExtraction(String extractionRule, Relation relation, List<Word> signalPhraseWords, List<Word> rightCoordinationWords, Leaf.Type rightCoordinationType) {
+    public RefCoordinationExtraction(String extractionRule, Relation relation, List<Word> signalPhraseWords, Leaf rightCoordinationLeaf) {
         this.extractionRule = extractionRule;
         this.relation = relation;
         this.signalPhrase = (signalPhraseWords != null) ? WordsUtils.wordsToString(signalPhraseWords) : null;
-        this.rightCoordination = WordsUtils.wordsToProperSentenceString(rightCoordinationWords);
-        this.rightCoordinationType = rightCoordinationType;
+        this.rightCoordinationLeaf = rightCoordinationLeaf;
     }
 
     public Optional<DiscourseTree> convert(Leaf currChild) {
@@ -69,7 +67,7 @@ public class RefCoordinationExtraction extends Extraction {
                     Collections.emptyList()
             );
             res.addCoordination(prevNode.get()); // set prev node as a reference
-            res.addCoordination(new Leaf(rightCoordinationType, extractionRule, rightCoordination));
+            res.addCoordination(rightCoordinationLeaf);
 
             return Optional.of(res);
 

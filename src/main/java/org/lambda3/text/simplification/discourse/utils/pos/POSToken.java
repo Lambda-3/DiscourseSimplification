@@ -1,6 +1,6 @@
 /*
  * ==========================License-Start=============================
- * DiscourseSimplification : SharedNPCoordinationExtractor
+ * DiscourseSimplification : ParseTreeExtractionUtils
  *
  * Copyright © 2017 Lambda³
  *
@@ -20,11 +20,35 @@
  * ==========================License-End==============================
  */
 
-package org.lambda3.text.simplification.discourse.tree.extraction.rules;
+package org.lambda3.text.simplification.discourse.utils.pos;
 
-public class SharedNPCoordinationExtractor extends CoordinationExtractor {
+/**
+ *
+ */
+public class POSToken {
+    private final int index;
+    private final String text;
+    private final String pos;
 
-    public SharedNPCoordinationExtractor() {
-        super("ROOT <<: (S < (NP $.. (VP=vp < (VP $..VP))))", "vp", "VP");
+    public POSToken(int index, String text, String pos) {
+        this.index = index;
+        this.text = text;
+        this.pos = pos;
+    }
+
+    public int getIndex() {
+        return index;
+    }
+
+    public String getText() {
+        return text;
+    }
+
+    public String getPos() {
+        return pos;
+    }
+
+    public String toString() {
+        return "(" + index + ": " + pos + ", '" + text + "')";
     }
 }

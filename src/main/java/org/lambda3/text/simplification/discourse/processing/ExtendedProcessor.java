@@ -22,7 +22,6 @@
 
 package org.lambda3.text.simplification.discourse.processing;
 
-import org.lambda3.text.simplification.discourse.sentence_simplification.element.DCore;
 import org.lambda3.text.simplification.discourse.utils.sentences.SentencesUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -66,15 +65,15 @@ public class ExtendedProcessor extends Processor {
         return res;
     }
 
-    public List<DCore> process(File file, ProcessingType type, boolean shuffleSentences, Integer maxSentenceLength, Integer maxSentences) throws FileNotFoundException {
+    public List<OutSentence> process(File file, ProcessingType type, boolean shuffleSentences, Integer maxSentenceLength, Integer maxSentences) throws FileNotFoundException {
         return process(SentencesUtils.splitIntoSentencesFromFile(file), type, shuffleSentences, maxSentenceLength, maxSentences);
     }
 
-    public List<DCore> process(String text, ProcessingType type, boolean shuffleSentences, Integer maxSentenceLength, Integer maxSentences) {
+    public List<OutSentence> process(String text, ProcessingType type, boolean shuffleSentences, Integer maxSentenceLength, Integer maxSentences) {
         return process(SentencesUtils.splitIntoSentences(text), type, shuffleSentences, maxSentenceLength, maxSentences);
     }
 
-    public List<DCore> process(List<String> sentences, ProcessingType type, boolean shuffleSentences, Integer maxSentenceLength, Integer maxSentences) {
+    public List<OutSentence> process(List<String> sentences, ProcessingType type, boolean shuffleSentences, Integer maxSentenceLength, Integer maxSentences) {
         return process(filterSentences(sentences, shuffleSentences, maxSentenceLength, maxSentences), type);
     }
 }

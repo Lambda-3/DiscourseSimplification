@@ -24,12 +24,7 @@ package org.lambda3.text.simplification.discourse.processing;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import org.lambda3.text.simplification.discourse.sentence_simplification.element.DCore;
-import org.lambda3.text.simplification.discourse.sentence_simplification.element.SContext;
-import org.lambda3.text.simplification.discourse.sentence_simplification.relation.DCoreRelation;
-import org.lambda3.text.simplification.discourse.tree.Relation;
 
-import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -39,31 +34,18 @@ class ProcessorTest {
 
     @Test
     void processSingleSentence() {
-
-        String text = "Bernhard is working on a project for PACE but he also works for MARIO.";
-
-        DCore first = new DCore("Bernhard is working on a project for PACE .", 0, "Bernhard is working on a project for PACE .");
-        DCore second = new DCore("he also works .", 0, "He also works for MARIO .");
-
-        first.addDCoreRelation(new DCoreRelation(
-                Relation.CONTRAST, second
-        ));
-
-        second.addDCoreRelation(new DCoreRelation(
-                Relation.CONTRAST, first
-        ));
-        second.addSContext(new SContext(
-                "This is for MARIO .", 0, Relation.UNKNOWN_SENT_SIM
-        ));
-
-        final List<DCore> expected = Arrays.asList(first, second);
-
-
         Processor p = new Processor();
-        final List<DCore> actual = p.process(text, Processor.ProcessingType.SEPARATE);
 
-        Assertions.assertIterableEquals(expected, actual);
+        String text = "Peter went to Paris because he likes the city.";
+        List<OutSentence> res = p.process(text, Processor.ProcessingType.WHOLE);
 
+        Assertions.assertEquals(1, res.size());
+        OutSentence sent = res.get(0);
+
+        Assertions.assertEquals(2, sent.getElements().size());
+
+        Assertions.assertEquals("Peter went to Paris .", sent.getElements().get(0).getText());
+        Assertions.assertEquals("He likes the city .", sent.getElements().get(1).getText());
     }
 
 }

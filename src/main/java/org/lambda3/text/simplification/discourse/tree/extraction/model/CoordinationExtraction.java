@@ -30,9 +30,9 @@ import org.lambda3.text.simplification.discourse.tree.model.DiscourseTree;
 import org.lambda3.text.simplification.discourse.tree.model.Leaf;
 import org.lambda3.text.simplification.discourse.utils.words.WordsUtils;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  *
@@ -41,24 +41,21 @@ public class CoordinationExtraction extends Extraction {
     private final String extractionRule;
     private final Relation relation;
     private final String signalPhrase; // optional
-    private final List<String> coordinations;
-    private final Leaf.Type coordinationsType;
+    private final List<Leaf> coordinationLeaves;
 
-    public CoordinationExtraction(String extractionRule, Relation relation, List<List<Word>> coordinationsWords, Leaf.Type coordinationsType) {
+    public CoordinationExtraction(String extractionRule, Relation relation, List<Leaf> coordinationLeaves) {
         this.extractionRule = extractionRule;
         this.relation = relation;
         this.signalPhrase = null;
-        this.coordinations = coordinationsWords.stream().map(WordsUtils::wordsToProperSentenceString).collect(Collectors.toList());
-        this.coordinationsType = coordinationsType;
+        this.coordinationLeaves = coordinationLeaves;
     }
 
     // binary
-    public CoordinationExtraction(String extractionRule, Relation relation, List<Word> signalPhraseWords, List<Word> leftCoordinationWords, List<Word> rightCoordinationWords, Leaf.Type coordinationsType) {
+    public CoordinationExtraction(String extractionRule, Relation relation, List<Word> signalPhraseWords, Leaf leftCoordinationLeaf, Leaf rightCoordinationLeaf) {
         this.extractionRule = extractionRule;
         this.relation = relation;
         this.signalPhrase = (signalPhraseWords != null) ? WordsUtils.wordsToString(signalPhraseWords) : null;
-        this.coordinations = Stream.of(leftCoordinationWords, rightCoordinationWords).map(WordsUtils::wordsToProperSentenceString).collect(Collectors.toList());
-        this.coordinationsType = coordinationsType;
+        this.coordinationLeaves = Arrays.asList(leftCoordinationLeaf, rightCoordinationLeaf);
     }
 
     public DiscourseTree convert() {
@@ -66,9 +63,7 @@ public class CoordinationExtraction extends Extraction {
                 extractionRule,
                 relation,
                 signalPhrase,
-                coordinations.stream().map(
-                        s -> new Leaf(coordinationsType, extractionRule, s)
-                ).collect(Collectors.toList())
+                coordinationLeaves.stream().collect(Collectors.toList())
         );
     }
 
