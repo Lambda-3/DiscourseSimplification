@@ -38,7 +38,7 @@ public enum Relation {
     ELABORATION,
     ENABLEMENT,
     EXPLANATION,
-    JOINT_LIST,
+    JOINT_CONJUNCTION,
     JOINT_DISJUNCTION,
     TEMPORAL_BEFORE,
     TEMPORAL_AFTER,
@@ -46,7 +46,7 @@ public enum Relation {
 
     // special relations
     INTRA_SENT_ATTR,
-    JOINT_NP_LIST,
+    JOINT_NP_CONJUNCTION,
     JOINT_NP_DISJUNCTION;
 
     static {

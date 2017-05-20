@@ -95,8 +95,8 @@ public class SignalPhraseClassifier {
             new Mapping(Relation.EXPLANATION, "...indeed..."),
             new Mapping(Relation.EXPLANATION, "...so...that..."),
 
-            // JOINT_LIST
-            new Mapping(Relation.JOINT_LIST, "...and..."),
+            // JOINT_CONJUNCTION
+            new Mapping(Relation.JOINT_CONJUNCTION, "...and..."),
 
             // JOINT_DISJUNCTION
             new Mapping(Relation.JOINT_DISJUNCTION, "...or..."),

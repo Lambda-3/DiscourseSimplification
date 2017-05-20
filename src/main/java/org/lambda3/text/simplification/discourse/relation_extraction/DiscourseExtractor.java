@@ -41,9 +41,9 @@ import java.util.stream.Collectors;
 public class DiscourseExtractor {
     private static final List<Relation> IGNORED_RELATIONS = Arrays.asList(
             Relation.UNKNOWN_COORDINATION,
-            Relation.JOINT_LIST,
+            Relation.JOINT_CONJUNCTION,
             Relation.JOINT_DISJUNCTION,
-            Relation.JOINT_NP_LIST,
+            Relation.JOINT_NP_CONJUNCTION,
             Relation.JOINT_NP_DISJUNCTION
 
     );

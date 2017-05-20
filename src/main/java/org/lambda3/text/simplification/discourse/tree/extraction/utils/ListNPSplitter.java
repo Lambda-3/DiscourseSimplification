@@ -204,7 +204,7 @@ public class ListNPSplitter {
         if (containsSemicolon) {
 
             // check for conjunction with elements separated by ;
-            Optional<Result> r = check(anchorTree, np, new ConjunctionLeafChecker("and"), new ValueLeafChecker(";"), Relation.JOINT_NP_LIST);
+            Optional<Result> r = check(anchorTree, np, new ConjunctionLeafChecker("and"), new ValueLeafChecker(";"), Relation.JOINT_NP_CONJUNCTION);
             if (r.isPresent()) {
                 return r;
             }
@@ -217,7 +217,7 @@ public class ListNPSplitter {
         } else {
 
             // check for conjunction with elements separated by ,
-            Optional<Result> r = check(anchorTree, np, new ConjunctionLeafChecker("and"), new ValueLeafChecker(","), Relation.JOINT_NP_LIST);
+            Optional<Result> r = check(anchorTree, np, new ConjunctionLeafChecker("and"), new ValueLeafChecker(","), Relation.JOINT_NP_CONJUNCTION);
             if (r.isPresent()) {
                 return r;
             }
