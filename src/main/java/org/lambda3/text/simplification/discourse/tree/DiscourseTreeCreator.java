@@ -22,6 +22,8 @@
 
 package org.lambda3.text.simplification.discourse.tree;
 
+import com.typesafe.config.Config;
+import com.typesafe.config.ConfigException;
 import edu.stanford.nlp.trees.Tree;
 import org.lambda3.text.simplification.discourse.tree.extraction.Extraction;
 import org.lambda3.text.simplification.discourse.tree.extraction.ExtractionRule;
@@ -39,6 +41,8 @@ import org.lambda3.text.simplification.discourse.utils.parseTree.ParseTreeVisual
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -47,37 +51,29 @@ import java.util.Optional;
  *
  */
 public class DiscourseTreeCreator {
-    private static final List<ExtractionRule> rules;
-
-    static {
-        rules = new ArrayList<>();
-
-        rules.add(new ReferenceExtractor1());
-        rules.add(new ReferenceExtractor2());
-        rules.add(new CoordinationExtractor());
-
-        rules.add(new EnablementPreExtractor());
-        rules.add(new SubordinationPreEnablementExtractor());
-        rules.add(new SharedNPPreParticipalExtractor());
-        rules.add(new SubordinationPreExtractor());
-
-        rules.add(new EnablementPostExtractor());
-        rules.add(new SubordinationPostEnablementExtractor());
-        rules.add(new SharedNPPostCoordinationExtractor());
-        rules.add(new SharedNPPostParticipalExtractor());
-        rules.add(new SubordinationPostISAExtractor());
-        rules.add(new SubordinationPostISAExtractor2());
-        rules.add(new SubordinationPostExtractor());
-
-        // should be applied last (because they dont allow further splitting)
-        rules.add(new PreListNPExtractor());
-        rules.add(new PostListNPExtractor());
-    }
+    private final List<ExtractionRule> rules;
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
+    private final Config config;
     private Coordination discourseTree;
 
-    public DiscourseTreeCreator() {
+    public DiscourseTreeCreator(Config config) {
+        this.config = config;
+
+        // create rules from config
+        this.rules = new ArrayList<>();
+        for (String className : this.config.getStringList("rules")) {
+            try {
+                Class<?> clazz = Class.forName(className);
+                Constructor<?> constructor = clazz.getConstructor();
+                ExtractionRule rule = (ExtractionRule) constructor.newInstance();
+                rules.add(rule);
+            } catch (InstantiationException | InvocationTargetException | NoSuchMethodException | IllegalAccessException | ClassNotFoundException e) {
+                logger.error("Failed to create instance of {}", className);
+                throw new ConfigException.BadValue("rules." + className, "Failed to create instance.");
+            }
+        }
+
         reset();
     }
 

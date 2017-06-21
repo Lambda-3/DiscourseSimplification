@@ -22,9 +22,12 @@
 
 package org.lambda3.text.simplification.discourse.processing;
 
+import com.typesafe.config.Config;
+import com.typesafe.config.ConfigFactory;
 import org.lambda3.text.simplification.discourse.relation_extraction.DiscourseExtractor;
 import org.lambda3.text.simplification.discourse.relation_extraction.Element;
 import org.lambda3.text.simplification.discourse.tree.DiscourseTreeCreator;
+import org.lambda3.text.simplification.discourse.utils.ConfigUtils;
 import org.lambda3.text.simplification.discourse.utils.sentences.SentencesUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,9 +42,25 @@ import java.util.Optional;
  *
  */
 public class Processor {
-    private final static DiscourseTreeCreator DISCOURSE_TREE_CREATOR = new DiscourseTreeCreator();
-    private final static DiscourseExtractor DISCOURSE_EXTRACTOR = new DiscourseExtractor();
+    private final DiscourseTreeCreator discourseTreeCreator;
+    private final DiscourseExtractor discourseExtractor;
     private final Logger logger = LoggerFactory.getLogger(getClass());
+
+    private final Config config;
+
+    public Processor(Config config) {
+        this.config = config.getConfig("discourse-simplification");
+
+        this.discourseTreeCreator = new DiscourseTreeCreator(this.config);
+        this.discourseExtractor = new DiscourseExtractor(this.config);
+
+        logger.info("Processor initialized");
+        logger.info("\n{}", ConfigUtils.prettyPrint(this.config));
+    }
+
+    public Processor() {
+        this(ConfigFactory.load());
+    }
 
     public List<OutSentence> process(File file, ProcessingType type) throws FileNotFoundException {
         List<String> sentences = SentencesUtils.splitIntoSentencesFromFile(file);
@@ -89,7 +108,7 @@ public class Processor {
         // Step 1) create document discourse tree
         logger.info("### STEP 1) CREATE DOCUMENT DISCOURSE TREE ###");
 
-        DISCOURSE_TREE_CREATOR.reset();
+        discourseTreeCreator.reset();
 
         int idx = 0;
         for (String sentence : sentences) {
@@ -97,14 +116,14 @@ public class Processor {
             logger.info("'" + sentence + "'");
 
             // extend discourse tree
-            DISCOURSE_TREE_CREATOR.addSentence(sentence, idx);
-            DISCOURSE_TREE_CREATOR.update();
+            discourseTreeCreator.addSentence(sentence, idx);
+            discourseTreeCreator.update();
             if (logger.isDebugEnabled()) {
 
-                Optional.ofNullable(DISCOURSE_TREE_CREATOR.getLastSentenceTree())
+                Optional.ofNullable(discourseTreeCreator.getLastSentenceTree())
                         .ifPresent(t -> logger.debug(t.toString()));
 
-//                logger.debug(DISCOURSE_TREE_CREATOR.getDiscourseTree().toString()); // to show the current document discourse tree
+//                logger.debug(discourseTreeCreator.getDiscourseTree().toString()); // to show the current document discourse tree
             }
 
             ++idx;
@@ -113,7 +132,7 @@ public class Processor {
         // Step 2) extract elements
         logger.info("### STEP 2) EXTRACT ELEMENTS ###");
 
-        List<Element> elements = DISCOURSE_EXTRACTOR.extract(DISCOURSE_TREE_CREATOR.getDiscourseTree());
+        List<Element> elements = discourseExtractor.extract(discourseTreeCreator.getDiscourseTree());
         if (logger.isDebugEnabled()) {
             elements.stream().filter(e -> e.getContextLayer() == 0).forEach(x -> logger.debug(x.toString()));
         }
@@ -143,17 +162,17 @@ public class Processor {
             // Step 1) create sentence discourse tree
             logger.debug("### Step 1) CREATE SENTENCE DISCOURSE TREE ###");
 
-            DISCOURSE_TREE_CREATOR.reset();
-            DISCOURSE_TREE_CREATOR.addSentence(sentence, idx);
-            DISCOURSE_TREE_CREATOR.update();
+            discourseTreeCreator.reset();
+            discourseTreeCreator.addSentence(sentence, idx);
+            discourseTreeCreator.update();
             if (logger.isDebugEnabled()) {
-                logger.debug(DISCOURSE_TREE_CREATOR.getDiscourseTree().toString());
+                logger.debug(discourseTreeCreator.getDiscourseTree().toString());
             }
 
             // Step 2) extract elements
             logger.debug("### STEP 2) EXTRACT ELEMENTS ###");
 
-            List<Element> es = DISCOURSE_EXTRACTOR.extract(DISCOURSE_TREE_CREATOR.getDiscourseTree());
+            List<Element> es = discourseExtractor.extract(discourseTreeCreator.getDiscourseTree());
             if (logger.isDebugEnabled()) {
                 es.stream().filter(e -> e.getContextLayer() == 0).forEach(x -> logger.debug(x.toString()));
             }

@@ -26,7 +26,7 @@
 
     <groupId>org.lambda3.text.simplification</groupId>
     <artifactId>discourse-simplification</artifactId>
-    <version>6.0.0</version>
+    <version>7.0.0-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <name>Discourse Simplification</name>
@@ -40,6 +40,8 @@
     </scm>
 
     <properties>
+        <config.version>1.3.1</config.version>
+
         <corenlp.version>3.7.0</corenlp.version>
         <logback.version>1.1.8</logback.version>
 
@@ -52,6 +54,13 @@
     </properties>
 
     <dependencies>
+
+        <!-- Config -->
+        <dependency>
+            <groupId>com.typesafe</groupId>
+            <artifactId>config</artifactId>
+            <version>${config.version}</version>
+        </dependency>
 
         <!-- Stanford NLP -->
         <dependency>
