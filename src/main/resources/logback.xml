@@ -23,14 +23,29 @@
 
 <!--suppress XmlUnboundNsPrefix, XmlUnboundNsPrefix -->
 <configuration>
+    <property name="LOG_DIR" value="log" />
 
     <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
-            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+            <!--<pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>-->
+            <pattern>%msg%n%n</pattern>
         </encoder>
     </appender>
 
+    <appender name="FILE" class="ch.qos.logback.core.FileAppender">
+        <file>${LOG_DIR}/out.log</file>
+        <append>false</append>
+        <encoder>
+            <!--<pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>-->
+            <pattern>%msg%n%n</pattern>
+        </encoder>
+    </appender>
+
+    <logger name="org.lambda3.text.simplification.discourse.processing" level="debug"/>
+    <!--<logger name="org.lambda3.text.simplification.discourse.tree" level="debug"/>-->
+
     <root level="info">
         <appender-ref ref="STDOUT"/>
+        <appender-ref ref="FILE"/>
     </root>
 </configuration>

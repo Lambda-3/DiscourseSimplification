@@ -22,7 +22,10 @@
 
 package org.lambda3.text.simplification.discourse.relation_extraction;
 
+import com.typesafe.config.Config;
+import com.typesafe.config.ConfigException;
 import org.lambda3.text.simplification.discourse.tree.Relation;
+import org.lambda3.text.simplification.discourse.tree.extraction.ExtractionRule;
 import org.lambda3.text.simplification.discourse.tree.model.Coordination;
 import org.lambda3.text.simplification.discourse.tree.model.DiscourseTree;
 import org.lambda3.text.simplification.discourse.tree.model.Leaf;
@@ -30,7 +33,9 @@ import org.lambda3.text.simplification.discourse.tree.model.Subordination;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Arrays;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -39,19 +44,27 @@ import java.util.stream.Collectors;
  *
  */
 public class DiscourseExtractor {
-    private static final List<Relation> IGNORED_RELATIONS = Arrays.asList(
-            Relation.UNKNOWN_COORDINATION,
-            Relation.JOINT_LIST,
-            Relation.JOINT_DISJUNCTION,
-            Relation.JOINT_NP_LIST,
-            Relation.JOINT_NP_DISJUNCTION
-
-    );
+    private final List<Relation> ignoredRelations;
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
+    private final Config config;
     private LinkedHashMap<Leaf, Element> processedLeaves;
 
-    public DiscourseExtractor() {
+    public DiscourseExtractor(Config config) {
+        this.config = config;
+
+        // create ignored relations from config
+        this.ignoredRelations = new ArrayList<>();
+        for (String valueName : this.config.getStringList("ignored-relations")) {
+            try {
+                Relation relation = Relation.valueOf(valueName);
+                ignoredRelations.add(relation);
+            } catch (IllegalArgumentException e) {
+                logger.error("Failed to create enum value of {}", valueName);
+                throw new ConfigException.BadValue("ignored-relations." + valueName, "Failed to create enum value.");
+            }
+        }
+
         this.processedLeaves = new LinkedHashMap<Leaf, Element>();
     }
 
@@ -89,7 +102,7 @@ public class DiscourseExtractor {
             }
 
             // set relations
-            if (!IGNORED_RELATIONS.contains(coordination.getRelation())) {
+            if (!ignoredRelations.contains(coordination.getRelation())) {
                 for (DiscourseTree child : coordination.getCoordinations()) {
                     List<Element> childNElements = child.getNucleusPathLeaves().stream().map(n -> processedLeaves.get(n)).collect(Collectors.toList());
 
@@ -128,7 +141,7 @@ public class DiscourseExtractor {
             extractRec(subordination.getSubordination(), contextLayer + 1);
 
             // add relations
-            if (!IGNORED_RELATIONS.contains(subordination.getRelation())) {
+            if (!ignoredRelations.contains(subordination.getRelation())) {
                 List<Element> superordinationNElements = subordination.getSuperordination().getNucleusPathLeaves().stream().map(n -> processedLeaves.get(n)).collect(Collectors.toList());
                 List<Element> subordinationNElements = subordination.getSubordination().getNucleusPathLeaves().stream().map(n -> processedLeaves.get(n)).collect(Collectors.toList());
 

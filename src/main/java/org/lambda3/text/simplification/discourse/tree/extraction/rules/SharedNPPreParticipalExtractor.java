@@ -59,13 +59,13 @@ public class SharedNPPreParticipalExtractor extends ExtractionRule {
             leftConstituentWords.addAll(ParseTreeExtractionUtils.getContainingWords(matcher.getNode("np")));
             leftConstituentWords.addAll(getRephrasedParticipalS(matcher.getNode("np"), matcher.getNode("vp"), matcher.getNode("s"), matcher.getNode("vbgn")));
             leftConstituentWords.addAll(ParseTreeExtractionUtils.getFollowingWords(parseTree, matcher.getNode("vp"), false));
-            Leaf rightConstituent = new Leaf(getClass().getSimpleName(), WordsUtils.wordsToProperSentenceString(leftConstituentWords));
+            Leaf leftConstituent = new Leaf(getClass().getSimpleName(), WordsUtils.wordsToProperSentenceString(leftConstituentWords));
 
             // the right constituent
             List<Word> rightConstituentWords = new ArrayList<>();
             rightConstituentWords.addAll(ParseTreeExtractionUtils.getPrecedingWords(parseTree, matcher.getNode("s"), false));
             rightConstituentWords.addAll(ParseTreeExtractionUtils.getFollowingWords(parseTree, matcher.getNode("s"), false));
-            Leaf leftConstituent = new Leaf(getClass().getSimpleName(), WordsUtils.wordsToProperSentenceString(rightConstituentWords));
+            Leaf rightConstituent = new Leaf(getClass().getSimpleName(), WordsUtils.wordsToProperSentenceString(rightConstituentWords));
 
             // relation
             Relation relation = Relation.UNKNOWN_COORDINATION;
