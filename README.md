@@ -28,3 +28,9 @@ Check `App.java`.
 Or its usage in the [Graphene](https://github.com/Lambda-3/Graphene) project.
     
    
+## Contributors (alphabetical order)
+- Andre Freitas
+- Bernhard Bermeitinger
+- Christina Niklaus
+- Matthias Cetto
+- Siegfried Handschuh
