@@ -46,20 +46,16 @@ public class Processor {
     private final DiscourseExtractor discourseExtractor;
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
-    private final Config config;
-
     public Processor(Config config) {
-        this.config = config.getConfig("discourse-simplification");
-
-        this.discourseTreeCreator = new DiscourseTreeCreator(this.config);
-        this.discourseExtractor = new DiscourseExtractor(this.config);
+        this.discourseTreeCreator = new DiscourseTreeCreator(config);
+        this.discourseExtractor = new DiscourseExtractor(config);
 
         logger.info("Processor initialized");
-        logger.info("\n{}", ConfigUtils.prettyPrint(this.config));
+        logger.info("\n{}", ConfigUtils.prettyPrint(config));
     }
 
     public Processor() {
-        this(ConfigFactory.load());
+        this(ConfigFactory.load().getConfig("discourse-simplification"));
     }
 
     public List<OutSentence> process(File file, ProcessingType type) throws FileNotFoundException {
