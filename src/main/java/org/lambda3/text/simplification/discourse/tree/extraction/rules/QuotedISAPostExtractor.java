@@ -48,23 +48,19 @@ public class QuotedISAPostExtractor extends ExtractionRule {
 
     @Override
     public Optional<Extraction> extract(Tree parseTree) {
-        TregexPattern p = TregexPattern.compile("ROOT <<: (S < (S=s < (NP $.. VP) ?,, (/``/=startOut) ?<<, (/``/=startIn) ?<<- (/''/=endIn) ?.. (/''/=endOut) $.. (NP $.. VP)))");
+        TregexPattern p = TregexPattern.compile("ROOT <<: (S << (/``/=start .. (NP .. (/VB./ .. (/''/=end .. (NP .. VP))))))");
         TregexMatcher matcher = p.matcher(parseTree);
 
         while (matcher.findAt(parseTree)) {
             Tree quoteStart;
-            if (matcher.getNode("startOut") != null) {
-                quoteStart = matcher.getNode("startOut");
-            } else if (matcher.getNode("startIn") != null) {
-                quoteStart = matcher.getNode("startIn");
+            if (matcher.getNode("start") != null) {
+                quoteStart = (matcher.getNode("start"));
             } else {
                 continue;
             }
             Tree quoteEnd;
-            if (matcher.getNode("endOut") != null) {
-                quoteEnd = matcher.getNode("endOut");
-            } else if (matcher.getNode("endIn") != null) {
-                quoteEnd = matcher.getNode("endIn");
+            if (matcher.getNode("end") != null) {
+                quoteEnd = matcher.getNode("end");
             } else {
                 continue;
             }
