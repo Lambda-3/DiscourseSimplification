@@ -48,14 +48,15 @@ public class SharedNPPreParticipalExtractor extends ExtractionRule {
     @Override
     public Optional<Extraction> extract(Tree parseTree) {
 
-        TregexPattern p = TregexPattern.compile("ROOT <<: (S < (S=s <<, (VP <<, VBG|VBN=vbgn) $.. (NP=np $.. (VP=vp))))");
+        TregexPattern p = TregexPattern.compile("ROOT <<: (S=r <+(SBAR|PP|ADVP) (S=s <<, (VP <<, VBG|VBN=vbgn >> (__=node > =r $.. (NP=np $.. (VP=vp))))))");
         TregexMatcher matcher = p.matcher(parseTree);
 
         while (matcher.findAt(parseTree)) {
+            List<Word> signalPhraseWords = ParseTreeExtractionUtils.getPrecedingWords(matcher.getNode("node"), matcher.getNode("s"), false);
 
             // the left constituent
             List<Word> leftConstituentWords = new ArrayList<>();
-            leftConstituentWords.addAll(ParseTreeExtractionUtils.getPrecedingWords(parseTree, matcher.getNode("s"), false));
+            leftConstituentWords.addAll(ParseTreeExtractionUtils.getPrecedingWords(parseTree, matcher.getNode("node"), false));
             leftConstituentWords.addAll(ParseTreeExtractionUtils.getContainingWords(matcher.getNode("np")));
             leftConstituentWords.addAll(getRephrasedParticipalS(matcher.getNode("np"), matcher.getNode("vp"), matcher.getNode("s"), matcher.getNode("vbgn")));
             leftConstituentWords.addAll(ParseTreeExtractionUtils.getFollowingWords(parseTree, matcher.getNode("vp"), false));
@@ -63,17 +64,17 @@ public class SharedNPPreParticipalExtractor extends ExtractionRule {
 
             // the right constituent
             List<Word> rightConstituentWords = new ArrayList<>();
-            rightConstituentWords.addAll(ParseTreeExtractionUtils.getPrecedingWords(parseTree, matcher.getNode("s"), false));
-            rightConstituentWords.addAll(ParseTreeExtractionUtils.getFollowingWords(parseTree, matcher.getNode("s"), false));
+            rightConstituentWords.addAll(ParseTreeExtractionUtils.getPrecedingWords(parseTree, matcher.getNode("node"), false));
+            rightConstituentWords.addAll(ParseTreeExtractionUtils.getFollowingWords(parseTree, matcher.getNode("node"), false));
             Leaf rightConstituent = new Leaf(getClass().getSimpleName(), WordsUtils.wordsToProperSentenceString(rightConstituentWords));
 
             // relation
-            Relation relation = Relation.UNKNOWN_COORDINATION;
+            Relation relation = CLASSIFIER.classifyGeneral(signalPhraseWords).orElse(Relation.UNKNOWN_COORDINATION);
 
             Extraction res = new CoordinationExtraction(
                     getClass().getSimpleName(),
                     relation,
-                    null,
+                    signalPhraseWords,
                     leftConstituent,
                     rightConstituent
             );
