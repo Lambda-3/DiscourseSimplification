@@ -116,6 +116,10 @@ public class SignalPhraseClassifier {
     );
 
     private static Optional<Relation> classify(List<Mapping> mappings, List<Word> signalPhraseWords) {
+        if (signalPhraseWords.size() == 0) {
+            return Optional.empty();
+        }
+
         String signalPhrase = WordsUtils.wordsToString(signalPhraseWords);
 
         Optional<Mapping> bestMapping = Optional.empty();
