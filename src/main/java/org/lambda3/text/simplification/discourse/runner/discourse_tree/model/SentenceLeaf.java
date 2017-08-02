@@ -1,6 +1,6 @@
 /*
  * ==========================License-Start=============================
- * DiscourseSimplification : ConfigUtils
+ * DiscourseSimplification : SentenceLeaf
  *
  * Copyright © 2017 Lambda³
  *
@@ -20,18 +20,15 @@
  * ==========================License-End==============================
  */
 
-package org.lambda3.text.simplification.discourse.utils;
-
-import com.typesafe.config.Config;
-import com.typesafe.config.ConfigRenderOptions;
+package org.lambda3.text.simplification.discourse.runner.discourse_tree.model;
 
 /**
  *
  */
-public class ConfigUtils {
-	public static String prettyPrint(Config config) {
-		return config == null
-				? null
-				: config.root().render(ConfigRenderOptions.concise().setFormatted(true));
-	}
+public class SentenceLeaf extends Leaf {
+
+    public SentenceLeaf(String sentence, int sentenceIdx) {
+        super("SENTENCE", sentence);
+        this.setRecursiveUnsetSentenceIdx(sentenceIdx);
+    }
 }

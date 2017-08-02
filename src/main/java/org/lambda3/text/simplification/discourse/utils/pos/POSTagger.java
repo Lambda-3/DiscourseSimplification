@@ -1,6 +1,6 @@
 /*
  * ==========================License-Start=============================
- * DiscourseSimplification : ParseTreeVisualizer
+ * DiscourseSimplification : POSTagger
  *
  * Copyright © 2017 Lambda³
  *

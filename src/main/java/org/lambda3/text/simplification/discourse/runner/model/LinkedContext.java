@@ -1,6 +1,6 @@
 /*
  * ==========================License-Start=============================
- * DiscourseSimplification : ConfigUtils
+ * DiscourseSimplification : LinkedContext
  *
  * Copyright © 2017 Lambda³
  *
@@ -20,18 +20,39 @@
  * ==========================License-End==============================
  */
 
-package org.lambda3.text.simplification.discourse.utils;
+package org.lambda3.text.simplification.discourse.runner.model;
 
-import com.typesafe.config.Config;
-import com.typesafe.config.ConfigRenderOptions;
+import org.lambda3.text.simplification.discourse.runner.discourse_tree.Relation;
 
-/**
- *
- */
-public class ConfigUtils {
-	public static String prettyPrint(Config config) {
-		return config == null
-				? null
-				: config.root().render(ConfigRenderOptions.concise().setFormatted(true));
+public class LinkedContext {
+	private String targetID;
+	private Relation relation;
+
+	// for deserialization
+	public LinkedContext() {
+	}
+
+	public LinkedContext(String targetID, Relation relation) {
+		this.targetID = targetID;
+		this.relation = relation;
+	}
+
+	public String getTargetID() {
+		return targetID;
+	}
+
+	public Element getTargetElement(SimplificationContent content) {
+		return content.getElement(targetID);
+	}
+
+	public Relation getRelation() {
+		return relation;
+	}
+
+	@Override
+	public boolean equals(Object o) {
+		return ((o instanceof LinkedContext)
+			&& (((LinkedContext) o).targetID.equals(targetID))
+			&& (((LinkedContext) o).relation.equals(relation)));
 	}
 }

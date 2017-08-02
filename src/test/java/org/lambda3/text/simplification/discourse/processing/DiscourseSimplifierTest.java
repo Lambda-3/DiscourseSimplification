@@ -1,6 +1,6 @@
 /*
  * ==========================License-Start=============================
- * DiscourseSimplification : ConfigUtils
+ * DiscourseSimplification : ProcessorTest
  *
  * Copyright © 2017 Lambda³
  *
@@ -20,18 +20,29 @@
  * ==========================License-End==============================
  */
 
-package org.lambda3.text.simplification.discourse.utils;
+package org.lambda3.text.simplification.discourse.processing;
 
-import com.typesafe.config.Config;
-import com.typesafe.config.ConfigRenderOptions;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.lambda3.text.simplification.discourse.runner.model.OutSentence;
+import org.lambda3.text.simplification.discourse.runner.model.SimplificationContent;
 
 /**
  *
  */
-public class ConfigUtils {
-	public static String prettyPrint(Config config) {
-		return config == null
-				? null
-				: config.root().render(ConfigRenderOptions.concise().setFormatted(true));
-	}
+class DiscourseSimplifierTest {
+
+    @Test
+    void processSingleSentence() {
+        DiscourseSimplifier p = new DiscourseSimplifier();
+
+        String text = "Peter went to Paris because he likes the city.";
+        SimplificationContent c = p.doDiscourseSimplification(text, ProcessingType.WHOLE);
+
+        Assertions.assertEquals(1, c.getSentences().size());
+        OutSentence sent = c.getSentences().get(0);
+
+        Assertions.assertEquals(2, sent.getElements().size());
+    }
+
 }

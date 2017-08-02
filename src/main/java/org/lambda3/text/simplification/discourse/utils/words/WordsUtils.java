@@ -22,9 +22,14 @@
 
 package org.lambda3.text.simplification.discourse.utils.words;
 
+import edu.stanford.nlp.ling.CoreLabel;
 import edu.stanford.nlp.ling.SentenceUtils;
 import edu.stanford.nlp.ling.Word;
+import edu.stanford.nlp.process.CoreLabelTokenFactory;
+import edu.stanford.nlp.process.PTBTokenizer;
+import org.lambda3.text.simplification.sentence.transformation.Core;
 
+import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
@@ -34,6 +39,18 @@ import java.util.List;
  *
  */
 public class WordsUtils {
+
+    public static List<Word> splitIntoWords(String sentence) {
+        PTBTokenizer<CoreLabel> ptbt = new PTBTokenizer<>(new StringReader(sentence), new CoreLabelTokenFactory(), "");
+        List<Word> words = new ArrayList<>();
+
+        while (ptbt.hasNext()) {
+            CoreLabel label = ptbt.next();
+            words.add(new Word(label));
+        }
+
+        return words;
+    }
 
     public static String wordsToString(List<Word> words) {
         return SentenceUtils.listToString(words);

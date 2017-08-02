@@ -22,21 +22,46 @@
 
 package org.lambda3.text.simplification.discourse;
 
-import org.lambda3.text.simplification.discourse.processing.OutSentence;
-import org.lambda3.text.simplification.discourse.processing.Processor;
+import org.lambda3.text.simplification.discourse.processing.DiscourseSimplifier;
+import org.lambda3.text.simplification.discourse.processing.ProcessingType;
+import org.lambda3.text.simplification.discourse.runner.model.SimplificationContent;
 import org.slf4j.LoggerFactory;
 
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class App {
     private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(App.class);
-    private static final Processor PROCESSOR = new Processor();
+    private static final DiscourseSimplifier DISCOURSE_SIMPLIFIER = new DiscourseSimplifier();
+
+    private static void saveLines(File file, List<String> lines) {
+        try (BufferedWriter bw = new BufferedWriter(new FileWriter(file))) {
+            bw.write(lines.stream().collect(Collectors.joining("\n")));
+
+            // no need to close it.
+            //bw.close()
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 
     public static void main(String[] args) throws IOException {
 
-        List<OutSentence> sentences = PROCESSOR.process(new File("input.txt"), Processor.ProcessingType.WHOLE);
-//        List<OutSentence> sentences = PROCESSOR.process("The text.", Processor.ProcessingType.WHOLE);
+        SimplificationContent content = DISCOURSE_SIMPLIFIER.doDiscourseSimplification(new File("input.txt"), ProcessingType.SEPARATE);
+//        SimplificationContent content = DISCOURSE_SIMPLIFIER.doDiscourseSimplification("The text.", DiscourseSimplifier.ProcessingType.WHOLE);
+        content.serializeToJSON(new File("output.json"));
+
+//        SimplificationContent loaded = SimplificationContent.deserializeFromJSON(new File("output.json"), SimplificationContent.class);
+
+
+        saveLines(new File("output_default.txt"), Arrays.asList(content.defaultFormat(true)));
+        saveLines(new File("output_flat.txt"), Arrays.asList(content.flatFormat(true)));
+        LOGGER.info("done");
+
     }
 }

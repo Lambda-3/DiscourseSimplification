@@ -1,6 +1,6 @@
 /*
  * ==========================License-Start=============================
- * DiscourseSimplification : ConfigUtils
+ * DiscourseSimplification : PreListNPExtractor
  *
  * Copyright © 2017 Lambda³
  *
@@ -20,18 +20,14 @@
  * ==========================License-End==============================
  */
 
-package org.lambda3.text.simplification.discourse.utils;
-
-import com.typesafe.config.Config;
-import com.typesafe.config.ConfigRenderOptions;
+package org.lambda3.text.simplification.discourse.runner.discourse_tree.extraction.rules.ListNP;
 
 /**
  *
  */
-public class ConfigUtils {
-	public static String prettyPrint(Config config) {
-		return config == null
-				? null
-				: config.root().render(ConfigRenderOptions.concise().setFormatted(true));
-	}
+public class PreListNPExtractor extends ListNPExtractor {
+
+    public PreListNPExtractor() {
+        super("ROOT <<: (S < (NP=np $.. VP))");
+    }
 }

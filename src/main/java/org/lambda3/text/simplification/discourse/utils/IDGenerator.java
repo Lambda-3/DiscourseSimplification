@@ -1,6 +1,6 @@
 /*
  * ==========================License-Start=============================
- * DiscourseSimplification : ConfigUtils
+ * DiscourseSimplification : IDGenerator
  *
  * Copyright © 2017 Lambda³
  *
@@ -22,16 +22,10 @@
 
 package org.lambda3.text.simplification.discourse.utils;
 
-import com.typesafe.config.Config;
-import com.typesafe.config.ConfigRenderOptions;
+import java.util.UUID;
 
-/**
- *
- */
-public class ConfigUtils {
-	public static String prettyPrint(Config config) {
-		return config == null
-				? null
-				: config.root().render(ConfigRenderOptions.concise().setFormatted(true));
-	}
+public class IDGenerator {
+    public static String generateUUID() {
+        return String.valueOf(UUID.randomUUID()).replaceAll("-", "");
+    }
 }

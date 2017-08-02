@@ -53,12 +53,12 @@ public class Test {
 
     public static void printParseTree(List<String> sentences) {
         for (String sentence : sentences) {
-            LOGGER.info("Generate parse tree for sentence:\n'{}'", sentence);
+            LOGGER.info("Generate parse discourse_tree for sentence:\n'{}'", sentence);
             try {
                 Tree parseTree = ParseTreeParser.parse(sentence);
                 LOGGER.info(ParseTreeVisualizer.prettyPrint(parseTree));
             } catch (ParseTreeException e) {
-                LOGGER.error("Failed to generate parse tree");
+                LOGGER.error("Failed to generate parse discourse_tree");
             }
         }
     }
