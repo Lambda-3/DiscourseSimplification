@@ -25,11 +25,12 @@ package org.lambda3.text.simplification.discourse.runner.sentence_simplification
 import com.typesafe.config.Config;
 import edu.stanford.nlp.trees.Tree;
 import org.lambda3.text.simplification.discourse.runner.discourse_tree.Relation;
-import org.lambda3.text.simplification.discourse.runner.model.Element;
-import org.lambda3.text.simplification.discourse.runner.model.OutSentence;
-import org.lambda3.text.simplification.discourse.runner.model.SimpleContext;
+import org.lambda3.text.simplification.discourse.model.Element;
+import org.lambda3.text.simplification.discourse.model.OutSentence;
+import org.lambda3.text.simplification.discourse.model.SimpleContext;
 import org.lambda3.text.simplification.discourse.runner.sentence_simplification.classification.ContextClassifier;
 import org.lambda3.text.simplification.discourse.runner.sentence_simplification.classification.ExtContextClassifier;
+import org.lambda3.text.simplification.discourse.utils.parseTree.ParseTreeExtractionUtils;
 import org.lambda3.text.simplification.discourse.utils.words.WordsUtils;
 import org.lambda3.text.simplification.sentence.transformation.CoreContextSentence;
 import org.lambda3.text.simplification.sentence.transformation.SentenceSimplifyingException;
@@ -44,19 +45,19 @@ import java.util.stream.Collectors;
 
 public class SentenceSimplifier {
     private static class Result {
-        private String core;
-        private List<String> contexts;
+        private Tree core;
+        private List<Tree> contexts;
 
-        public Result(String core, List<String> contexts) {
+        public Result(Tree core, List<Tree> contexts) {
             this.core = core;
             this.contexts = contexts;
         }
 
-        public String getCore() {
+        public Tree getCore() {
             return core;
         }
 
-        public List<String> getContexts() {
+        public List<Tree> getContexts() {
             return contexts;
         }
     }
@@ -70,28 +71,26 @@ public class SentenceSimplifier {
         this.config = config;
     }
 
-    private Result simplify(String text) {
+    private Result simplify(Tree parseTree) {
         Transformer transformer = new Transformer();
         CoreContextSentence s;
         try {
-            s = transformer.simplify(text);
-            String core = text;
-            if ((s.getCore() != null) && (s.getCore().size() > 0)) {
-                Tree c = s.getCore().get(0);
-                if (c != null) {
-                    core = WordsUtils.wordsToProperSentenceString(c.yieldWords());
-                }
+            s = transformer.simplify(WordsUtils.wordsToString(ParseTreeExtractionUtils.getContainingWords(parseTree))); //TODO change transformer to accept parsed tree
+
+            Tree core = parseTree;
+            if ((s.getCore() != null) && (s.getCore().size() > 0) && (s.getCore().get(0) != null)) {
+               core = s.getCore().get(0);
             }
 
-            List<String> contexts = Collections.emptyList();
+            List<Tree> contexts = Collections.emptyList();
             if (s.getContext() != null) {
-                contexts = s.getContext().stream().filter(c -> c != null).map(c -> WordsUtils.wordsToProperSentenceString(c.yieldWords())).collect(Collectors.toList());
+                contexts = s.getContext().stream().filter(c -> c != null).collect(Collectors.toList());
             }
 
             return new Result(core, contexts);
         } catch (SentenceSimplifyingException e) {
-            logger.warn("Failed to simplify text: \"{}\"", text);
-            return new Result(text, Collections.emptyList());
+            logger.warn("Failed to simplify: \"{}\"", WordsUtils.wordsToString(ParseTreeExtractionUtils.getContainingWords(parseTree)));
+            return new Result(parseTree, Collections.emptyList());
         }
     }
 
@@ -103,16 +102,16 @@ public class SentenceSimplifier {
 
             // INTRA SENT ATTR
             if (simpleContext.getRelation().equals(Relation.ATTRIBUTION)) {
-                Result r = simplify(simpleContext.getText());
-                simpleContext.setText(r.getCore());
-                for (String c : r.getContexts()) {
+                Result r = simplify(simpleContext.getParseTree());
+                simpleContext.setParseTree(r.getCore());
+                for (Tree c : r.getContexts()) {
                     SimpleContext sc = new SimpleContext(c);
 
                     // classify
                     CONTEXT_CLASSIFIER.classify(sc);
 
-                    // add only if it has no phrase
-                    if (!sc.getPhrase().isPresent()) {
+                    // add only if it is noun based
+                    if (sc.getRelation().equals(Relation.NOUN_BASED)) {
                         newSimpleContexts.add(sc);
                     }
                 }
@@ -123,12 +122,12 @@ public class SentenceSimplifier {
 
     public void doSentenceSimplification(OutSentence sentence) {
         for (Element element : sentence.getElements()) {
-            Result r = simplify(element.getText());
+            Result r = simplify(element.getParseTree());
 
             simplifyContexts(element);
 
-            element.setText(r.getCore());
-            for (String c : r.getContexts()) {
+            element.setParseTree(r.getCore());
+            for (Tree c : r.getContexts()) {
                 SimpleContext simpleContext = new SimpleContext(c);
 
                 // classify

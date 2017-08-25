@@ -20,14 +20,16 @@
  * ==========================License-End==============================
  */
 
-package org.lambda3.text.simplification.discourse.runner.model;
+package org.lambda3.text.simplification.discourse.model;
 
+import edu.stanford.nlp.trees.Tree;
 import org.lambda3.text.simplification.discourse.utils.IDGenerator;
-import org.lambda3.text.simplification.discourse.utils.PrettyTreePrinter;
+import org.lambda3.text.simplification.discourse.utils.parseTree.ParseTreeException;
+import org.lambda3.text.simplification.discourse.utils.parseTree.ParseTreeExtractionUtils;
+import org.lambda3.text.simplification.discourse.utils.parseTree.ParseTreeParser;
+import org.lambda3.text.simplification.discourse.utils.words.WordsUtils;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 
 /**
@@ -35,7 +37,7 @@ import java.util.List;
  */
 public class Element {
     private String id;
-    private String text;
+    private Tree parseTree;
     private int sentenceIdx;
     private int contextLayer;
     private List<SimpleContext> simpleContexts;
@@ -45,13 +47,18 @@ public class Element {
     public Element() {
     }
 
-    public Element(String text, int sentenceIdx, int contextLayer) {
+    public Element(Tree parseTree, int sentenceIdx, int contextLayer) {
         this.id = IDGenerator.generateUUID();
-        this.text = text;
+        this.parseTree = parseTree;
         this.sentenceIdx = sentenceIdx;
         this.contextLayer = contextLayer;
         this.simpleContexts = new ArrayList<>();
         this.linkedContexts = new ArrayList<>();
+    }
+
+    // not efficient -> prefer to use constructor with tree
+    public Element(String text, int sentenceIdx, int contextLayer) throws ParseTreeException {
+        this(ParseTreeParser.parse(text), sentenceIdx, contextLayer);
     }
 
     public void addLinkedContext(LinkedContext context) {
@@ -70,12 +77,16 @@ public class Element {
         return id;
     }
 
-    public void setText(String text) {
-        this.text = text;
+    public Tree getParseTree() {
+        return parseTree;
+    }
+
+    public void setParseTree(Tree parseTree) {
+        this.parseTree = parseTree;
     }
 
     public String getText() {
-        return text;
+        return WordsUtils.wordsToString(ParseTreeExtractionUtils.getContainingWords(parseTree));
     }
 
     public int getSentenceIdx() {
@@ -97,7 +108,7 @@ public class Element {
     @Override
     public String toString() {
         StringBuilder strb = new StringBuilder();
-        strb.append(id + "     " + contextLayer + "     " + text + "\n");
+        strb.append(id + "     " + contextLayer + "     " + getText() + "\n");
         getSimpleContexts().forEach(c -> strb.append("\tS:" + c.getRelation() + "    " + c.getText() + "\n"));
         getLinkedContexts().forEach(c -> strb.append("\tL:" + c.getRelation() + "    " + c.getTargetID() + "\n"));
         return strb.toString();

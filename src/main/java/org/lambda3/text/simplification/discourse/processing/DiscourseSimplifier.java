@@ -25,12 +25,13 @@ package org.lambda3.text.simplification.discourse.processing;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 import org.lambda3.text.simplification.discourse.runner.discourse_extraction.DiscourseExtractor;
-import org.lambda3.text.simplification.discourse.runner.model.Element;
-import org.lambda3.text.simplification.discourse.runner.model.OutSentence;
+import org.lambda3.text.simplification.discourse.model.Element;
+import org.lambda3.text.simplification.discourse.model.OutSentence;
 import org.lambda3.text.simplification.discourse.runner.discourse_tree.DiscourseTreeCreator;
-import org.lambda3.text.simplification.discourse.runner.model.SimplificationContent;
+import org.lambda3.text.simplification.discourse.model.SimplificationContent;
 import org.lambda3.text.simplification.discourse.runner.sentence_simplification.SentenceSimplifier;
 import org.lambda3.text.simplification.discourse.utils.ConfigUtils;
+import org.lambda3.text.simplification.discourse.utils.parseTree.ParseTreeException;
 import org.lambda3.text.simplification.discourse.utils.sentences.SentencesUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -100,14 +101,18 @@ public class DiscourseSimplifier {
             content.addSentence(new OutSentence(idx, sentence));
 
             // extend discourse discourse_tree
-            discourseTreeCreator.addSentence(sentence, idx);
-            discourseTreeCreator.update();
-            if (logger.isDebugEnabled()) {
+            try {
+                discourseTreeCreator.addSentence(sentence, idx);
+                discourseTreeCreator.update();
+                if (logger.isDebugEnabled()) {
 
-                Optional.ofNullable(discourseTreeCreator.getLastSentenceTree())
-                        .ifPresent(t -> logger.debug(t.toString()));
+                    Optional.ofNullable(discourseTreeCreator.getLastSentenceTree())
+                            .ifPresent(t -> logger.debug(t.toString()));
 
 //                logger.debug(discourseTreeCreator.getDiscourseTree().toString()); // to show the current document discourse discourse_tree
+                }
+            } catch (ParseTreeException e) {
+                logger.error("Failed to process sentence: {}", sentence);
             }
 
             ++idx;
@@ -150,25 +155,29 @@ public class DiscourseSimplifier {
             // Step 1) create sentence discourse tree
             logger.debug("### Step 1) CREATE SENTENCE DISCOURSE TREE ###");
             discourseTreeCreator.reset();
-            discourseTreeCreator.addSentence(sentence, idx);
-            discourseTreeCreator.update();
-            if (logger.isDebugEnabled()) {
-                logger.debug(discourseTreeCreator.getDiscourseTree().toString());
-            }
+            try {
+                discourseTreeCreator.addSentence(sentence, idx);
+                discourseTreeCreator.update();
+                if (logger.isDebugEnabled()) {
+                    logger.debug(discourseTreeCreator.getDiscourseTree().toString());
+                }
 
-            // Step 2) do discourse extraction
-            logger.debug("### STEP 2) DO DISCOURSE EXTRACTION ###");
-            List<Element> elements = discourseExtractor.doDiscourseExtraction(discourseTreeCreator.getDiscourseTree());
-            elements.forEach(e -> outSentence.addElement(e));
-            logger.debug(outSentence.toString());
-
-            // Step 3) do sentence simplification
-            logger.debug("### STEP 3) DO SENTENCE SIMPLIFICATION ###");
-            if (withSentenceSimplification) {
-                sentenceSimplifier.doSentenceSimplification(outSentence);
+                // Step 2) do discourse extraction
+                logger.debug("### STEP 2) DO DISCOURSE EXTRACTION ###");
+                List<Element> elements = discourseExtractor.doDiscourseExtraction(discourseTreeCreator.getDiscourseTree());
+                elements.forEach(e -> outSentence.addElement(e));
                 logger.debug(outSentence.toString());
-            } else {
-                logger.info("DEACTIVATED");
+
+                // Step 3) do sentence simplification
+                logger.debug("### STEP 3) DO SENTENCE SIMPLIFICATION ###");
+                if (withSentenceSimplification) {
+                    sentenceSimplifier.doSentenceSimplification(outSentence);
+                    logger.debug(outSentence.toString());
+                } else {
+                    logger.info("DEACTIVATED");
+                }
+            } catch (ParseTreeException e) {
+                logger.error("Failed to process sentence: {}", sentence);
             }
 
             content.addSentence(outSentence);

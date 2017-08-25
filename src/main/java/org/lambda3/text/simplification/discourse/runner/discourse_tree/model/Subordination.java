@@ -45,8 +45,8 @@ public class Subordination extends DiscourseTree {
         this.signalPhrase = signalPhrase;
         this.superordinationIsLeft = superordinationIsLeft;
 
-        this.leftConstituent = new Leaf("tmp", "tmp");
-        this.rightConstituent = new Leaf("tmp", "tmp");
+        this.leftConstituent = new Leaf(); //tmp
+        this.rightConstituent = new Leaf(); //tmp
         replaceLeftConstituent(leftConstituent);
         replaceRightConstituent(rightConstituent);
     }

@@ -84,7 +84,7 @@ public class DiscourseTreeCreator {
         );
     }
 
-    public void addSentence(String sentence, int sentenceIdx) {
+    public void addSentence(String sentence, int sentenceIdx) throws ParseTreeException {
         discourseTree.addCoordination(new SentenceLeaf(sentence, sentenceIdx));
     }
 
@@ -177,24 +177,21 @@ public class DiscourseTreeCreator {
             return Optional.empty();
         }
 
-        // try to generate parseTree
-        Tree parseTree;
-        try {
-            parseTree = ParseTreeParser.parse(leaf.getText());
-        } catch (ParseTreeException e) {
-            logger.error("Failed to generate parse discourse_tree");
-
-            return Optional.empty();
-        }
-        logger.debug("Parse discourse_tree:");
+        logger.debug("Process leaf:");
         if (logger.isDebugEnabled()) {
-            logger.debug(ParseTreeVisualizer.prettyPrint(parseTree));
+            logger.debug(ParseTreeVisualizer.prettyPrint(leaf.getParseTree()));
         }
 
         // check rules
         for (ExtractionRule rule : rules) {
 
-            Optional<Extraction> extraction = rule.extract(parseTree);
+            Optional<Extraction> extraction = null;
+            try {
+                extraction = rule.extract(leaf);
+            } catch (ParseTreeException e) {
+                continue;
+            }
+
             if (extraction.isPresent()) {
                 logger.debug("Extraction rule " + rule.getClass().getSimpleName() + " matched.");
 

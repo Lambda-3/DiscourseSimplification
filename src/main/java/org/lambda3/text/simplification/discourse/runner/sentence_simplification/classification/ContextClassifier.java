@@ -22,7 +22,7 @@
 
 package org.lambda3.text.simplification.discourse.runner.sentence_simplification.classification;
 
-import org.lambda3.text.simplification.discourse.runner.model.SimpleContext;
+import org.lambda3.text.simplification.discourse.model.SimpleContext;
 
 /**
  *

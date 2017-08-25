@@ -23,7 +23,7 @@
 package org.lambda3.text.simplification.discourse.runner.sentence_simplification.classification;
 
 import org.lambda3.text.simplification.discourse.runner.discourse_tree.Relation;
-import org.lambda3.text.simplification.discourse.runner.model.TimeInformation;
+import org.lambda3.text.simplification.discourse.model.TimeInformation;
 
 import java.util.Optional;
 

@@ -1,6 +1,6 @@
 /*
  * ==========================License-Start=============================
- * DiscourseSimplification : LinkedContext
+ * DiscourseSimplification : TreeSerializer
  *
  * Copyright © 2017 Lambda³
  *
@@ -20,39 +20,30 @@
  * ==========================License-End==============================
  */
 
-package org.lambda3.text.simplification.discourse.runner.model;
+package org.lambda3.text.simplification.discourse.model.serializer;
 
-import org.lambda3.text.simplification.discourse.runner.discourse_tree.Relation;
+import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.databind.SerializerProvider;
+import com.fasterxml.jackson.databind.ser.std.StdSerializer;
+import edu.stanford.nlp.trees.Tree;
 
-public class LinkedContext {
-	private String targetID;
-	private Relation relation;
+import java.io.IOException;
 
-	// for deserialization
-	public LinkedContext() {
-	}
+/**
+ *
+ */
+public class TreeSerializer extends StdSerializer<Tree> {
 
-	public LinkedContext(String targetID, Relation relation) {
-		this.targetID = targetID;
-		this.relation = relation;
-	}
+    public TreeSerializer() {
+        this(null);
+    }
 
-	public String getTargetID() {
-		return targetID;
-	}
+    protected TreeSerializer(Class<Tree> t) {
+        super(t);
+    }
 
-	public Element getTargetElement(SimplificationContent content) {
-		return content.getElement(targetID);
-	}
-
-	public Relation getRelation() {
-		return relation;
-	}
-
-	@Override
-	public boolean equals(Object o) {
-		return ((o instanceof LinkedContext)
-			&& (((LinkedContext) o).targetID.equals(targetID))
-			&& (((LinkedContext) o).relation.equals(relation)));
-	}
+    @Override
+    public void serialize(Tree value, JsonGenerator gen, SerializerProvider provider) throws IOException {
+        gen.writeString(value.pennString().trim().replaceAll("\\s+", " ").replaceAll("[\\n\\t]", ""));
+    }
 }

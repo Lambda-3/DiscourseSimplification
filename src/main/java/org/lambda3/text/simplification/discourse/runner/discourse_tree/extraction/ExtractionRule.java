@@ -26,6 +26,7 @@ import edu.stanford.nlp.ling.Word;
 import edu.stanford.nlp.trees.Tree;
 import edu.stanford.nlp.trees.tregex.TregexMatcher;
 import edu.stanford.nlp.trees.tregex.TregexPattern;
+import org.lambda3.text.simplification.discourse.runner.discourse_tree.model.Leaf;
 import org.lambda3.text.simplification.discourse.utils.parseTree.ParseTreeException;
 import org.lambda3.text.simplification.discourse.utils.parseTree.ParseTreeExtractionUtils;
 import org.lambda3.text.simplification.discourse.utils.parseTree.ParseTreeParser;
@@ -52,7 +53,7 @@ public abstract class ExtractionRule {
         PLURAL
     }
 
-    public abstract Optional<Extraction> extract(Tree parseTree);
+    public abstract Optional<Extraction> extract(Leaf leaf) throws ParseTreeException;
 
     protected static List<Tree> getSiblings(Tree parseTree, List<String> tags) {
         return parseTree.getChildrenAsList().stream().filter(c -> tags.contains(c.value())).collect(Collectors.toList());

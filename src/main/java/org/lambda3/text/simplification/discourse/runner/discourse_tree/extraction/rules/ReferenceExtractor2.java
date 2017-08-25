@@ -32,6 +32,7 @@ import org.lambda3.text.simplification.discourse.runner.discourse_tree.extractio
 import org.lambda3.text.simplification.discourse.runner.discourse_tree.extraction.ExtractionRule;
 import org.lambda3.text.simplification.discourse.runner.discourse_tree.extraction.model.RefCoordinationExtraction;
 import org.lambda3.text.simplification.discourse.runner.discourse_tree.model.Leaf;
+import org.lambda3.text.simplification.discourse.utils.parseTree.ParseTreeException;
 import org.lambda3.text.simplification.discourse.utils.parseTree.ParseTreeExtractionUtils;
 import org.lambda3.text.simplification.discourse.utils.words.WordsUtils;
 
@@ -45,16 +46,16 @@ public class ReferenceExtractor2 extends ExtractionRule {
     private static final SignalPhraseClassifier CLASSIFIER = new SignalPhraseClassifier();
 
     @Override
-    public Optional<Extraction> extract(Tree parseTree) {
+    public Optional<Extraction> extract(Leaf leaf) throws ParseTreeException {
 
         TregexPattern p = TregexPattern.compile("ROOT <<: S <<, (__=node >1 S << /this|that/=det)");
-        TregexMatcher matcher = p.matcher(parseTree);
+        TregexMatcher matcher = p.matcher(leaf.getParseTree());
 
-        if (matcher.findAt(parseTree)) {
+        if (matcher.findAt(leaf.getParseTree())) {
             List<Word> signalPhraseWords = ParseTreeExtractionUtils.getPrecedingWords(matcher.getNode("node"), matcher.getNode("det"), true);
 
             // the right constituent
-            List<Word> words = ParseTreeExtractionUtils.getFollowingWords(parseTree, matcher.getNode("node"), false);
+            List<Word> words = ParseTreeExtractionUtils.getFollowingWords(leaf.getParseTree(), matcher.getNode("node"), false);
             Leaf rightConstituent = new Leaf(getClass().getSimpleName(), WordsUtils.wordsToProperSentenceString(words));
 
             // relation

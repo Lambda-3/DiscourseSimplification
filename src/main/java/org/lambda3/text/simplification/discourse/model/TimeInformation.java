@@ -1,6 +1,6 @@
 /*
  * ==========================License-Start=============================
- * DiscourseSimplification : SentenceLeaf
+ * DiscourseSimplification : TimeInformation
  *
  * Copyright © 2017 Lambda³
  *
@@ -20,17 +20,20 @@
  * ==========================License-End==============================
  */
 
-package org.lambda3.text.simplification.discourse.runner.discourse_tree.model;
+package org.lambda3.text.simplification.discourse.model;
 
-import org.lambda3.text.simplification.discourse.utils.parseTree.ParseTreeException;
+public class TimeInformation {
+	private String value;
 
-/**
- *
- */
-public class SentenceLeaf extends Leaf {
+	// for deserialization
+	public TimeInformation() {
+	}
 
-    public SentenceLeaf(String sentence, int sentenceIdx) throws ParseTreeException {
-        super("SENTENCE", sentence);
-        this.setRecursiveUnsetSentenceIdx(sentenceIdx);
-    }
+	public TimeInformation(String value) {
+		this.value = value;
+	}
+
+	public String getValue() {
+		return value;
+	}
 }

@@ -65,7 +65,7 @@ public class RefSubordinationExtraction extends Extraction {
                     extractionRule,
                     relation,
                     signalPhrase,
-                    new Leaf(extractionRule, "tmp"), // tmp
+                    new Leaf(), // tmp
                     rightConstituentLeaf,
                     superordinationIsLeft
             );

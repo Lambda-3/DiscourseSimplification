@@ -31,6 +31,7 @@ import org.lambda3.text.simplification.discourse.runner.discourse_tree.extractio
 import org.lambda3.text.simplification.discourse.runner.discourse_tree.extraction.model.CoordinationExtraction;
 import org.lambda3.text.simplification.discourse.runner.discourse_tree.extraction.utils.ListNPSplitter;
 import org.lambda3.text.simplification.discourse.runner.discourse_tree.model.Leaf;
+import org.lambda3.text.simplification.discourse.utils.parseTree.ParseTreeException;
 import org.lambda3.text.simplification.discourse.utils.parseTree.ParseTreeExtractionUtils;
 import org.lambda3.text.simplification.discourse.utils.words.WordsUtils;
 
@@ -49,19 +50,19 @@ public abstract class ListNPExtractor extends ExtractionRule {
     }
 
     @Override
-    public Optional<Extraction> extract(Tree parseTree) {
+    public Optional<Extraction> extract(Leaf leaf) throws ParseTreeException {
 
         TregexPattern p = TregexPattern.compile(pattern);
-        TregexMatcher matcher = p.matcher(parseTree);
+        TregexMatcher matcher = p.matcher(leaf.getParseTree());
 
-        while (matcher.findAt(parseTree)) {
+        while (matcher.findAt(leaf.getParseTree())) {
 
-            Optional<ListNPSplitter.Result> r = ListNPSplitter.splitList(parseTree, matcher.getNode("np"));
+            Optional<ListNPSplitter.Result> r = ListNPSplitter.splitList(leaf.getParseTree(), matcher.getNode("np"));
             if (r.isPresent()) {
 
                 // constituents
-                List<Word> precedingWords = ParseTreeExtractionUtils.getPrecedingWords(parseTree, matcher.getNode("np"), false);
-                List<Word> followingWords = ParseTreeExtractionUtils.getFollowingWords(parseTree, matcher.getNode("np"), false);
+                List<Word> precedingWords = ParseTreeExtractionUtils.getPrecedingWords(leaf.getParseTree(), matcher.getNode("np"), false);
+                List<Word> followingWords = ParseTreeExtractionUtils.getFollowingWords(leaf.getParseTree(), matcher.getNode("np"), false);
 
                 List<Leaf> constituents = new ArrayList<>();
 

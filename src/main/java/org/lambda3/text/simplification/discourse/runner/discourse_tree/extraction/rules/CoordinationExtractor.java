@@ -27,6 +27,7 @@ import edu.stanford.nlp.trees.Tree;
 import edu.stanford.nlp.trees.tregex.TregexMatcher;
 import edu.stanford.nlp.trees.tregex.TregexPattern;
 import org.lambda3.text.simplification.discourse.runner.discourse_tree.Relation;
+import org.lambda3.text.simplification.discourse.utils.parseTree.ParseTreeException;
 import org.lambda3.text.simplification.discourse.utils.words.WordsUtils;
 import org.lambda3.text.simplification.discourse.runner.discourse_tree.classification.SignalPhraseClassifier;
 import org.lambda3.text.simplification.discourse.runner.discourse_tree.extraction.Extraction;
@@ -55,18 +56,18 @@ public class CoordinationExtractor extends ExtractionRule {
     }
 
     @Override
-    public Optional<Extraction> extract(Tree parseTree) {
+    public Optional<Extraction> extract(Leaf leaf) throws ParseTreeException {
 
         TregexPattern p = TregexPattern.compile("ROOT <<: (S=s < (S < (NP $.. VP) $.. (S < (NP $.. VP))))");
-        TregexMatcher matcher = p.matcher(parseTree);
+        TregexMatcher matcher = p.matcher(leaf.getParseTree());
 
-        while (matcher.findAt(parseTree)) {
+        while (matcher.findAt(leaf.getParseTree())) {
             List<Tree> siblings = getSiblings(matcher.getNode("s"), Arrays.asList("S")).stream().filter(t -> isNPVPClause(t)).collect(Collectors.toList());
             if (siblings.size() >= 2) {
 
                 // constituents
-                List<Word> precedingWords = ParseTreeExtractionUtils.getPrecedingWords(parseTree, siblings.get(0), false);
-                List<Word> followingWords = ParseTreeExtractionUtils.getFollowingWords(parseTree, siblings.get(siblings.size() - 1), false);
+                List<Word> precedingWords = ParseTreeExtractionUtils.getPrecedingWords(leaf.getParseTree(), siblings.get(0), false);
+                List<Word> followingWords = ParseTreeExtractionUtils.getFollowingWords(leaf.getParseTree(), siblings.get(siblings.size() - 1), false);
 
                 List<Leaf> constituents = new ArrayList<>();
                 for (Tree sibling : siblings) {
@@ -82,7 +83,7 @@ public class CoordinationExtractor extends ExtractionRule {
                 if (constituents.size() == 2) {
 
                     // relation
-                    List<Word> signalPhraseWords = ParseTreeExtractionUtils.getWordsInBetween(parseTree, siblings.get(0), siblings.get(siblings.size() - 1), false, false);
+                    List<Word> signalPhraseWords = ParseTreeExtractionUtils.getWordsInBetween(leaf.getParseTree(), siblings.get(0), siblings.get(siblings.size() - 1), false, false);
                     Relation relation = CLASSIFIER.classifyDefault(signalPhraseWords).orElse(Relation.UNKNOWN_COORDINATION);
 
                     Extraction res = new CoordinationExtraction(

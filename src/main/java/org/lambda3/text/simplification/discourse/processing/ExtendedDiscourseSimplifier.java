@@ -22,7 +22,7 @@
 
 package org.lambda3.text.simplification.discourse.processing;
 
-import org.lambda3.text.simplification.discourse.runner.model.SimplificationContent;
+import org.lambda3.text.simplification.discourse.model.SimplificationContent;
 import org.lambda3.text.simplification.discourse.utils.sentences.SentencesUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

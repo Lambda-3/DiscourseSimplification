@@ -32,6 +32,7 @@ import org.lambda3.text.simplification.discourse.runner.discourse_tree.extractio
 import org.lambda3.text.simplification.discourse.runner.discourse_tree.extraction.ExtractionRule;
 import org.lambda3.text.simplification.discourse.runner.discourse_tree.extraction.model.CoordinationExtraction;
 import org.lambda3.text.simplification.discourse.runner.discourse_tree.model.Leaf;
+import org.lambda3.text.simplification.discourse.utils.parseTree.ParseTreeException;
 import org.lambda3.text.simplification.discourse.utils.parseTree.ParseTreeExtractionUtils;
 import org.lambda3.text.simplification.discourse.utils.words.WordsUtils;
 
@@ -47,17 +48,17 @@ public class SharedNPPostCoordinationExtractor extends ExtractionRule {
     private static final SignalPhraseClassifier CLASSIFIER = new SignalPhraseClassifier();
 
     @Override
-    public Optional<Extraction> extract(Tree parseTree) {
+    public Optional<Extraction> extract(Leaf leaf) throws ParseTreeException {
 
         TregexPattern p = TregexPattern.compile("ROOT <<: (S < (NP $.. (VP <+(VP) (VP > VP=vp $.. VP))))");
-        TregexMatcher matcher = p.matcher(parseTree);
+        TregexMatcher matcher = p.matcher(leaf.getParseTree());
 
-        while (matcher.findAt(parseTree)) {
+        while (matcher.findAt(leaf.getParseTree())) {
             List<Tree> siblings = getSiblings(matcher.getNode("vp"), Arrays.asList("VP"));
 
             // constituents
-            List<Word> precedingWords = ParseTreeExtractionUtils.getPrecedingWords(parseTree, siblings.get(0), false);
-            List<Word> followingWords = ParseTreeExtractionUtils.getFollowingWords(parseTree, siblings.get(siblings.size() - 1), false);
+            List<Word> precedingWords = ParseTreeExtractionUtils.getPrecedingWords(leaf.getParseTree(), siblings.get(0), false);
+            List<Word> followingWords = ParseTreeExtractionUtils.getFollowingWords(leaf.getParseTree(), siblings.get(siblings.size() - 1), false);
 
             List<Leaf> constituents = new ArrayList<>();
             for (Tree sibling : siblings) {
@@ -73,7 +74,7 @@ public class SharedNPPostCoordinationExtractor extends ExtractionRule {
             if (constituents.size() == 2) {
 
                 // relation
-                List<Word> signalPhraseWords = ParseTreeExtractionUtils.getWordsInBetween(parseTree, siblings.get(0), siblings.get(siblings.size() - 1), false, false);
+                List<Word> signalPhraseWords = ParseTreeExtractionUtils.getWordsInBetween(leaf.getParseTree(), siblings.get(0), siblings.get(siblings.size() - 1), false, false);
                 Relation relation = CLASSIFIER.classifyDefault(signalPhraseWords).orElse(Relation.UNKNOWN_COORDINATION);
 
                 Extraction res = new CoordinationExtraction(

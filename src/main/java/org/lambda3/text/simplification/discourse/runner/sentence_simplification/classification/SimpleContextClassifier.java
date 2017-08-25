@@ -25,9 +25,10 @@ package org.lambda3.text.simplification.discourse.runner.sentence_simplification
 import edu.stanford.nlp.ling.Word;
 import org.lambda3.text.simplification.discourse.runner.discourse_tree.Relation;
 import org.lambda3.text.simplification.discourse.runner.discourse_tree.classification.SignalPhraseClassifier;
-import org.lambda3.text.simplification.discourse.runner.model.SimpleContext;
+import org.lambda3.text.simplification.discourse.model.SimpleContext;
 import org.lambda3.text.simplification.discourse.utils.ner.NERString;
 import org.lambda3.text.simplification.discourse.utils.ner.NERStringParser;
+import org.lambda3.text.simplification.discourse.utils.parseTree.ParseTreeExtractionUtils;
 import org.lambda3.text.simplification.discourse.utils.words.WordsUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -76,16 +77,20 @@ public class SimpleContextClassifier implements ContextClassifier {
     private static final SignalPhraseClassifier SIGNAL_PHRASE_CLASSIFIER = new SignalPhraseClassifier();
 
     private static boolean checkTemporal(SimpleContext simpleContext) {
-        if (!simpleContext.getPhrase().isPresent()) {
-            return false;
-        }
 
-        if ((MONTH_PATTERNS.stream().anyMatch(simpleContext.getPhrase().get()::matches))
-                || (DAY_PATTERNS.stream().anyMatch(simpleContext.getPhrase().get()::matches))
-                || (simpleContext.getPhrase().get().matches(YEAR_PATTERN))
-                || (simpleContext.getPhrase().get().matches(BC_AD_PATTERN))
-                || (simpleContext.getPhrase().get().matches(CENTURY_PATTERN))
-                || (simpleContext.getPhrase().get().matches(TIME_PATTERN))) {
+        // use first 10 words as signal phrase
+        List<Word> signalPhraseWords = ParseTreeExtractionUtils.getContainingWords(simpleContext.getPhrase());
+        if (signalPhraseWords.size() > 10) {
+            signalPhraseWords = signalPhraseWords.subList(0, 10);
+        }
+        String signalPhrase = WordsUtils.wordsToString(signalPhraseWords);
+
+        if ((MONTH_PATTERNS.stream().anyMatch(signalPhrase::matches))
+                || (DAY_PATTERNS.stream().anyMatch(signalPhrase::matches))
+                || (signalPhrase.matches(YEAR_PATTERN))
+                || (signalPhrase.matches(BC_AD_PATTERN))
+                || (signalPhrase.matches(CENTURY_PATTERN))
+                || (signalPhrase.matches(TIME_PATTERN))) {
 
             simpleContext.setRelation(Relation.TEMPORAL);
             return true;
@@ -95,11 +100,15 @@ public class SimpleContextClassifier implements ContextClassifier {
     }
 
     private boolean checkSpatial(SimpleContext simpleContext) {
-        if (!simpleContext.getPhrase().isPresent()) {
-            return false;
-        }
 
-        NERString ner = NERStringParser.parse(simpleContext.getPhrase().get());
+        // use first 10 words as signal phrase
+        List<Word> signalPhraseWords = ParseTreeExtractionUtils.getContainingWords(simpleContext.getPhrase());
+        if (signalPhraseWords.size() > 10) {
+            signalPhraseWords = signalPhraseWords.subList(0, 10);
+        }
+        String signalPhrase = WordsUtils.wordsToString(signalPhraseWords);
+
+        NERString ner = NERStringParser.parse(signalPhrase);
 
         if (ner.getTokens().stream().anyMatch(t -> t.getCategory().equals("LOCATION"))) {
             simpleContext.setRelation(Relation.SPATIAL);
@@ -110,12 +119,9 @@ public class SimpleContextClassifier implements ContextClassifier {
     }
 
     private static boolean checkSignals(SimpleContext simpleContext) {
-        if (!simpleContext.getPhrase().isPresent()) {
-            return false;
-        }
 
         // use first 3 words as signal phrase
-        List<Word> signalPhraseWords = WordsUtils.splitIntoWords(simpleContext.getPhrase().get());
+        List<Word> signalPhraseWords = ParseTreeExtractionUtils.getContainingWords(simpleContext.getPhrase());
         if (signalPhraseWords.size() > 3) {
             signalPhraseWords = signalPhraseWords.subList(0, 3);
         }
@@ -133,6 +139,11 @@ public class SimpleContextClassifier implements ContextClassifier {
     @Override
     public void classify(SimpleContext simpleContext) {
 
+        // SIGNAL
+        if (checkSignals(simpleContext)) {
+            return;
+        }
+
         // TEMPORAL
         if (checkTemporal(simpleContext)) {
             return;
@@ -140,11 +151,6 @@ public class SimpleContextClassifier implements ContextClassifier {
 
         // SPATIAL
         if (checkSpatial(simpleContext)) {
-            return;
-        }
-
-        // SIGNAL
-        if (checkSignals(simpleContext)) {
             return;
         }
     }

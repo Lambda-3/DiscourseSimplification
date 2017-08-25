@@ -31,6 +31,7 @@ import org.lambda3.text.simplification.discourse.runner.discourse_tree.extractio
 import org.lambda3.text.simplification.discourse.runner.discourse_tree.extraction.ExtractionRule;
 import org.lambda3.text.simplification.discourse.runner.discourse_tree.extraction.model.SubordinationExtraction;
 import org.lambda3.text.simplification.discourse.runner.discourse_tree.model.Leaf;
+import org.lambda3.text.simplification.discourse.utils.parseTree.ParseTreeException;
 import org.lambda3.text.simplification.discourse.utils.parseTree.ParseTreeExtractionUtils;
 import org.lambda3.text.simplification.discourse.utils.words.WordsUtils;
 
@@ -44,21 +45,20 @@ import java.util.Optional;
 public class SubordinationPostISAExtractor extends ExtractionRule {
 
     @Override
-    public Optional<Extraction> extract(Tree parseTree) {
+    public Optional<Extraction> extract(Leaf leaf) throws ParseTreeException {
         TregexPattern p = TregexPattern.compile("ROOT <<: (S < (NP $.. (VP <+(VP) (SBAR=sbar <<, /that/ < (S=s)))))");
-        TregexMatcher matcher = p.matcher(parseTree);
+        TregexMatcher matcher = p.matcher(leaf.getParseTree());
 
-        while (matcher.findAt(parseTree)) {
+        while (matcher.findAt(leaf.getParseTree())) {
 
             // the left, !subordinate! constituent
             List<Word> leftConstituentWords = new ArrayList<>();
-            leftConstituentWords.addAll(ParseTreeExtractionUtils.getPrecedingWords(parseTree, matcher.getNode("sbar"), false));
-            leftConstituentWords.addAll(ParseTreeExtractionUtils.getFollowingWords(parseTree, matcher.getNode("sbar"), false));
-            Leaf leftConstituent = new Leaf(getClass().getSimpleName(), WordsUtils.wordsToProperSentenceString(leftConstituentWords));
+            leftConstituentWords.addAll(ParseTreeExtractionUtils.getPrecedingWords(leaf.getParseTree(), matcher.getNode("sbar"), false));
+            leftConstituentWords.addAll(ParseTreeExtractionUtils.getFollowingWords(leaf.getParseTree(), matcher.getNode("sbar"), false));
 
             // rephrase
-            List<Word> rephrasedWords = rephraseIntraSententialAttribution(leftConstituentWords);
-            leftConstituent.setText(WordsUtils.wordsToProperSentenceString(rephrasedWords));
+            leftConstituentWords = rephraseIntraSententialAttribution(leftConstituentWords);
+            Leaf leftConstituent = new Leaf(getClass().getSimpleName(), WordsUtils.wordsToProperSentenceString(leftConstituentWords));
             leftConstituent.dontAllowSplit();
             leftConstituent.setToSimpleContext(true);
 

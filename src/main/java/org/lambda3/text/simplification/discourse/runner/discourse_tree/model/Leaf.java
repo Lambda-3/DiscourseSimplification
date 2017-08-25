@@ -22,7 +22,12 @@
 
 package org.lambda3.text.simplification.discourse.runner.discourse_tree.model;
 
+import edu.stanford.nlp.trees.Tree;
 import org.lambda3.text.simplification.discourse.utils.PrettyTreePrinter;
+import org.lambda3.text.simplification.discourse.utils.parseTree.ParseTreeException;
+import org.lambda3.text.simplification.discourse.utils.parseTree.ParseTreeExtractionUtils;
+import org.lambda3.text.simplification.discourse.utils.parseTree.ParseTreeParser;
+import org.lambda3.text.simplification.discourse.utils.words.WordsUtils;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -32,27 +37,40 @@ import java.util.List;
  *
  */
 public class Leaf extends DiscourseTree {
-    private String text;
+    private Tree parseTree;
     private boolean allowSplit; // true, if extraction-rules will be applied on the text
     private boolean toSimpleContext;
 
-    public Leaf(String extractionRule, String text) {
+    public Leaf() {
+        super("UNKNOWN");
+    }
+
+    public Leaf(String extractionRule, Tree parseTree) {
         super(extractionRule);
-        this.text = text;
+        this.parseTree = parseTree;
         this.allowSplit = true;
         this.toSimpleContext = false;
+    }
+
+    // not efficient -> prefer to use constructor with tree
+    public Leaf(String extractionRule, String text) throws ParseTreeException {
+        this(extractionRule, ParseTreeParser.parse(text));
     }
 
     public void dontAllowSplit() {
         this.allowSplit = false;
     }
 
-    public String getText() {
-        return text;
+    public Tree getParseTree() {
+        return parseTree;
     }
 
-    public void setText(String text) {
-        this.text = text;
+    public void setParseTree(Tree parseTree) {
+        this.parseTree = parseTree;
+    }
+
+    public String getText() {
+        return WordsUtils.wordsToString(ParseTreeExtractionUtils.getContainingWords(parseTree));
     }
 
     public void setToSimpleContext(boolean toSimpleContext) {
@@ -71,7 +89,7 @@ public class Leaf extends DiscourseTree {
 
     @Override
     public List<String> getPTPCaption() {
-        return Collections.singletonList("'" + text + "'");
+        return Collections.singletonList("'" + getText() + "'");
     }
 
     @Override

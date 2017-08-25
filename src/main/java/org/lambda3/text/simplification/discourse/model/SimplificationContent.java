@@ -20,10 +20,9 @@
  * ==========================License-End==============================
  */
 
-package org.lambda3.text.simplification.discourse.runner.model;
+package org.lambda3.text.simplification.discourse.model;
 
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -68,7 +67,7 @@ public class SimplificationContent extends Content {
     public String defaultFormat(boolean resolve) {
 	    StringBuilder strb = new StringBuilder();
         for (OutSentence outSentence : getSentences()) {
-            strb.append("# " + outSentence.getOriginalSentence() + "\n");
+            strb.append("\n# " + outSentence.getOriginalSentence() + "\n");
             for (Element element : outSentence.getElements()) {
                 strb.append("\n" + element.getId() + "\t" + element.getContextLayer() + "\t" + element.getText() + "\n");
                 for (SimpleContext simpleContext : element.getSimpleContexts()) {

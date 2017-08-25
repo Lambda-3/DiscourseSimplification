@@ -20,7 +20,7 @@
  * ==========================License-End==============================
  */
 
-package org.lambda3.text.simplification.discourse.runner.model;
+package org.lambda3.text.simplification.discourse.model;
 
 import java.util.HashMap;
 import java.util.LinkedHashMap;

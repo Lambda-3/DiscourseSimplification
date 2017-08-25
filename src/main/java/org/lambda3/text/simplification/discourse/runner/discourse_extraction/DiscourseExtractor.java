@@ -25,14 +25,13 @@ package org.lambda3.text.simplification.discourse.runner.discourse_extraction;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigException;
 import org.lambda3.text.simplification.discourse.runner.discourse_tree.Relation;
-import org.lambda3.text.simplification.discourse.runner.model.Element;
-import org.lambda3.text.simplification.discourse.runner.model.LinkedContext;
+import org.lambda3.text.simplification.discourse.model.Element;
+import org.lambda3.text.simplification.discourse.model.LinkedContext;
 import org.lambda3.text.simplification.discourse.runner.discourse_tree.model.Coordination;
 import org.lambda3.text.simplification.discourse.runner.discourse_tree.model.DiscourseTree;
 import org.lambda3.text.simplification.discourse.runner.discourse_tree.model.Leaf;
 import org.lambda3.text.simplification.discourse.runner.discourse_tree.model.Subordination;
-import org.lambda3.text.simplification.discourse.runner.model.SimpleContext;
-import org.lambda3.text.simplification.discourse.runner.model.SimplificationContent;
+import org.lambda3.text.simplification.discourse.model.SimpleContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -85,7 +84,7 @@ public class DiscourseExtractor {
 
         if (targetLeaf.isToSimpleContext()) {
             // simple context
-            SimpleContext sc = new SimpleContext(targetLeaf.getText());
+            SimpleContext sc = new SimpleContext(targetLeaf.getParseTree());
             sc.setRelation(targetRelation);
             leafElement.addSimpleContext(sc);
         } else {
@@ -103,7 +102,7 @@ public class DiscourseExtractor {
 
                 // create new element
                 Element element = new Element(
-                        leaf.getText(),
+                        leaf.getParseTree(),
                         leaf.getSentenceIdx(),
                         contextLayer
                 );

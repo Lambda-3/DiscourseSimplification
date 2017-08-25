@@ -1,6 +1,6 @@
 /*
  * ==========================License-Start=============================
- * DiscourseSimplification : TimeInformation
+ * DiscourseSimplification : LinkedContext
  *
  * Copyright © 2017 Lambda³
  *
@@ -20,20 +20,39 @@
  * ==========================License-End==============================
  */
 
-package org.lambda3.text.simplification.discourse.runner.model;
+package org.lambda3.text.simplification.discourse.model;
 
-public class TimeInformation {
-	private String value;
+import org.lambda3.text.simplification.discourse.runner.discourse_tree.Relation;
+
+public class LinkedContext {
+	private String targetID;
+	private Relation relation;
 
 	// for deserialization
-	public TimeInformation() {
+	public LinkedContext() {
 	}
 
-	public TimeInformation(String value) {
-		this.value = value;
+	public LinkedContext(String targetID, Relation relation) {
+		this.targetID = targetID;
+		this.relation = relation;
 	}
 
-	public String getValue() {
-		return value;
+	public String getTargetID() {
+		return targetID;
+	}
+
+	public Element getTargetElement(SimplificationContent content) {
+		return content.getElement(targetID);
+	}
+
+	public Relation getRelation() {
+		return relation;
+	}
+
+	@Override
+	public boolean equals(Object o) {
+		return ((o instanceof LinkedContext)
+			&& (((LinkedContext) o).targetID.equals(targetID))
+			&& (((LinkedContext) o).relation.equals(relation)));
 	}
 }

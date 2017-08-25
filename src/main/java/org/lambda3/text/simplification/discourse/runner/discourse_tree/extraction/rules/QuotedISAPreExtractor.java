@@ -31,6 +31,7 @@ import org.lambda3.text.simplification.discourse.runner.discourse_tree.extractio
 import org.lambda3.text.simplification.discourse.runner.discourse_tree.extraction.ExtractionRule;
 import org.lambda3.text.simplification.discourse.runner.discourse_tree.extraction.model.SubordinationExtraction;
 import org.lambda3.text.simplification.discourse.runner.discourse_tree.model.Leaf;
+import org.lambda3.text.simplification.discourse.utils.parseTree.ParseTreeException;
 import org.lambda3.text.simplification.discourse.utils.parseTree.ParseTreeExtractionUtils;
 import org.lambda3.text.simplification.discourse.utils.words.WordsUtils;
 import org.slf4j.Logger;
@@ -47,11 +48,11 @@ public class QuotedISAPreExtractor extends ExtractionRule {
     private final static Logger LOG = LoggerFactory.getLogger(ExtractionRule.class);
 
     @Override
-    public Optional<Extraction> extract(Tree parseTree) {
+    public Optional<Extraction> extract(Leaf leaf) throws ParseTreeException {
         TregexPattern p = TregexPattern.compile("ROOT <<: (S << (NP .. (VP .. (/``/=start .. (NP .. (/VB./ .. (/''/=end)))))))");
-        TregexMatcher matcher = p.matcher(parseTree);
+        TregexMatcher matcher = p.matcher(leaf.getParseTree());
 
-        while (matcher.findAt(parseTree)) {
+        while (matcher.findAt(leaf.getParseTree())) {
             Tree quoteStart;
             if (matcher.getNode("start") != null) {
                 quoteStart = (matcher.getNode("start"));
@@ -67,18 +68,17 @@ public class QuotedISAPreExtractor extends ExtractionRule {
 
             // the left, subordinate constituent
             List<Word> leftConstituentWords = new ArrayList<>();
-            leftConstituentWords.addAll(ParseTreeExtractionUtils.getPrecedingWords(parseTree, quoteStart, false));
-            leftConstituentWords.addAll(ParseTreeExtractionUtils.getFollowingWords(parseTree, quoteEnd, false));
-            Leaf leftConstituent = new Leaf(getClass().getSimpleName(), WordsUtils.wordsToProperSentenceString(leftConstituentWords));
+            leftConstituentWords.addAll(ParseTreeExtractionUtils.getPrecedingWords(leaf.getParseTree(), quoteStart, false));
+            leftConstituentWords.addAll(ParseTreeExtractionUtils.getFollowingWords(leaf.getParseTree(), quoteEnd, false));
 
             // rephrase
-            List<Word> rephrasedWords = rephraseIntraSententialAttribution(leftConstituentWords);
-            leftConstituent.setText(WordsUtils.wordsToProperSentenceString(rephrasedWords));
+            leftConstituentWords = rephraseIntraSententialAttribution(leftConstituentWords);
+            Leaf leftConstituent = new Leaf(getClass().getSimpleName(), WordsUtils.wordsToProperSentenceString(leftConstituentWords));
             leftConstituent.dontAllowSplit();
             leftConstituent.setToSimpleContext(true);
 
             // the right, superordinate constituent
-            List<Word> rightConstituentWords = ParseTreeExtractionUtils.getWordsInBetween(parseTree, quoteStart, quoteEnd, false, false);
+            List<Word> rightConstituentWords = ParseTreeExtractionUtils.getWordsInBetween(leaf.getParseTree(), quoteStart, quoteEnd, false, false);
             Leaf rightConstituent = new Leaf(getClass().getSimpleName(), WordsUtils.wordsToProperSentenceString(rightConstituentWords));
 
             // relation
