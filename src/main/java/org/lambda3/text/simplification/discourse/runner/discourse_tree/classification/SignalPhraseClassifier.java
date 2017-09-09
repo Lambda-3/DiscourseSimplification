@@ -158,12 +158,12 @@ public class SignalPhraseClassifier {
 
         public Mapping(Relation relation, String signalPhrasePattern) {
             this.relation = relation;
-            this.signalPhrasePattern = "^" + signalPhrasePattern.replaceAll("\\.\\.\\.", "((?<=^)(.*\\\\W)?|\\\\W|\\\\W.*\\\\W|(\\\\W.*)?(?=\\$))") + "$";
+            this.signalPhrasePattern = "^(?i:" + signalPhrasePattern.replaceAll("\\.\\.\\.", "((?<=^)(.*\\\\W)?|\\\\W|\\\\W.*\\\\W|(\\\\W.*)?(?=\\$))") + ")$";
             this.signalPhrasePatternSize = signalPhrasePattern.length();
         }
 
         boolean check(String signalPhrase) {
-            return signalPhrase.toLowerCase().matches(signalPhrasePattern);
+            return signalPhrase.matches(signalPhrasePattern);
         }
 
         public Relation getRelation() {

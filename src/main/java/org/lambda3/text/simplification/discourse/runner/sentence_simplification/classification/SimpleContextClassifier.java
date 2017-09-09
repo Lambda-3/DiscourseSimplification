@@ -41,8 +41,8 @@ import java.util.stream.Stream;
 public class SimpleContextClassifier implements ContextClassifier {
     private static final Logger LOG = LoggerFactory.getLogger(SimpleContextClassifier.class);
 
-    private static final String PATTERN_PREFIX = "^.*(?<!\\w)";
-    private static final String PATTERN_SUFFIX = "(?!\\w).*$";
+    private static final String PATTERN_PREFIX = "^(?i:.*(?<!\\w)";
+    private static final String PATTERN_SUFFIX = "(?!\\w).*)$";
 
     private static final List<String> MONTH_PATTERNS = Stream.of(
             "january", "jan\\.",
