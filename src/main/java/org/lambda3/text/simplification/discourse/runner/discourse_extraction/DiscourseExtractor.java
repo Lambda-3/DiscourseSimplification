@@ -122,11 +122,11 @@ public class DiscourseExtractor {
             // set relations
             if (!ignoredRelations.contains(coordination.getRelation())) {
                 for (DiscourseTree child : coordination.getCoordinations()) {
-                    List<Leaf> childNLeaves = child.getNucleusPathLeaves();
+                    List<Leaf> childNLeaves = child.getCorePathLeaves();
 
                     // forward direction
                     for (DiscourseTree sibling : coordination.getOtherFollowingCoordinations(child)) {
-                        List<Leaf> siblingNLeaves = sibling.getNucleusPathLeaves();
+                        List<Leaf> siblingNLeaves = sibling.getCorePathLeaves();
 
                         for (Leaf childNLeaf : childNLeaves) {
                             for (Leaf siblingNLeaf : siblingNLeaves) {
@@ -135,15 +135,13 @@ public class DiscourseExtractor {
                         }
                     }
 
-                    // reverse direction
-                    if (coordination.getRelation().getReverseRelation().isPresent()) {
-                        for (DiscourseTree sibling : coordination.getOtherPrecedingCoordinations(child)) {
-                            List<Leaf> siblingNLeaves = sibling.getNucleusPathLeaves();
+                    // inverse direction
+                    for (DiscourseTree sibling : coordination.getOtherPrecedingCoordinations(child)) {
+                        List<Leaf> siblingNLeaves = sibling.getCorePathLeaves();
 
-                            for (Leaf childNLeaf : childNLeaves) {
-                                for (Leaf siblingNLeaf : siblingNLeaves) {
-                                    addAsContext(childNLeaf, siblingNLeaf, coordination.getRelation().getReverseRelation().get());
-                                }
+                        for (Leaf childNLeaf : childNLeaves) {
+                            for (Leaf siblingNLeaf : siblingNLeaves) {
+                                addAsContext(childNLeaf, siblingNLeaf, coordination.getRelation().getInverseRelation());
                             }
                         }
                     }
@@ -160,8 +158,8 @@ public class DiscourseExtractor {
 
             // add relations
             if (!ignoredRelations.contains(subordination.getRelation())) {
-                List<Leaf> superordinationNLeaves = subordination.getSuperordination().getNucleusPathLeaves();
-                List<Leaf> subordinationNLeaves = subordination.getSubordination().getNucleusPathLeaves();
+                List<Leaf> superordinationNLeaves = subordination.getSuperordination().getCorePathLeaves();
+                List<Leaf> subordinationNLeaves = subordination.getSubordination().getCorePathLeaves();
 
                 for (Leaf superordinationNLeaf : superordinationNLeaves) {
                     for (Leaf subordinationNLeaf : subordinationNLeaves) {

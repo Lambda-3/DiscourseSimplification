@@ -27,10 +27,8 @@ import edu.stanford.nlp.trees.Tree;
 import edu.stanford.nlp.trees.tregex.TregexMatcher;
 import edu.stanford.nlp.trees.tregex.TregexPattern;
 import org.lambda3.text.simplification.discourse.runner.discourse_tree.Relation;
-import org.lambda3.text.simplification.discourse.runner.discourse_tree.classification.SignalPhraseClassifier;
-import org.lambda3.text.simplification.discourse.runner.discourse_tree.extraction.Extraction;
 import org.lambda3.text.simplification.discourse.runner.discourse_tree.extraction.ExtractionRule;
-import org.lambda3.text.simplification.discourse.runner.discourse_tree.extraction.model.CoordinationExtraction;
+import org.lambda3.text.simplification.discourse.runner.discourse_tree.extraction.Extraction;
 import org.lambda3.text.simplification.discourse.runner.discourse_tree.model.Leaf;
 import org.lambda3.text.simplification.discourse.utils.parseTree.ParseTreeException;
 import org.lambda3.text.simplification.discourse.utils.parseTree.ParseTreeExtractionUtils;
@@ -45,7 +43,6 @@ import java.util.Optional;
  *
  */
 public class SharedNPPostCoordinationExtractor extends ExtractionRule {
-    private static final SignalPhraseClassifier CLASSIFIER = new SignalPhraseClassifier();
 
     @Override
     public Optional<Extraction> extract(Leaf leaf) throws ParseTreeException {
@@ -71,34 +68,23 @@ public class SharedNPPostCoordinationExtractor extends ExtractionRule {
                 constituents.add(constituent);
             }
 
+            List<Word> cuePhraseWords = null;
+            Relation relation = Relation.UNKNOWN_COORDINATION;
             if (constituents.size() == 2) {
-
-                // relation
-                List<Word> signalPhraseWords = ParseTreeExtractionUtils.getWordsInBetween(leaf.getParseTree(), siblings.get(0), siblings.get(siblings.size() - 1), false, false);
-                Relation relation = CLASSIFIER.classifyDefault(signalPhraseWords).orElse(Relation.UNKNOWN_COORDINATION);
-
-                Extraction res = new CoordinationExtraction(
-                        getClass().getSimpleName(),
-                        relation,
-                        signalPhraseWords,
-                        constituents.get(0),
-                        constituents.get(constituents.size() - 1)
-                );
-
-                return Optional.of(res);
-            } else {
-
-                // relation
-                Relation relation = Relation.UNKNOWN_COORDINATION;
-
-                Extraction res = new CoordinationExtraction(
-                        getClass().getSimpleName(),
-                        relation,
-                        constituents
-                );
-
-                return Optional.of(res);
+                cuePhraseWords = ParseTreeExtractionUtils.getWordsInBetween(leaf.getParseTree(), siblings.get(0), siblings.get(siblings.size() - 1), false, false);
+                relation = classifer.classifyCoordinating(cuePhraseWords).orElse(Relation.UNKNOWN_COORDINATION);
             }
+
+            Extraction res = new Extraction(
+                getClass().getSimpleName(),
+                false,
+                cuePhraseWords,
+                relation,
+                true,
+                constituents
+            );
+
+            return Optional.of(res);
         }
 
         return Optional.empty();

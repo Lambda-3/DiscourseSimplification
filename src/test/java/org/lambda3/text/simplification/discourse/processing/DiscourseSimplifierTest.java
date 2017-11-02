@@ -1,6 +1,6 @@
 /*
  * ==========================License-Start=============================
- * DiscourseSimplification : ProcessorTest
+ * DiscourseSimplification : DiscourseSimplifierTest
  *
  * Copyright © 2017 Lambda³
  *
@@ -24,25 +24,49 @@ package org.lambda3.text.simplification.discourse.processing;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import org.lambda3.text.simplification.discourse.runner.model.OutSentence;
-import org.lambda3.text.simplification.discourse.runner.model.SimplificationContent;
+import org.lambda3.text.simplification.discourse.model.OutSentence;
+import org.lambda3.text.simplification.discourse.model.SimplificationContent;
+import org.slf4j.LoggerFactory;
+
+import java.io.File;
+import java.io.IOException;
 
 /**
  *
  */
 class DiscourseSimplifierTest {
+    private org.slf4j.Logger log = LoggerFactory.getLogger(this.getClass());
+    private DiscourseSimplifier simplifier = new DiscourseSimplifier();
 
     @Test
     void processSingleSentence() {
-        DiscourseSimplifier p = new DiscourseSimplifier();
-
         String text = "Peter went to Paris because he likes the city.";
-        SimplificationContent c = p.doDiscourseSimplification(text, ProcessingType.WHOLE);
+        SimplificationContent c = simplifier.doDiscourseSimplification(text, ProcessingType.WHOLE);
 
         Assertions.assertEquals(1, c.getSentences().size());
         OutSentence sent = c.getSentences().get(0);
 
         Assertions.assertEquals(2, sent.getElements().size());
+    }
+
+    @Test
+    void serializationTest() throws IOException {
+        String text = "After graduating from Columbia University in 1983, Barack Obama worked as a community organizer in Chicago.";
+        SimplificationContent c = simplifier.doDiscourseSimplification(text, ProcessingType.WHOLE);
+
+        final String filename = "tmp-w8weg3q493ewqieh.json";
+
+        log.info("SAVE TO FILE...");
+        c.serializeToJSON(new File(filename));
+
+        log.info("LOAD FROM FILE...");
+        SimplificationContent loaded = SimplificationContent.deserializeFromJSON(new File(filename), SimplificationContent.class);
+
+        log.info(loaded.defaultFormat(false));
+
+        log.info("DELETE FILE...");
+        File file = new File(filename);
+        file.delete();
     }
 
 }

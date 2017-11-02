@@ -1,6 +1,6 @@
 /*
  * ==========================License-Start=============================
- * DiscourseSimplification : QuotedISAPostExtractor
+ * DiscourseSimplification : SubordinationPostEnablementExtractor
  *
  * Copyright © 2017 Lambda³
  *
@@ -23,74 +23,58 @@
 package org.lambda3.text.simplification.discourse.runner.discourse_tree.extraction.rules;
 
 import edu.stanford.nlp.ling.Word;
-import edu.stanford.nlp.trees.Tree;
 import edu.stanford.nlp.trees.tregex.TregexMatcher;
 import edu.stanford.nlp.trees.tregex.TregexPattern;
 import org.lambda3.text.simplification.discourse.runner.discourse_tree.Relation;
-import org.lambda3.text.simplification.discourse.runner.discourse_tree.extraction.Extraction;
 import org.lambda3.text.simplification.discourse.runner.discourse_tree.extraction.ExtractionRule;
-import org.lambda3.text.simplification.discourse.runner.discourse_tree.extraction.model.SubordinationExtraction;
+import org.lambda3.text.simplification.discourse.runner.discourse_tree.extraction.Extraction;
 import org.lambda3.text.simplification.discourse.runner.discourse_tree.model.Leaf;
 import org.lambda3.text.simplification.discourse.utils.parseTree.ParseTreeException;
 import org.lambda3.text.simplification.discourse.utils.parseTree.ParseTreeExtractionUtils;
 import org.lambda3.text.simplification.discourse.utils.words.WordsUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
 /**
  *
  */
-public class QuotedISAPostExtractor extends ExtractionRule {
-    private final static Logger LOG = LoggerFactory.getLogger(ExtractionRule.class);
+public class SubordinationPostPurposeExtractor extends ExtractionRule {
 
     @Override
     public Optional<Extraction> extract(Leaf leaf) throws ParseTreeException {
-        TregexPattern p = TregexPattern.compile("ROOT <<: (S << (/``/=start .. (NP .. (/VB./ .. (/''/=end .. (NP .. VP))))))");
+        TregexPattern p = TregexPattern.compile("ROOT <<: (S < (NP $.. (VP=vp <+(VP) (SBAR=sbar < (S=s <<, (VP <<, /(T|t)o/))))))");
         TregexMatcher matcher = p.matcher(leaf.getParseTree());
 
         while (matcher.findAt(leaf.getParseTree())) {
-            Tree quoteStart;
-            if (matcher.getNode("start") != null) {
-                quoteStart = (matcher.getNode("start"));
-            } else {
-                continue;
-            }
-            Tree quoteEnd;
-            if (matcher.getNode("end") != null) {
-                quoteEnd = matcher.getNode("end");
-            } else {
-                continue;
-            }
 
             // the left, superordinate constituent
-            List<Word> leftConstituentWords = ParseTreeExtractionUtils.getWordsInBetween(leaf.getParseTree(), quoteStart, quoteEnd, false, false);
+            List<Word> leftConstituentWords = new ArrayList<>();
+            leftConstituentWords.addAll(ParseTreeExtractionUtils.getPrecedingWords(leaf.getParseTree(), matcher.getNode("sbar"), false));
+            leftConstituentWords.addAll(ParseTreeExtractionUtils.getFollowingWords(leaf.getParseTree(), matcher.getNode("sbar"), false));
             Leaf leftConstituent = new Leaf(getClass().getSimpleName(), WordsUtils.wordsToProperSentenceString(leftConstituentWords));
 
             // the right, subordinate constituent
-            List<Word> rightConstituentWords = new ArrayList<>();
-            rightConstituentWords.addAll(ParseTreeExtractionUtils.getPrecedingWords(leaf.getParseTree(), quoteStart, false));
-            rightConstituentWords.addAll(ParseTreeExtractionUtils.getFollowingWords(leaf.getParseTree(), quoteEnd, false));
+//            List<Word> rightConstituentWords = ParseTreeExtractionUtils.getContainingWords(matcher.getNode("s"));
 
             // rephrase
-            rightConstituentWords = rephraseIntraSententialAttribution(rightConstituentWords);
+            List<Word> rightConstituentWords = rephraseEnablement(matcher.getNode("s"), matcher.getNode("vp"));
             Leaf rightConstituent = new Leaf(getClass().getSimpleName(), WordsUtils.wordsToProperSentenceString(rightConstituentWords));
             rightConstituent.dontAllowSplit();
             rightConstituent.setToSimpleContext(true);
 
             // relation
-            Relation relation = Relation.ATTRIBUTION;
+            Relation relation = Relation.PURPOSE;
 
-            Extraction res = new SubordinationExtraction(
-                    getClass().getSimpleName(),
-                    relation,
-                    null,
-                    leftConstituent, // the superordinate constituent
-                    rightConstituent, // the subordinate constituent
-                    true
+            Extraction res = new Extraction(
+                getClass().getSimpleName(),
+                false,
+                null,
+                relation,
+                true,
+                Arrays.asList(leftConstituent, rightConstituent)
             );
 
             return Optional.of(res);

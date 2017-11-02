@@ -34,16 +34,16 @@ import java.util.List;
  */
 public class Subordination extends DiscourseTree {
     private final Relation relation;
-    private final String signalPhrase; // optional
-    private final boolean superordinationIsLeft;
+    private final String cuePhrase; // optional
+    private final boolean contextRight;
     private DiscourseTree leftConstituent;
     private DiscourseTree rightConstituent;
 
-    public Subordination(String extractionRule, Relation relation, String signalPhrase, DiscourseTree leftConstituent, DiscourseTree rightConstituent, boolean superordinationIsLeft) {
+    public Subordination(String extractionRule, Relation relation, String cuePhrase, DiscourseTree leftConstituent, DiscourseTree rightConstituent, boolean contextRight) {
         super(extractionRule);
         this.relation = relation;
-        this.signalPhrase = signalPhrase;
-        this.superordinationIsLeft = superordinationIsLeft;
+        this.cuePhrase = cuePhrase;
+        this.contextRight = contextRight;
 
         this.leftConstituent = new Leaf(); //tmp
         this.rightConstituent = new Leaf(); //tmp
@@ -66,7 +66,7 @@ public class Subordination extends DiscourseTree {
     }
 
     public void replaceSuperordination(DiscourseTree newSuperordination) {
-        if (superordinationIsLeft) {
+        if (contextRight) {
             replaceLeftConstituent(newSuperordination);
         } else {
             replaceRightConstituent(newSuperordination);
@@ -74,7 +74,7 @@ public class Subordination extends DiscourseTree {
     }
 
     public void replaceSubordination(DiscourseTree newSubordination) {
-        if (superordinationIsLeft) {
+        if (contextRight) {
             replaceRightConstituent(newSubordination);
         } else {
             replaceLeftConstituent(newSubordination);
@@ -94,26 +94,26 @@ public class Subordination extends DiscourseTree {
     }
 
     public DiscourseTree getSuperordination() {
-        return (superordinationIsLeft) ? leftConstituent : rightConstituent;
+        return (contextRight) ? leftConstituent : rightConstituent;
     }
 
     public DiscourseTree getSubordination() {
-        return (superordinationIsLeft) ? rightConstituent : leftConstituent;
+        return (contextRight) ? rightConstituent : leftConstituent;
     }
 
     // VISUALIZATION ///////////////////////////////////////////////////////////////////////////////////////////////////
 
     @Override
     public List<String> getPTPCaption() {
-        String signalPhraseStr = (signalPhrase != null) ? "'" + signalPhrase + "'" : "NULL";
-        return Collections.singletonList("SUB/" + relation + " (" + signalPhraseStr + ", " + extractionRule + ")");
+        String cuePhraseStr = (cuePhrase != null) ? "'" + cuePhrase + "'" : "NULL";
+        return Collections.singletonList("SUB/" + relation + " (" + cuePhraseStr + ", " + extractionRule + ")");
     }
 
     @Override
     public List<PrettyTreePrinter.Edge> getPTPEdges() {
         List<PrettyTreePrinter.Edge> res = new ArrayList<>();
-        res.add(new PrettyTreePrinter.DefaultEdge((superordinationIsLeft) ? "n" : "s", leftConstituent, true));
-        res.add(new PrettyTreePrinter.DefaultEdge((superordinationIsLeft) ? "s" : "n", rightConstituent, true));
+        res.add(new PrettyTreePrinter.DefaultEdge((contextRight) ? "n" : "s", leftConstituent, true));
+        res.add(new PrettyTreePrinter.DefaultEdge((contextRight) ? "s" : "n", rightConstituent, true));
 
         return res;
     }

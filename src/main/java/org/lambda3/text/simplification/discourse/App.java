@@ -31,6 +31,7 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -51,16 +52,10 @@ public class App {
 
     public static void main(String[] args) throws IOException {
 
-        SimplificationContent content = DISCOURSE_SIMPLIFIER.doDiscourseSimplification(new File("input.txt"), ProcessingType.SEPARATE);
-//        SimplificationContent content = DISCOURSE_SIMPLIFIER.doDiscourseSimplification("The text.", DiscourseSimplifier.ProcessingType.WHOLE);
-        content.serializeToJSON(new File("ds_output_coref.json"));
-//        content.serializeToJSON(new File(l"/home/mischn/Projects/github/OpenIE/oie-benchmark_clone/systems_output/x.json"));
-
-//        SimplificationContent loaded = SimplificationContent.deserializeFromJSON(new File("output.json"), SimplificationContent.class);
-
-//        saveLines(new File("ds_output_default.txt"), Arrays.asList(content.defaultFormat(true)));
-//        saveLines(new File("ds_output_flat.txt"), Arrays.asList(content.flatFormat(true)));
+        SimplificationContent content = DISCOURSE_SIMPLIFIER.doDiscourseSimplification(new File("input.txt"), ProcessingType.WHOLE);
+        content.serializeToJSON(new File("output.json"));
+        saveLines(new File("output_default.txt"), Arrays.asList(content.defaultFormat(false)));
+        saveLines(new File("output_flat.txt"), Arrays.asList(content.flatFormat(false)));
         LOGGER.info("done");
-
     }
 }

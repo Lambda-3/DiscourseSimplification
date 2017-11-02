@@ -23,26 +23,25 @@
 package org.lambda3.text.simplification.discourse.runner.discourse_tree.extraction.rules;
 
 import edu.stanford.nlp.ling.Word;
-import edu.stanford.nlp.trees.Tree;
 import edu.stanford.nlp.trees.tregex.TregexMatcher;
 import edu.stanford.nlp.trees.tregex.TregexPattern;
 import org.lambda3.text.simplification.discourse.runner.discourse_tree.Relation;
-import org.lambda3.text.simplification.discourse.runner.discourse_tree.extraction.Extraction;
 import org.lambda3.text.simplification.discourse.runner.discourse_tree.extraction.ExtractionRule;
-import org.lambda3.text.simplification.discourse.runner.discourse_tree.extraction.model.SubordinationExtraction;
+import org.lambda3.text.simplification.discourse.runner.discourse_tree.extraction.Extraction;
 import org.lambda3.text.simplification.discourse.runner.discourse_tree.model.Leaf;
 import org.lambda3.text.simplification.discourse.utils.parseTree.ParseTreeException;
 import org.lambda3.text.simplification.discourse.utils.parseTree.ParseTreeExtractionUtils;
 import org.lambda3.text.simplification.discourse.utils.words.WordsUtils;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
 /**
  *
  */
-public class EnablementPostExtractor extends ExtractionRule {
+public class PurposePostExtractor extends ExtractionRule {
 
     @Override
     public Optional<Extraction> extract(Leaf leaf) throws ParseTreeException {
@@ -68,15 +67,15 @@ public class EnablementPostExtractor extends ExtractionRule {
             rightConstituent.setToSimpleContext(true);
 
             // relation
-            Relation relation = Relation.ENABLEMENT;
+            Relation relation = Relation.PURPOSE;
 
-            Extraction res = new SubordinationExtraction(
-                    getClass().getSimpleName(),
-                    relation,
-                    null,
-                    leftConstituent, // the superordinate constituent
-                    rightConstituent, // the subordinate constituent
-                    true
+            Extraction res = new Extraction(
+                getClass().getSimpleName(),
+                false,
+                null,
+                relation,
+                true,
+                Arrays.asList(leftConstituent, rightConstituent)
             );
 
             return Optional.of(res);

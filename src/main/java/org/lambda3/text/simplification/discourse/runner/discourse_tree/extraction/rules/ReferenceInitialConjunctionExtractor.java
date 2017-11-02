@@ -1,6 +1,6 @@
 /*
  * ==========================License-Start=============================
- * DiscourseSimplification : SubordinationPreExtractor
+ * DiscourseSimplification : ReferenceExtractor0
  *
  * Copyright © 2017 Lambda³
  *
@@ -41,39 +41,39 @@ import java.util.Optional;
 /**
  *
  */
-public class SubordinationPreExtractor extends ExtractionRule {
+public class ReferenceInitialConjunctionExtractor extends ExtractionRule {
 
     @Override
     public Optional<Extraction> extract(Leaf leaf) throws ParseTreeException {
-        TregexPattern p = TregexPattern.compile("ROOT <<: (S < (SBAR=sbar < (S=s < (NP $.. VP)) $.. (NP $.. VP)))");
+
+        TregexPattern p = TregexPattern.compile("ROOT <<: (S <, (CC=cc))");
         TregexMatcher matcher = p.matcher(leaf.getParseTree());
 
-        while (matcher.findAt(leaf.getParseTree())) {
+        if (matcher.findAt(leaf.getParseTree())) {
+            List<Word> cuePhraseWords = ParseTreeExtractionUtils.getContainingWords(matcher.getNode("cc"));
 
-            // the left, subordinate constituent
-            List<Word> leftConstituentWords = ParseTreeExtractionUtils.getContainingWords(matcher.getNode("s"));
-            Leaf leftConstituent = new Leaf(getClass().getSimpleName(), WordsUtils.wordsToProperSentenceString(leftConstituentWords));
-
-            // the right, superordinate constituent
-            List<Word> rightConstituentWords = new ArrayList<>();
-            rightConstituentWords.addAll(ParseTreeExtractionUtils.getPrecedingWords(leaf.getParseTree(), matcher.getNode("sbar"), false));
-            rightConstituentWords.addAll(ParseTreeExtractionUtils.getFollowingWords(leaf.getParseTree(), matcher.getNode("sbar"), false));
-            Leaf rightConstituent = new Leaf(getClass().getSimpleName(), WordsUtils.wordsToProperSentenceString(rightConstituentWords));
+            // the right constituent
+            List<Word> words = new ArrayList<>();
+            words.addAll(ParseTreeExtractionUtils.getPrecedingWords(leaf.getParseTree(), matcher.getNode("cc"), false));
+            words.addAll(ParseTreeExtractionUtils.getFollowingWords(leaf.getParseTree(), matcher.getNode("cc"), false));
+            Leaf rightConstituent = new Leaf(getClass().getSimpleName(), WordsUtils.wordsToProperSentenceString(words));
 
             // relation
-            List<Word> cuePhraseWords = ParseTreeExtractionUtils.getPrecedingWords(matcher.getNode("sbar"), matcher.getNode("s"), false);
-            Relation relation = classifer.classifySubordinating(cuePhraseWords).orElse(Relation.UNKNOWN_SUBORDINATION);
+            Optional<Relation> relation = classifer.classifyCoordinating(cuePhraseWords);
 
-            Extraction res = new Extraction(
-                getClass().getSimpleName(),
-                false,
-                cuePhraseWords,
-                relation,
-                false,
-                Arrays.asList(leftConstituent, rightConstituent)
-            );
+            // only if present
+            if (relation.isPresent()) {
+                Extraction res = new Extraction(
+                    getClass().getSimpleName(),
+                    true,
+                    cuePhraseWords,
+                    relation.get(),
+                    true,
+                    Arrays.asList(rightConstituent)
+                );
 
-            return Optional.of(res);
+                return Optional.of(res);
+            }
         }
 
         return Optional.empty();

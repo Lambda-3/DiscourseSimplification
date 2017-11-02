@@ -1,6 +1,6 @@
 /*
  * ==========================License-Start=============================
- * DiscourseSimplification : SubordinationPreEnablementExtractor
+ * DiscourseSimplification : ReferenceExtractor3
  *
  * Copyright © 2017 Lambda³
  *
@@ -23,62 +23,57 @@
 package org.lambda3.text.simplification.discourse.runner.discourse_tree.extraction.rules;
 
 import edu.stanford.nlp.ling.Word;
-import edu.stanford.nlp.trees.Tree;
 import edu.stanford.nlp.trees.tregex.TregexMatcher;
 import edu.stanford.nlp.trees.tregex.TregexPattern;
 import org.lambda3.text.simplification.discourse.runner.discourse_tree.Relation;
 import org.lambda3.text.simplification.discourse.runner.discourse_tree.extraction.Extraction;
 import org.lambda3.text.simplification.discourse.runner.discourse_tree.extraction.ExtractionRule;
-import org.lambda3.text.simplification.discourse.runner.discourse_tree.extraction.model.SubordinationExtraction;
 import org.lambda3.text.simplification.discourse.runner.discourse_tree.model.Leaf;
 import org.lambda3.text.simplification.discourse.utils.parseTree.ParseTreeException;
 import org.lambda3.text.simplification.discourse.utils.parseTree.ParseTreeExtractionUtils;
 import org.lambda3.text.simplification.discourse.utils.words.WordsUtils;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
 /**
  *
  */
-public class SubordinationPreEnablementExtractor extends ExtractionRule {
+public class ReferenceFinalAdverbialExtractor extends ExtractionRule {
 
     @Override
     public Optional<Extraction> extract(Leaf leaf) throws ParseTreeException {
-        TregexPattern p = TregexPattern.compile("ROOT <<: (S < (SBAR=sbar < (S=s <<, (VP <<, /(T|t)o/)) $.. (NP $.. VP=vp)))");
+
+        TregexPattern p = TregexPattern.compile("ROOT <<: (S=s < (VP <+(VP) (ADVP|PP=adv))) : (=s [<<- =adv | <<- (/\\./ , =adv)])");
         TregexMatcher matcher = p.matcher(leaf.getParseTree());
 
-        while (matcher.findAt(leaf.getParseTree())) {
+        if (matcher.findAt(leaf.getParseTree())) {
+            List<Word> cuePhraseWords = ParseTreeExtractionUtils.getContainingWords(matcher.getNode("adv"));
 
-            // the left, subordinate constituent
-            List<Word> leftConstituentWords = ParseTreeExtractionUtils.getContainingWords(matcher.getNode("s"));
-
-            // rephrase
-            leftConstituentWords = rephraseEnablement(matcher.getNode("s"), matcher.getNode("vp"));
-            Leaf leftConstituent = new Leaf(getClass().getSimpleName(), WordsUtils.wordsToProperSentenceString(leftConstituentWords));
-            leftConstituent.dontAllowSplit();
-            leftConstituent.setToSimpleContext(true);
-
-            // the right, superordinate constituent
-            List<Word> rightConstituentWords = new ArrayList<>();
-            rightConstituentWords.addAll(ParseTreeExtractionUtils.getPrecedingWords(leaf.getParseTree(), matcher.getNode("sbar"), false));
-            rightConstituentWords.addAll(ParseTreeExtractionUtils.getFollowingWords(leaf.getParseTree(), matcher.getNode("sbar"), false));
-            Leaf rightConstituent = new Leaf(getClass().getSimpleName(), WordsUtils.wordsToProperSentenceString(rightConstituentWords));
+            // the right constituent
+            List<Word> words = new ArrayList<>();
+            words.addAll(ParseTreeExtractionUtils.getPrecedingWords(leaf.getParseTree(), matcher.getNode("adv"), false));
+            words.addAll(ParseTreeExtractionUtils.getFollowingWords(leaf.getParseTree(), matcher.getNode("adv"), false));
+            Leaf rightConstituent = new Leaf(getClass().getSimpleName(), WordsUtils.wordsToProperSentenceString(words));
 
             // relation
-            Relation relation = Relation.ENABLEMENT;
+            Optional<Relation> relation = classifer.classifyAdverbial(cuePhraseWords);
 
-            Extraction res = new SubordinationExtraction(
+            // only if present
+            if (relation.isPresent()) {
+                Extraction res = new Extraction(
                     getClass().getSimpleName(),
-                    relation,
-                    null,
-                    leftConstituent, // the subordinate constituent
-                    rightConstituent, // the superordinate constituent
-                    false
-            );
+                    true,
+                    cuePhraseWords,
+                    relation.get(),
+                    true,
+                    Arrays.asList(rightConstituent)
+                );
 
-            return Optional.of(res);
+                return Optional.of(res);
+            }
         }
 
         return Optional.empty();

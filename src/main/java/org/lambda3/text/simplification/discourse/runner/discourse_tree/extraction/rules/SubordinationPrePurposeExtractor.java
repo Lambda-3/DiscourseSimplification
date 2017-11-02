@@ -1,6 +1,6 @@
 /*
  * ==========================License-Start=============================
- * DiscourseSimplification : ReferenceExtractor2
+ * DiscourseSimplification : SubordinationPreEnablementExtractor
  *
  * Copyright © 2017 Lambda³
  *
@@ -23,54 +23,61 @@
 package org.lambda3.text.simplification.discourse.runner.discourse_tree.extraction.rules;
 
 import edu.stanford.nlp.ling.Word;
-import edu.stanford.nlp.trees.Tree;
 import edu.stanford.nlp.trees.tregex.TregexMatcher;
 import edu.stanford.nlp.trees.tregex.TregexPattern;
 import org.lambda3.text.simplification.discourse.runner.discourse_tree.Relation;
-import org.lambda3.text.simplification.discourse.runner.discourse_tree.classification.SignalPhraseClassifier;
-import org.lambda3.text.simplification.discourse.runner.discourse_tree.extraction.Extraction;
 import org.lambda3.text.simplification.discourse.runner.discourse_tree.extraction.ExtractionRule;
-import org.lambda3.text.simplification.discourse.runner.discourse_tree.extraction.model.RefCoordinationExtraction;
+import org.lambda3.text.simplification.discourse.runner.discourse_tree.extraction.Extraction;
 import org.lambda3.text.simplification.discourse.runner.discourse_tree.model.Leaf;
 import org.lambda3.text.simplification.discourse.utils.parseTree.ParseTreeException;
 import org.lambda3.text.simplification.discourse.utils.parseTree.ParseTreeExtractionUtils;
 import org.lambda3.text.simplification.discourse.utils.words.WordsUtils;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
 /**
  *
  */
-public class ReferenceExtractor2 extends ExtractionRule {
-    private static final SignalPhraseClassifier CLASSIFIER = new SignalPhraseClassifier();
+public class SubordinationPrePurposeExtractor extends ExtractionRule {
 
     @Override
     public Optional<Extraction> extract(Leaf leaf) throws ParseTreeException {
-
-        TregexPattern p = TregexPattern.compile("ROOT <<: S <<, (__=node >1 S << /this|that/=det)");
+        TregexPattern p = TregexPattern.compile("ROOT <<: (S < (SBAR=sbar < (S=s <<, (VP <<, /(T|t)o/)) $.. (NP $.. VP=vp)))");
         TregexMatcher matcher = p.matcher(leaf.getParseTree());
 
-        if (matcher.findAt(leaf.getParseTree())) {
-            List<Word> signalPhraseWords = ParseTreeExtractionUtils.getPrecedingWords(matcher.getNode("node"), matcher.getNode("det"), true);
+        while (matcher.findAt(leaf.getParseTree())) {
 
-            // the right constituent
-            List<Word> words = ParseTreeExtractionUtils.getFollowingWords(leaf.getParseTree(), matcher.getNode("node"), false);
-            Leaf rightConstituent = new Leaf(getClass().getSimpleName(), WordsUtils.wordsToProperSentenceString(words));
+            // the left, subordinate constituent
+            List<Word> leftConstituentWords = ParseTreeExtractionUtils.getContainingWords(matcher.getNode("s"));
+
+            // rephrase
+            leftConstituentWords = rephraseEnablement(matcher.getNode("s"), matcher.getNode("vp"));
+            Leaf leftConstituent = new Leaf(getClass().getSimpleName(), WordsUtils.wordsToProperSentenceString(leftConstituentWords));
+            leftConstituent.dontAllowSplit();
+            leftConstituent.setToSimpleContext(true);
+
+            // the right, superordinate constituent
+            List<Word> rightConstituentWords = new ArrayList<>();
+            rightConstituentWords.addAll(ParseTreeExtractionUtils.getPrecedingWords(leaf.getParseTree(), matcher.getNode("sbar"), false));
+            rightConstituentWords.addAll(ParseTreeExtractionUtils.getFollowingWords(leaf.getParseTree(), matcher.getNode("sbar"), false));
+            Leaf rightConstituent = new Leaf(getClass().getSimpleName(), WordsUtils.wordsToProperSentenceString(rightConstituentWords));
 
             // relation
-            Optional<Relation> relation = CLASSIFIER.classifyDefault(signalPhraseWords);
+            Relation relation = Relation.PURPOSE;
 
-            if (relation.isPresent()) {
-                Extraction res = new RefCoordinationExtraction(
-                        getClass().getSimpleName(),
-                        relation.get(),
-                        signalPhraseWords,
-                        rightConstituent
-                );
+            Extraction res = new Extraction(
+                getClass().getSimpleName(),
+                false,
+                null,
+                relation,
+                false,
+                Arrays.asList(leftConstituent, rightConstituent)
+            );
 
-                return Optional.of(res);
-            }
+            return Optional.of(res);
         }
 
         return Optional.empty();

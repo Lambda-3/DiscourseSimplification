@@ -22,15 +22,16 @@
 
 package org.lambda3.text.simplification.discourse.runner.discourse_tree.extraction;
 
+import com.typesafe.config.Config;
 import edu.stanford.nlp.ling.Word;
 import edu.stanford.nlp.trees.Tree;
 import edu.stanford.nlp.trees.tregex.TregexMatcher;
 import edu.stanford.nlp.trees.tregex.TregexPattern;
+import org.lambda3.text.simplification.discourse.runner.discourse_tree.classification.CuePhraseClassifier;
 import org.lambda3.text.simplification.discourse.runner.discourse_tree.model.Leaf;
 import org.lambda3.text.simplification.discourse.utils.parseTree.ParseTreeException;
 import org.lambda3.text.simplification.discourse.utils.parseTree.ParseTreeExtractionUtils;
 import org.lambda3.text.simplification.discourse.utils.parseTree.ParseTreeParser;
-import org.lambda3.text.simplification.discourse.utils.parseTree.ParseTreeVisualizer;
 import org.lambda3.text.simplification.discourse.utils.words.WordsUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -51,6 +52,15 @@ public abstract class ExtractionRule {
     protected enum Number {
         SINGULAR,
         PLURAL
+    }
+
+    protected CuePhraseClassifier classifer;
+
+    public ExtractionRule() {
+    }
+
+    public void setConfig(Config config) {
+        this.classifer = new CuePhraseClassifier(config);
     }
 
     public abstract Optional<Extraction> extract(Leaf leaf) throws ParseTreeException;
@@ -91,6 +101,15 @@ public abstract class ExtractionRule {
         }
 
         return res;
+    }
+
+    protected static Optional<Word> getHeadVerb(Tree vp) {
+        TregexPattern pattern = TregexPattern.compile(vp.value() + " [ <+(VP) (VP=lowestvp !< VP < /V../=v) | ==(VP=lowestvp !< VP < /V../=v) ]");
+        TregexMatcher matcher = pattern.matcher(vp);
+        while (matcher.findAt(vp)) {
+            return Optional.of(ParseTreeExtractionUtils.getContainingWords(matcher.getNode("v")).get(0));
+        }
+        return Optional.empty();
     }
 
     private static List<Word> appendWordsFromTree(List<Word> words, Tree tree) {

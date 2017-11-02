@@ -35,13 +35,13 @@ import java.util.stream.Collectors;
  */
 public class Coordination extends DiscourseTree {
     final Relation relation;
-    private final String signalPhrase; // optional
+    private final String cuePhrase; // optional
     private final List<DiscourseTree> coordinations;
 
-    public Coordination(String extractionRule, Relation relation, String signalPhrase, List<DiscourseTree> coordinations) {
+    public Coordination(String extractionRule, Relation relation, String cuePhrase, List<DiscourseTree> coordinations) {
         super(extractionRule);
         this.relation = relation;
-        this.signalPhrase = signalPhrase;
+        this.cuePhrase = cuePhrase;
         this.coordinations = new ArrayList<>();
         coordinations.forEach(this::addCoordination);
     }
@@ -121,8 +121,8 @@ public class Coordination extends DiscourseTree {
 
     @Override
     public List<String> getPTPCaption() {
-        String signalPhraseStr = (signalPhrase != null) ? "'" + signalPhrase + "'" : "NULL";
-        return Collections.singletonList("CO/" + relation + " (" + signalPhraseStr + ", " + extractionRule + ")");
+        String cuePhraseStr = (cuePhrase != null) ? "'" + cuePhrase + "'" : "NULL";
+        return Collections.singletonList("CO/" + relation + " (" + cuePhraseStr + ", " + extractionRule + ")");
     }
 
     @Override

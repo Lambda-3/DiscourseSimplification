@@ -87,7 +87,7 @@ public abstract class DiscourseTree implements PrettyTreePrinter.Node {
         }
     }
 
-    public List<Leaf> getNucleusPathLeaves() {
+    public List<Leaf> getCorePathLeaves() {
         List<Leaf> res = new ArrayList<>();
 
         if (this instanceof Leaf) {
@@ -96,13 +96,13 @@ public abstract class DiscourseTree implements PrettyTreePrinter.Node {
             // recursion on coordinations
             if (this instanceof Coordination) {
                 for (DiscourseTree child : ((Coordination) this).getCoordinations()) {
-                    res.addAll(child.getNucleusPathLeaves());
+                    res.addAll(child.getCorePathLeaves());
                 }
             }
 
             // recursion on superordinations
             if (this instanceof Subordination) {
-                res.addAll(((Subordination) this).getSuperordination().getNucleusPathLeaves());
+                res.addAll(((Subordination) this).getSuperordination().getCorePathLeaves());
             }
         }
 

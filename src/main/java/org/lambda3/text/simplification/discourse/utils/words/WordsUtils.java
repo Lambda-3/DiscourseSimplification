@@ -27,6 +27,7 @@ import edu.stanford.nlp.ling.SentenceUtils;
 import edu.stanford.nlp.ling.Word;
 import edu.stanford.nlp.process.CoreLabelTokenFactory;
 import edu.stanford.nlp.process.PTBTokenizer;
+import edu.stanford.nlp.simple.Sentence;
 import org.lambda3.text.simplification.sentence.transformation.Core;
 
 import java.io.StringReader;
@@ -39,6 +40,11 @@ import java.util.List;
  *
  */
 public class WordsUtils {
+
+    public static Word lemmatize(Word word) {
+        Sentence sentence = new Sentence(word.value());
+        return new Word(sentence.lemma(0));
+    }
 
     public static List<Word> splitIntoWords(String sentence) {
         PTBTokenizer<CoreLabel> ptbt = new PTBTokenizer<>(new StringReader(sentence), new CoreLabelTokenFactory(), "");

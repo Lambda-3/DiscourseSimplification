@@ -23,20 +23,18 @@
 package org.lambda3.text.simplification.discourse.runner.discourse_tree.extraction.rules;
 
 import edu.stanford.nlp.ling.Word;
-import edu.stanford.nlp.trees.Tree;
 import edu.stanford.nlp.trees.tregex.TregexMatcher;
 import edu.stanford.nlp.trees.tregex.TregexPattern;
 import org.lambda3.text.simplification.discourse.runner.discourse_tree.Relation;
-import org.lambda3.text.simplification.discourse.runner.discourse_tree.classification.SignalPhraseClassifier;
 import org.lambda3.text.simplification.discourse.runner.discourse_tree.extraction.Extraction;
 import org.lambda3.text.simplification.discourse.runner.discourse_tree.extraction.ExtractionRule;
-import org.lambda3.text.simplification.discourse.runner.discourse_tree.extraction.model.SubordinationExtraction;
 import org.lambda3.text.simplification.discourse.runner.discourse_tree.model.Leaf;
 import org.lambda3.text.simplification.discourse.utils.parseTree.ParseTreeException;
 import org.lambda3.text.simplification.discourse.utils.parseTree.ParseTreeExtractionUtils;
 import org.lambda3.text.simplification.discourse.utils.words.WordsUtils;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
@@ -44,7 +42,6 @@ import java.util.Optional;
  *
  */
 public class SubordinationPostExtractor extends ExtractionRule {
-    private static final SignalPhraseClassifier CLASSIFIER = new SignalPhraseClassifier();
 
     @Override
     public Optional<Extraction> extract(Leaf leaf) throws ParseTreeException {
@@ -64,17 +61,17 @@ public class SubordinationPostExtractor extends ExtractionRule {
             Leaf rightConstituent = new Leaf(getClass().getSimpleName(), WordsUtils.wordsToProperSentenceString(rightConstituentWords));
 
             // relation
-            List<Word> signalPhraseWords = ParseTreeExtractionUtils.getPrecedingWords(matcher.getNode("sbar"), matcher.getNode("s"), false);
-            Relation relation = CLASSIFIER.classifyDefault(signalPhraseWords).orElse(Relation.UNKNOWN_SUBORDINATION);
+            List<Word> cuePhraseWords = ParseTreeExtractionUtils.getPrecedingWords(matcher.getNode("sbar"), matcher.getNode("s"), false);
+            Relation relation = classifer.classifySubordinating(cuePhraseWords).orElse(Relation.UNKNOWN_SUBORDINATION);
 
             //TODO not always doDiscourseExtraction?
-            Extraction res = new SubordinationExtraction(
-                    getClass().getSimpleName(),
-                    relation,
-                    signalPhraseWords,
-                    leftConstituent, // the superordinate constituent
-                    rightConstituent, // the subordinate constituent
-                    true
+            Extraction res = new Extraction(
+                getClass().getSimpleName(),
+                false,
+                cuePhraseWords,
+                relation,
+                true,
+                Arrays.asList(leftConstituent, rightConstituent)
             );
 
             return Optional.of(res);

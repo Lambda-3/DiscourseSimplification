@@ -58,8 +58,8 @@ public class DiscourseSimplifier {
 
         this.withSentenceSimplification = config.getBoolean("with-sentence-simplification");
 
-        logger.info("DiscourseSimplifier initialized");
-        logger.info("\n{}", ConfigUtils.prettyPrint(config));
+        logger.debug("DiscourseSimplifier initialized");
+        logger.debug("\n{}", ConfigUtils.prettyPrint(config));
     }
 
     public DiscourseSimplifier() {

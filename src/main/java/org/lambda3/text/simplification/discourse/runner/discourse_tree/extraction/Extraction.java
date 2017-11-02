@@ -22,9 +22,112 @@
 
 package org.lambda3.text.simplification.discourse.runner.discourse_tree.extraction;
 
+import edu.stanford.nlp.ling.Word;
+import org.lambda3.text.simplification.discourse.runner.discourse_tree.Relation;
+import org.lambda3.text.simplification.discourse.runner.discourse_tree.model.Coordination;
+import org.lambda3.text.simplification.discourse.runner.discourse_tree.model.DiscourseTree;
+import org.lambda3.text.simplification.discourse.runner.discourse_tree.model.Leaf;
+import org.lambda3.text.simplification.discourse.runner.discourse_tree.model.Subordination;
+import org.lambda3.text.simplification.discourse.utils.words.WordsUtils;
+
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
+
 /**
  *
  */
-public abstract class Extraction {
+public class Extraction {
+    private String extractionRule;
+    private boolean referring;
+    private String cuePhrase; // optional
+    private Relation relation;
+    private boolean contextRight; // only for subordinate relations
+    private List<Leaf> constituents;
 
+    public Extraction(String extractionRule, boolean referring, List<Word> cuePhraseWords, Relation relation, boolean contextRight, List<Leaf> constituents) {
+        if ((referring) && (constituents.size() != 1)) {
+            throw new AssertionError("Referring relations should have one constituent");
+        }
+
+        if ((!referring) && (!relation.isCoordination()) && (constituents.size() != 2)) {
+            throw new AssertionError("(Non-referring) subordinate relations rules should have two constituents");
+        }
+
+        this.extractionRule = extractionRule;
+        this.referring = referring;
+        this.cuePhrase = (cuePhraseWords == null)? null : WordsUtils.wordsToString(cuePhraseWords);
+        this.relation = relation;
+        this.contextRight = contextRight;
+        this.constituents = constituents;
+    }
+
+    public Optional<DiscourseTree> generate(Leaf currChild) {
+
+        if (relation.isCoordination()) {
+            if (referring) {
+
+                // find previous node to use as a reference
+                Optional<DiscourseTree> prevNode = currChild.getPreviousNode();
+                if ((prevNode.isPresent()) && (prevNode.get().usableAsReference())) {
+
+                    // use prev node as a reference
+                    prevNode.get().useAsReference();
+
+                    Coordination res = new Coordination(
+                        extractionRule,
+                        relation,
+                        cuePhrase,
+                        Collections.emptyList()
+                    );
+                    res.addCoordination(prevNode.get()); // set prev node as a reference
+                    res.addCoordination(constituents.get(0));
+
+                    return Optional.of(res);
+                }
+            } else {
+                return Optional.of(new Coordination(
+                    extractionRule,
+                    relation,
+                    cuePhrase,
+                    constituents.stream().collect(Collectors.toList())
+                ));
+            }
+        } else {
+            if (referring) {
+
+                // find previous node to use as a reference
+                Optional<DiscourseTree> prevNode = currChild.getPreviousNode();
+                if ((prevNode.isPresent()) && (prevNode.get().usableAsReference())) {
+
+                    // use prev node as a reference
+                    prevNode.get().useAsReference();
+
+                    Subordination res = new Subordination(
+                        extractionRule,
+                        relation,
+                        cuePhrase,
+                        new Leaf(), // tmp
+                        constituents.get(0),
+                        contextRight
+                    );
+                    res.replaceLeftConstituent(prevNode.get()); // set prev node as a reference
+
+                    return Optional.of(res);
+                }
+            } else {
+                return Optional.of(new Subordination(
+                    extractionRule,
+                    relation,
+                    cuePhrase,
+                    constituents.get(0),
+                    constituents.get(1),
+                    contextRight
+                ));
+            }
+        }
+
+        return Optional.empty();
+    }
 }

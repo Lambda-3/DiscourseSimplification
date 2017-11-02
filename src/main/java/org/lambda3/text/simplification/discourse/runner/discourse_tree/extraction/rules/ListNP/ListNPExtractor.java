@@ -23,12 +23,10 @@
 package org.lambda3.text.simplification.discourse.runner.discourse_tree.extraction.rules.ListNP;
 
 import edu.stanford.nlp.ling.Word;
-import edu.stanford.nlp.trees.Tree;
 import edu.stanford.nlp.trees.tregex.TregexMatcher;
 import edu.stanford.nlp.trees.tregex.TregexPattern;
 import org.lambda3.text.simplification.discourse.runner.discourse_tree.extraction.Extraction;
 import org.lambda3.text.simplification.discourse.runner.discourse_tree.extraction.ExtractionRule;
-import org.lambda3.text.simplification.discourse.runner.discourse_tree.extraction.model.CoordinationExtraction;
 import org.lambda3.text.simplification.discourse.runner.discourse_tree.extraction.utils.ListNPSplitter;
 import org.lambda3.text.simplification.discourse.runner.discourse_tree.model.Leaf;
 import org.lambda3.text.simplification.discourse.utils.parseTree.ParseTreeException;
@@ -88,10 +86,14 @@ public abstract class ListNPExtractor extends ExtractionRule {
                     constituents.add(constituent);
                 }
 
-                Extraction res = new CoordinationExtraction(
-                        getClass().getSimpleName(),
-                        r.get().getRelation(),
-                        constituents
+
+                Extraction res = new Extraction(
+                    getClass().getSimpleName(),
+                    false,
+                    null,
+                    r.get().getRelation(),
+                    true,
+                    constituents
                 );
 
                 return Optional.of(res);

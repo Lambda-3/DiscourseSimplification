@@ -26,56 +26,100 @@ import java.util.Optional;
 
 public enum Relation {
 
-    // default relations
     UNKNOWN,
-    UNKNOWN_COORDINATION, // the default for coordination
-    UNKNOWN_SUBORDINATION, // the default for subordination
 
-    // rst inspired
+    // Coordinations
+    UNKNOWN_COORDINATION, // the default for coordination
+    CONTRAST,
+    CAUSE_C,
+    RESULT_C,
+    LIST,
+    DISJUNCTION,
+    TEMPORAL_AFTER_C,
+    TEMPORAL_BEFORE_C,
+
+    // Subordinations
+    UNKNOWN_SUBORDINATION, // the default for subordination
+    ATTRIBUTION,
     BACKGROUND,
     CAUSE,
+    RESULT,
     CONDITION,
-    CONTRAST,
     ELABORATION,
-    ENABLEMENT,
-    EXPLANATION,
-    JOINT_CONJUNCTION,
-    JOINT_DISJUNCTION,
-    TEMPORAL_BEFORE,
+    PURPOSE,
     TEMPORAL_AFTER,
-    TEMPORAL_SEQUENCE,
-
-    // special relations
-    ATTRIBUTION,
-    JOINT_NP_CONJUNCTION,
-    JOINT_NP_DISJUNCTION,
+    TEMPORAL_BEFORE,
 
     // for sentence simplification
     NOUN_BASED,
+    SPATIAL,
     TEMPORAL,
     TEMPORAL_TIME, // indicating a particular instance on a time scale (e.g. “Next Sunday 2 pm”).
     TEMPORAL_DURATION, // the amount of time between the two end-points of a time interval (e.g. “2 weeks").
     TEMPORAL_DATE, // particular date (e.g. “On 7 April 2013”).
-    TEMPORAL_SET, // periodic temporal sets representing times that occur with some frequency (“Every Tuesday”).
-    SPATIAL;
+    TEMPORAL_SET; // periodic temporal sets representing times that occur with some frequency (“Every Tuesday”).
 
     static {
-        TEMPORAL_AFTER.reverseRelation = TEMPORAL_BEFORE;
-        TEMPORAL_BEFORE.reverseRelation = TEMPORAL_AFTER;
+        UNKNOWN_COORDINATION.coordination = true;
+        CONTRAST.coordination = true;
+        CAUSE_C.coordination = true;
+        RESULT_C.coordination = true;
+        LIST.coordination = true;
+        DISJUNCTION.coordination = true;
+        TEMPORAL_AFTER_C.coordination = true;
+        TEMPORAL_BEFORE_C.coordination = true;
+
+        CAUSE.coordinateVersion = CAUSE_C;
+        RESULT.coordinateVersion = RESULT_C;
+        TEMPORAL_AFTER.coordinateVersion = TEMPORAL_AFTER_C;
+        TEMPORAL_BEFORE.coordinateVersion = TEMPORAL_BEFORE_C;
+
+        CAUSE_C.subordinateVersion = CAUSE;
+        RESULT_C.subordinateVersion = RESULT;
+        TEMPORAL_AFTER_C.subordinateVersion = TEMPORAL_AFTER;
+        TEMPORAL_BEFORE_C.subordinateVersion = TEMPORAL_BEFORE;
+
+        CAUSE_C.inverse = RESULT_C;
+        RESULT_C.inverse = CAUSE_C;
+        TEMPORAL_AFTER_C.inverse = TEMPORAL_BEFORE_C;
+        TEMPORAL_BEFORE_C.inverse = TEMPORAL_AFTER_C;
+        CAUSE.inverse = RESULT;
+        RESULT.inverse = CAUSE;
+        TEMPORAL_AFTER.inverse = TEMPORAL_BEFORE;
+        TEMPORAL_BEFORE.inverse = TEMPORAL_AFTER;
     }
 
-    private Relation reverseRelation;
+    private boolean coordination;
+    private Relation regular; // class of context span (in subordination) or right span (coordination)
+    private Relation inverse; // class of core span (in subordination) or left span (coordination)
+    private Relation coordinateVersion; // optional
+    private Relation subordinateVersion; // optional
 
     Relation() {
-        /*
-         * by default, each relation is bidirectional with an equal reverse relation.
-         * To make a relation unidirectional, set reverseRelation to null.
-         */
-        this.reverseRelation = this;
+        this.coordination = false;
+        this.regular = this;
+        this.inverse = this; // only used in coordinations
+        this.coordinateVersion = null;
+        this.subordinateVersion = null;
     }
 
+    public boolean isCoordination() {
+        return coordination;
+    }
 
-    public Optional<Relation> getReverseRelation() {
-        return Optional.ofNullable(reverseRelation);
+    public Relation getRegulatRelation() {
+        return regular;
+    }
+
+    public Relation getInverseRelation() {
+        return inverse;
+    }
+
+    public Optional<Relation> getCoordinateVersion() {
+        return Optional.ofNullable(coordinateVersion);
+    }
+
+    public Optional<Relation> getSubordinateVersion() {
+        return Optional.ofNullable(subordinateVersion);
     }
 }

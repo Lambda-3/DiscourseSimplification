@@ -24,16 +24,10 @@ package org.lambda3.text.simplification.discourse.runner.discourse_tree;
 
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigException;
-import edu.stanford.nlp.trees.Tree;
 import org.lambda3.text.simplification.discourse.runner.discourse_tree.extraction.Extraction;
 import org.lambda3.text.simplification.discourse.runner.discourse_tree.extraction.ExtractionRule;
-import org.lambda3.text.simplification.discourse.runner.discourse_tree.extraction.model.CoordinationExtraction;
-import org.lambda3.text.simplification.discourse.runner.discourse_tree.extraction.model.RefCoordinationExtraction;
-import org.lambda3.text.simplification.discourse.runner.discourse_tree.extraction.model.RefSubordinationExtraction;
-import org.lambda3.text.simplification.discourse.runner.discourse_tree.extraction.model.SubordinationExtraction;
 import org.lambda3.text.simplification.discourse.runner.discourse_tree.model.*;
 import org.lambda3.text.simplification.discourse.utils.parseTree.ParseTreeException;
-import org.lambda3.text.simplification.discourse.utils.parseTree.ParseTreeParser;
 import org.lambda3.text.simplification.discourse.utils.parseTree.ParseTreeVisualizer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -64,8 +58,10 @@ public class DiscourseTreeCreator {
                 Class<?> clazz = Class.forName(className);
                 Constructor<?> constructor = clazz.getConstructor();
                 ExtractionRule rule = (ExtractionRule) constructor.newInstance();
+                rule.setConfig(config);
                 rules.add(rule);
             } catch (InstantiationException | InvocationTargetException | NoSuchMethodException | IllegalAccessException | ClassNotFoundException e) {
+                logger.error("{}", e);
                 logger.error("Failed to create instance of {}", className);
                 throw new ConfigException.BadValue("rules." + className, "Failed to create instance.");
             }
@@ -195,34 +191,12 @@ public class DiscourseTreeCreator {
             if (extraction.isPresent()) {
                 logger.debug("Extraction rule " + rule.getClass().getSimpleName() + " matched.");
 
-                // handle CoordinationExtraction
-                if (extraction.get() instanceof CoordinationExtraction) {
-                    return Optional.of(((CoordinationExtraction) extraction.get()).convert());
-                }
-
-                // handle SubordinationExtraction
-                if (extraction.get() instanceof SubordinationExtraction) {
-                    return Optional.of(((SubordinationExtraction) extraction.get()).convert());
-                }
-
-                // handle RefCoordinationExtraction
-                if (extraction.get() instanceof RefCoordinationExtraction) {
-                    Optional<DiscourseTree> r = ((RefCoordinationExtraction) extraction.get()).convert(leaf);
-                    if (r.isPresent()) {
-                        return r;
-                    } else {
-                        logger.debug("Reference could not be used, checking other model rules.");
-                    }
-                }
-
-                // handle RefSubordinationExtraction
-                if (extraction.get() instanceof RefSubordinationExtraction) {
-                    Optional<DiscourseTree> r = ((RefSubordinationExtraction) extraction.get()).convert(leaf);
-                    if (r.isPresent()) {
-                        return r;
-                    } else {
-                        logger.debug("Reference could not be used, checking other model rules.");
-                    }
+                // handle extractions
+                Optional<DiscourseTree> r = extraction.get().generate(leaf);
+                if (r.isPresent()) {
+                    return r;
+                } else {
+                    logger.debug("Reference could not be used, checking other model rules.");
                 }
             }
         }

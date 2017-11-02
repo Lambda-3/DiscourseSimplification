@@ -22,6 +22,7 @@
 
 package org.lambda3.text.simplification.discourse.runner.sentence_simplification.classification;
 
+import com.typesafe.config.Config;
 import edu.stanford.nlp.ling.Word;
 import edu.stanford.nlp.pipeline.Annotation;
 import edu.stanford.nlp.pipeline.AnnotationPipeline;
@@ -31,10 +32,10 @@ import edu.stanford.nlp.time.TimeAnnotations;
 import edu.stanford.nlp.time.TimeAnnotator;
 import edu.stanford.nlp.time.TimeExpression;
 import edu.stanford.nlp.util.CoreMap;
-import org.lambda3.text.simplification.discourse.runner.discourse_tree.Relation;
-import org.lambda3.text.simplification.discourse.runner.discourse_tree.classification.SignalPhraseClassifier;
 import org.lambda3.text.simplification.discourse.model.SimpleContext;
 import org.lambda3.text.simplification.discourse.model.TimeInformation;
+import org.lambda3.text.simplification.discourse.runner.discourse_tree.Relation;
+import org.lambda3.text.simplification.discourse.runner.discourse_tree.classification.CuePhraseClassifier;
 import org.lambda3.text.simplification.discourse.utils.ner.NERString;
 import org.lambda3.text.simplification.discourse.utils.ner.NERStringParser;
 import org.lambda3.text.simplification.discourse.utils.parseTree.ParseTreeExtractionUtils;
@@ -56,18 +57,22 @@ public class ExtContextClassifier implements ContextClassifier {
 		PIPELINE.addAnnotator(new TimeAnnotator("sutime", PROPS));
 	}
 
-    private static final SignalPhraseClassifier SIGNAL_PHRASE_CLASSIFIER = new SignalPhraseClassifier();
+    private final CuePhraseClassifier cuePhraseClassifier;
 
-    private static boolean checkTemporal(SimpleContext simpleContext) {
+    public ExtContextClassifier(Config config) {
+        this.cuePhraseClassifier = new CuePhraseClassifier(config);
+    }
 
-        // use first 10 words as signal phrase
-        List<Word> signalPhraseWords = ParseTreeExtractionUtils.getContainingWords(simpleContext.getPhrase());
-        if (signalPhraseWords.size() > 10) {
-            signalPhraseWords = signalPhraseWords.subList(0, 10);
+    private boolean checkTemporal(SimpleContext simpleContext) {
+
+        // use first 10 words as cue phrase
+        List<Word> cuePhraseWords = ParseTreeExtractionUtils.getContainingWords(simpleContext.getPhrase());
+        if (cuePhraseWords.size() > 10) {
+            cuePhraseWords = cuePhraseWords.subList(0, 10);
         }
-        String signalPhrase = WordsUtils.wordsToString(signalPhraseWords);
+        String cuePhrase = WordsUtils.wordsToString(cuePhraseWords);
 
-        Annotation annotation = new Annotation(signalPhrase);
+        Annotation annotation = new Annotation(cuePhrase);
 //            annotation.set(CoreAnnotations.DocDateAnnotation.class, "2013-07-14"); // not yet supported by Graphene
         PIPELINE.annotate(annotation);
         List<CoreMap> timexAnnsAll = annotation.get(TimeAnnotations.TimexAnnotations.class);
@@ -104,14 +109,14 @@ public class ExtContextClassifier implements ContextClassifier {
 
     private boolean checkSpatial(SimpleContext simpleContext) {
 
-        // use first 10 words as signal phrase
-        List<Word> signalPhraseWords = ParseTreeExtractionUtils.getContainingWords(simpleContext.getPhrase());
-        if (signalPhraseWords.size() > 10) {
-            signalPhraseWords = signalPhraseWords.subList(0, 10);
+        // use first 10 words as cue phrase
+        List<Word> cuePhraseWords = ParseTreeExtractionUtils.getContainingWords(simpleContext.getPhrase());
+        if (cuePhraseWords.size() > 10) {
+            cuePhraseWords = cuePhraseWords.subList(0, 10);
         }
-        String signalPhrase = WordsUtils.wordsToString(signalPhraseWords);
+        String cuePhrase = WordsUtils.wordsToString(cuePhraseWords);
 
-        NERString ner = NERStringParser.parse(signalPhrase);
+        NERString ner = NERStringParser.parse(cuePhrase);
 
         if (ner.getTokens().stream().anyMatch(t -> t.getCategory().equals("LOCATION"))) {
             simpleContext.setRelation(Relation.SPATIAL);
@@ -121,16 +126,16 @@ public class ExtContextClassifier implements ContextClassifier {
         return false;
     }
 
-    private static boolean checkSignals(SimpleContext simpleContext) {
+    private boolean checkCues(SimpleContext simpleContext) {
 
-        // use first 3 words as signal phrase
-        List<Word> signalPhraseWords = ParseTreeExtractionUtils.getContainingWords(simpleContext.getPhrase());
-        if (signalPhraseWords.size() > 3) {
-            signalPhraseWords = signalPhraseWords.subList(0, 3);
+        // use first 3 words as cue phrase
+        List<Word> cuePhraseWords = ParseTreeExtractionUtils.getContainingWords(simpleContext.getPhrase());
+        if (cuePhraseWords.size() > 3) {
+            cuePhraseWords = cuePhraseWords.subList(0, 3);
         }
-        String signalPhrase = WordsUtils.wordsToString(signalPhraseWords);
+        String cuePhrase = WordsUtils.wordsToString(cuePhraseWords);
 
-        Optional<Relation> relation = SIGNAL_PHRASE_CLASSIFIER.classifyDefault(signalPhrase);
+        Optional<Relation> relation = cuePhraseClassifier.classifySubordinating(cuePhrase);
         if (relation.isPresent()) {
             simpleContext.setRelation(relation.get());
             return true;
@@ -142,8 +147,8 @@ public class ExtContextClassifier implements ContextClassifier {
     @Override
     public void classify(SimpleContext simpleContext) {
 
-        // SIGNAL
-        if (checkSignals(simpleContext)) {
+        // CUE
+        if (checkCues(simpleContext)) {
             return;
         }
 

@@ -29,7 +29,7 @@ import org.lambda3.text.simplification.discourse.model.Element;
 import org.lambda3.text.simplification.discourse.model.OutSentence;
 import org.lambda3.text.simplification.discourse.model.SimpleContext;
 import org.lambda3.text.simplification.discourse.runner.sentence_simplification.classification.ContextClassifier;
-import org.lambda3.text.simplification.discourse.runner.sentence_simplification.classification.ExtContextClassifier;
+import org.lambda3.text.simplification.discourse.runner.sentence_simplification.classification.SimpleContextClassifier;
 import org.lambda3.text.simplification.discourse.utils.parseTree.ParseTreeExtractionUtils;
 import org.lambda3.text.simplification.discourse.utils.words.WordsUtils;
 import org.lambda3.text.simplification.sentence.transformation.CoreContextSentence;
@@ -63,12 +63,13 @@ public class SentenceSimplifier {
     }
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
-    private final ContextClassifier CONTEXT_CLASSIFIER = new ExtContextClassifier();
+    private final ContextClassifier contextClassifier;
 
     private final Config config;
 
     public SentenceSimplifier(Config config) {
         this.config = config;
+        this.contextClassifier = new SimpleContextClassifier(config);
     }
 
     private Result simplify(Tree parseTree) {
@@ -108,7 +109,7 @@ public class SentenceSimplifier {
                     SimpleContext sc = new SimpleContext(c);
 
                     // classify
-                    CONTEXT_CLASSIFIER.classify(sc);
+                    contextClassifier.classify(sc);
 
                     // add only if it is noun based
                     if (sc.getRelation().equals(Relation.NOUN_BASED)) {
@@ -131,7 +132,7 @@ public class SentenceSimplifier {
                 SimpleContext simpleContext = new SimpleContext(c);
 
                 // classify
-                CONTEXT_CLASSIFIER.classify(simpleContext);
+                contextClassifier.classify(simpleContext);
 
                 // add simple context
                 element.addSimpleContext(simpleContext);

@@ -1,6 +1,6 @@
 /*
  * ==========================License-Start=============================
- * DiscourseSimplification : SubordinationPostISAExtractor2
+ * DiscourseSimplification : SubordinationPostISAExtractor
  *
  * Copyright © 2017 Lambda³
  *
@@ -23,32 +23,29 @@
 package org.lambda3.text.simplification.discourse.runner.discourse_tree.extraction.rules;
 
 import edu.stanford.nlp.ling.Word;
-import edu.stanford.nlp.trees.Tree;
 import edu.stanford.nlp.trees.tregex.TregexMatcher;
 import edu.stanford.nlp.trees.tregex.TregexPattern;
 import org.lambda3.text.simplification.discourse.runner.discourse_tree.Relation;
-import org.lambda3.text.simplification.discourse.runner.discourse_tree.classification.SignalPhraseClassifier;
-import org.lambda3.text.simplification.discourse.runner.discourse_tree.extraction.Extraction;
 import org.lambda3.text.simplification.discourse.runner.discourse_tree.extraction.ExtractionRule;
-import org.lambda3.text.simplification.discourse.runner.discourse_tree.extraction.model.SubordinationExtraction;
+import org.lambda3.text.simplification.discourse.runner.discourse_tree.extraction.Extraction;
 import org.lambda3.text.simplification.discourse.runner.discourse_tree.model.Leaf;
 import org.lambda3.text.simplification.discourse.utils.parseTree.ParseTreeException;
 import org.lambda3.text.simplification.discourse.utils.parseTree.ParseTreeExtractionUtils;
 import org.lambda3.text.simplification.discourse.utils.words.WordsUtils;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
 /**
  *
  */
-public class SubordinationPostISAExtractor2 extends ExtractionRule {
-    private static final SignalPhraseClassifier CLASSIFIER = new SignalPhraseClassifier();
+public class SubordinationPostExtractor2 extends ExtractionRule {
 
     @Override
     public Optional<Extraction> extract(Leaf leaf) throws ParseTreeException {
-        TregexPattern p = TregexPattern.compile("ROOT <<: (S < (NP $.. (VP <+(VP) (SBAR=sbar <1 (S=s < (NP $.. VP))))))");
+        TregexPattern p = TregexPattern.compile("ROOT <<: (S < (NP $.. (VP <+(VP) (SBAR=sbar <<, /that/ < (S=s)))))");
         TregexMatcher matcher = p.matcher(leaf.getParseTree());
 
         while (matcher.findAt(leaf.getParseTree())) {
@@ -69,15 +66,15 @@ public class SubordinationPostISAExtractor2 extends ExtractionRule {
             Leaf rightConstituent = new Leaf(getClass().getSimpleName(), WordsUtils.wordsToProperSentenceString(rightConstituentWords));
 
             // relation
-            Relation relation = Relation.ATTRIBUTION;
+            Relation relation = Relation.UNKNOWN_SUBORDINATION;
 
-            Extraction res = new SubordinationExtraction(
-                    getClass().getSimpleName(),
-                    relation,
-                    null,
-                    leftConstituent, // the subordinate constituent
-                    rightConstituent, // the superordinate constituent
-                    false
+            Extraction res = new Extraction(
+                getClass().getSimpleName(),
+                false,
+                null,
+                relation,
+                false,
+                Arrays.asList(leftConstituent, rightConstituent)
             );
 
             return Optional.of(res);

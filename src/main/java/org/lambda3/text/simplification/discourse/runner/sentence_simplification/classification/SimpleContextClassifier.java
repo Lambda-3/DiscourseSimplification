@@ -22,10 +22,11 @@
 
 package org.lambda3.text.simplification.discourse.runner.sentence_simplification.classification;
 
+import com.typesafe.config.Config;
 import edu.stanford.nlp.ling.Word;
-import org.lambda3.text.simplification.discourse.runner.discourse_tree.Relation;
-import org.lambda3.text.simplification.discourse.runner.discourse_tree.classification.SignalPhraseClassifier;
 import org.lambda3.text.simplification.discourse.model.SimpleContext;
+import org.lambda3.text.simplification.discourse.runner.discourse_tree.Relation;
+import org.lambda3.text.simplification.discourse.runner.discourse_tree.classification.CuePhraseClassifier;
 import org.lambda3.text.simplification.discourse.utils.ner.NERString;
 import org.lambda3.text.simplification.discourse.utils.ner.NERStringParser;
 import org.lambda3.text.simplification.discourse.utils.parseTree.ParseTreeExtractionUtils;
@@ -60,6 +61,7 @@ public class SimpleContextClassifier implements ContextClassifier {
     ).map(p -> PATTERN_PREFIX + p + PATTERN_SUFFIX).collect(Collectors.toList());
 
     private static final List<String> DAY_PATTERNS = Stream.of(
+            "today", "yesterday",
             "monday", "mon\\.",
             "tuesday", "tues\\.",
             "wednesday", "wed\\.",
@@ -74,23 +76,27 @@ public class SimpleContextClassifier implements ContextClassifier {
     private static final String CENTURY_PATTERN = PATTERN_PREFIX + "(1st|2nd|3rd|\\d+th)\\s+century" + PATTERN_SUFFIX;
     private static final String TIME_PATTERN = PATTERN_PREFIX + "([0-1]?\\d|2[0-4])\\s*:\\s*[0-5]\\d" + PATTERN_SUFFIX;
 
-    private static final SignalPhraseClassifier SIGNAL_PHRASE_CLASSIFIER = new SignalPhraseClassifier();
+    private final CuePhraseClassifier cuePhraseClassifier;
 
-    private static boolean checkTemporal(SimpleContext simpleContext) {
+    public SimpleContextClassifier(Config config) {
+        this.cuePhraseClassifier = new CuePhraseClassifier(config);
+    }
 
-        // use first 10 words as signal phrase
-        List<Word> signalPhraseWords = ParseTreeExtractionUtils.getContainingWords(simpleContext.getPhrase());
-        if (signalPhraseWords.size() > 10) {
-            signalPhraseWords = signalPhraseWords.subList(0, 10);
+    private boolean checkTemporal(SimpleContext simpleContext) {
+
+        // use first 10 words as cue phrase
+        List<Word> cuePhraseWords = ParseTreeExtractionUtils.getContainingWords(simpleContext.getPhrase());
+        if (cuePhraseWords.size() > 10) {
+            cuePhraseWords = cuePhraseWords.subList(0, 10);
         }
-        String signalPhrase = WordsUtils.wordsToString(signalPhraseWords);
+        String cuePhrase = WordsUtils.wordsToString(cuePhraseWords);
 
-        if ((MONTH_PATTERNS.stream().anyMatch(signalPhrase::matches))
-                || (DAY_PATTERNS.stream().anyMatch(signalPhrase::matches))
-                || (signalPhrase.matches(YEAR_PATTERN))
-                || (signalPhrase.matches(BC_AD_PATTERN))
-                || (signalPhrase.matches(CENTURY_PATTERN))
-                || (signalPhrase.matches(TIME_PATTERN))) {
+        if ((MONTH_PATTERNS.stream().anyMatch(cuePhrase::matches))
+                || (DAY_PATTERNS.stream().anyMatch(cuePhrase::matches))
+                || (cuePhrase.matches(YEAR_PATTERN))
+                || (cuePhrase.matches(BC_AD_PATTERN))
+                || (cuePhrase.matches(CENTURY_PATTERN))
+                || (cuePhrase.matches(TIME_PATTERN))) {
 
             simpleContext.setRelation(Relation.TEMPORAL);
             return true;
@@ -101,14 +107,14 @@ public class SimpleContextClassifier implements ContextClassifier {
 
     private boolean checkSpatial(SimpleContext simpleContext) {
 
-        // use first 10 words as signal phrase
-        List<Word> signalPhraseWords = ParseTreeExtractionUtils.getContainingWords(simpleContext.getPhrase());
-        if (signalPhraseWords.size() > 10) {
-            signalPhraseWords = signalPhraseWords.subList(0, 10);
+        // use first 10 words as cue phrase
+        List<Word> cuePhraseWords = ParseTreeExtractionUtils.getContainingWords(simpleContext.getPhrase());
+        if (cuePhraseWords.size() > 10) {
+            cuePhraseWords = cuePhraseWords.subList(0, 10);
         }
-        String signalPhrase = WordsUtils.wordsToString(signalPhraseWords);
+        String cuePhrase = WordsUtils.wordsToString(cuePhraseWords);
 
-        NERString ner = NERStringParser.parse(signalPhrase);
+        NERString ner = NERStringParser.parse(cuePhrase);
 
         if (ner.getTokens().stream().anyMatch(t -> t.getCategory().equals("LOCATION"))) {
             simpleContext.setRelation(Relation.SPATIAL);
@@ -118,16 +124,16 @@ public class SimpleContextClassifier implements ContextClassifier {
         return false;
     }
 
-    private static boolean checkSignals(SimpleContext simpleContext) {
+    private boolean checkCues(SimpleContext simpleContext) {
 
-        // use first 3 words as signal phrase
-        List<Word> signalPhraseWords = ParseTreeExtractionUtils.getContainingWords(simpleContext.getPhrase());
-        if (signalPhraseWords.size() > 3) {
-            signalPhraseWords = signalPhraseWords.subList(0, 3);
+        // use first 3 words as cue phrase
+        List<Word> cuePhraseWords = ParseTreeExtractionUtils.getContainingWords(simpleContext.getPhrase());
+        if (cuePhraseWords.size() > 3) {
+            cuePhraseWords = cuePhraseWords.subList(0, 3);
         }
-        String signalPhrase = WordsUtils.wordsToString(signalPhraseWords);
+        String cuePhrase = WordsUtils.wordsToString(cuePhraseWords);
 
-        Optional<Relation> relation = SIGNAL_PHRASE_CLASSIFIER.classifyDefault(signalPhrase);
+        Optional<Relation> relation = cuePhraseClassifier.classifySubordinating(cuePhrase);
         if (relation.isPresent()) {
             simpleContext.setRelation(relation.get());
             return true;
@@ -139,8 +145,8 @@ public class SimpleContextClassifier implements ContextClassifier {
     @Override
     public void classify(SimpleContext simpleContext) {
 
-        // SIGNAL
-        if (checkSignals(simpleContext)) {
+        // CUE
+        if (checkCues(simpleContext)) {
             return;
         }
 
