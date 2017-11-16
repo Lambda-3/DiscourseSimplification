@@ -1,6 +1,6 @@
 /*
  * ==========================License-Start=============================
- * DiscourseSimplification : ExtractionUtilsTest
+ * DiscourseSimplification : WordUtilsTest
  *
  * Copyright © 2017 Lambda³
  *

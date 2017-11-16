@@ -1,6 +1,6 @@
 /*
  * ==========================License-Start=============================
- * DiscourseSimplification : ConfigUtils
+ * DiscourseSimplification : TreeSerializer
  *
  * Copyright © 2017 Lambda³
  *
@@ -20,18 +20,30 @@
  * ==========================License-End==============================
  */
 
-package org.lambda3.text.simplification.discourse.utils;
+package org.lambda3.text.simplification.discourse.model.serializer;
 
-import com.typesafe.config.Config;
-import com.typesafe.config.ConfigRenderOptions;
+import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.databind.SerializerProvider;
+import com.fasterxml.jackson.databind.ser.std.StdSerializer;
+import edu.stanford.nlp.trees.Tree;
+
+import java.io.IOException;
 
 /**
  *
  */
-public class ConfigUtils {
-	public static String prettyPrint(Config config) {
-		return config == null
-				? null
-				: config.root().render(ConfigRenderOptions.concise().setFormatted(true));
-	}
+public class TreeSerializer extends StdSerializer<Tree> {
+
+    public TreeSerializer() {
+        this(null);
+    }
+
+    protected TreeSerializer(Class<Tree> t) {
+        super(t);
+    }
+
+    @Override
+    public void serialize(Tree value, JsonGenerator gen, SerializerProvider provider) throws IOException {
+        gen.writeString(value.pennString().trim().replaceAll("\\s+", " ").replaceAll("[\\n\\t]", ""));
+    }
 }

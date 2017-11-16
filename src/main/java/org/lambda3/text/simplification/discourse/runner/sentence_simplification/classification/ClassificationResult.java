@@ -1,6 +1,6 @@
 /*
  * ==========================License-Start=============================
- * DiscourseSimplification : POSToken
+ * DiscourseSimplification : ClassificationResult
  *
  * Copyright © 2017 Lambda³
  *
@@ -20,35 +20,34 @@
  * ==========================License-End==============================
  */
 
-package org.lambda3.text.simplification.discourse.utils.pos;
+package org.lambda3.text.simplification.discourse.runner.sentence_simplification.classification;
+
+import org.lambda3.text.simplification.discourse.runner.discourse_tree.Relation;
+import org.lambda3.text.simplification.discourse.model.TimeInformation;
+
+import java.util.Optional;
 
 /**
  *
  */
-public class POSToken {
-    private final int index;
-    private final String text;
-    private final String pos;
+public class ClassificationResult {
+    private Relation relation;
+    private TimeInformation timeInformation; // optional
 
-    public POSToken(int index, String text, String pos) {
-        this.index = index;
-        this.text = text;
-        this.pos = pos;
+    public ClassificationResult(Relation relation) {
+        this.relation = relation;
+        this.timeInformation = null;
     }
 
-    public int getIndex() {
-        return index;
+    public void setTimeInformation(TimeInformation timeInformation) {
+        this.timeInformation = timeInformation;
     }
 
-    public String getText() {
-        return text;
+    public Relation getRelation() {
+        return relation;
     }
 
-    public String getPos() {
-        return pos;
-    }
-
-    public String toString() {
-        return "(" + index + ": " + pos + ", '" + text + "')";
+    public Optional<TimeInformation> getTimeInformation() {
+        return Optional.ofNullable(timeInformation);
     }
 }

@@ -1,6 +1,6 @@
 /*
  * ==========================License-Start=============================
- * DiscourseSimplification : App
+ * DiscourseSimplification : SPOSplitter
  *
  * Copyright © 2017 Lambda³
  *

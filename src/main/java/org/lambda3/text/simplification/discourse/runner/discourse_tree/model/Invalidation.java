@@ -1,6 +1,6 @@
 /*
  * ==========================License-Start=============================
- * DiscourseSimplification : ConfigUtils
+ * DiscourseSimplification : Invalidation
  *
  * Copyright © 2017 Lambda³
  *
@@ -20,18 +20,32 @@
  * ==========================License-End==============================
  */
 
-package org.lambda3.text.simplification.discourse.utils;
+package org.lambda3.text.simplification.discourse.runner.discourse_tree.model;
 
-import com.typesafe.config.Config;
-import com.typesafe.config.ConfigRenderOptions;
+import org.lambda3.text.simplification.discourse.utils.PrettyTreePrinter;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 /**
  *
  */
-public class ConfigUtils {
-	public static String prettyPrint(Config config) {
-		return config == null
-				? null
-				: config.root().render(ConfigRenderOptions.concise().setFormatted(true));
-	}
+public class Invalidation extends DiscourseTree {
+
+    public Invalidation() {
+        super("");
+    }
+
+    // VISUALIZATION ///////////////////////////////////////////////////////////////////////////////////////////////////
+
+    @Override
+    public List<String> getPTPCaption() {
+        return Collections.singletonList("INVALIDATED");
+    }
+
+    @Override
+    public List<PrettyTreePrinter.Edge> getPTPEdges() {
+        return new ArrayList<>();
+    }
 }

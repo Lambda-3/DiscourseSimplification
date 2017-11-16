@@ -1,6 +1,6 @@
 /*
  * ==========================License-Start=============================
- * DiscourseSimplification : ConfigUtils
+ * DiscourseSimplification : ContextClassifier
  *
  * Copyright © 2017 Lambda³
  *
@@ -20,18 +20,13 @@
  * ==========================License-End==============================
  */
 
-package org.lambda3.text.simplification.discourse.utils;
+package org.lambda3.text.simplification.discourse.runner.sentence_simplification.classification;
 
-import com.typesafe.config.Config;
-import com.typesafe.config.ConfigRenderOptions;
+import org.lambda3.text.simplification.discourse.model.SimpleContext;
 
 /**
  *
  */
-public class ConfigUtils {
-	public static String prettyPrint(Config config) {
-		return config == null
-				? null
-				: config.root().render(ConfigRenderOptions.concise().setFormatted(true));
-	}
+public interface ContextClassifier {
+    void classify(SimpleContext simpleContext);
 }

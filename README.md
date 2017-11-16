@@ -20,8 +20,18 @@ Clone and install locally
     mvn package
 
 ### Run the program
+Create a new text file with the input
+
+    vim input.txt
+     
+Run program
 
     mvn clean compile exec:java
+    
+Inspect output
+
+    cat output_default.txt
+    cat output_flat.txt
 
 ## Use as library
 Check `App.java`. 
