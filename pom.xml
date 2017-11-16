@@ -26,7 +26,7 @@
 
     <groupId>org.lambda3.text.simplification</groupId>
     <artifactId>discourse-simplification</artifactId>
-    <version>8.0.0-SNAPSHOT</version>
+    <version>8.0.0</version>
     <packaging>jar</packaging>
 
     <name>Discourse Simplification</name>
