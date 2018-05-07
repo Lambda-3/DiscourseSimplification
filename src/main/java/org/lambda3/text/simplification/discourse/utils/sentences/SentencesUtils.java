@@ -50,7 +50,20 @@ public class SentencesUtils {
         return splitIntoSentences(new StringReader(text));
     }
 
-    public static List<String> splitIntoSentencesFromFile(File file) throws FileNotFoundException {
-        return splitIntoSentences(new BufferedReader(new FileReader(file)));
+    public static List<String> splitIntoSentencesFromFile(File file, boolean byLines) throws IOException {
+        if (byLines) {
+            List<String> res = new ArrayList<>();
+
+            try (BufferedReader br = new BufferedReader(new FileReader(file))) {
+                String line;
+                while ((line = br.readLine()) != null) {
+                    res.add(line);
+                }
+            }
+
+            return res;
+        } else {
+            return splitIntoSentences(new BufferedReader(new FileReader(file)));
+        }
     }
 }
