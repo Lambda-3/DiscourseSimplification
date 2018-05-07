@@ -24,6 +24,7 @@ package org.lambda3.text.simplification.discourse.runner.discourse_tree;
 
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigException;
+import org.lambda3.text.simplification.discourse.processing.SentencePreprocessor;
 import org.lambda3.text.simplification.discourse.runner.discourse_tree.extraction.Extraction;
 import org.lambda3.text.simplification.discourse.runner.discourse_tree.extraction.ExtractionRule;
 import org.lambda3.text.simplification.discourse.runner.discourse_tree.model.*;
@@ -42,14 +43,16 @@ import java.util.Optional;
  *
  */
 public class DiscourseTreeCreator {
+    private final Config config;
+    private final SentencePreprocessor preprocessor;
     private final List<ExtractionRule> rules;
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
-    private final Config config;
     private Coordination discourseTree;
 
-    public DiscourseTreeCreator(Config config) {
+    public DiscourseTreeCreator(Config config, SentencePreprocessor preprocessor) {
         this.config = config;
+        this.preprocessor = preprocessor;
 
         // create rules from config
         this.rules = new ArrayList<>();
@@ -81,7 +84,8 @@ public class DiscourseTreeCreator {
     }
 
     public void addSentence(String sentence, int sentenceIdx) throws ParseTreeException {
-        discourseTree.addCoordination(new SentenceLeaf(sentence, sentenceIdx));
+        String preprocessedSentence = preprocessor.preprocessSentence(sentence);
+        discourseTree.addCoordination(new SentenceLeaf(preprocessedSentence, sentenceIdx));
     }
 
     public DiscourseTree getLastSentenceTree() {

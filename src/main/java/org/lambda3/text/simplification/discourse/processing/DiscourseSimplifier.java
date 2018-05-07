@@ -49,10 +49,12 @@ public class DiscourseSimplifier {
     private final DiscourseExtractor discourseExtractor;
     private final SentenceSimplifier sentenceSimplifier;
     private final boolean withSentenceSimplification;
+
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
     public DiscourseSimplifier(Config config) {
-        this.discourseTreeCreator = new DiscourseTreeCreator(config);
+        SentencePreprocessor preprocessor = new SentencePreprocessor(config);
+        this.discourseTreeCreator = new DiscourseTreeCreator(config, preprocessor);
         this.discourseExtractor = new DiscourseExtractor(config);
         this.sentenceSimplifier = new SentenceSimplifier(config);
 
