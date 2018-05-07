@@ -29,6 +29,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -66,8 +67,12 @@ public class ExtendedDiscourseSimplifier extends DiscourseSimplifier {
         return res;
     }
 
-    public SimplificationContent process(File file, ProcessingType type, boolean shuffleSentences, Integer maxSentenceLength, Integer maxSentences) throws FileNotFoundException {
-        return process(SentencesUtils.splitIntoSentencesFromFile(file), type, shuffleSentences, maxSentenceLength, maxSentences);
+    public SimplificationContent process(File file, ProcessingType type, boolean shuffleSentences, Integer maxSentenceLength, Integer maxSentences) throws IOException {
+        return process(file, type, shuffleSentences, maxSentenceLength, maxSentences, false);
+    }
+
+    public SimplificationContent process(File file, ProcessingType type, boolean shuffleSentences, Integer maxSentenceLength, Integer maxSentences, boolean separateLines) throws IOException {
+        return process(SentencesUtils.splitIntoSentencesFromFile(file, separateLines), type, shuffleSentences, maxSentenceLength, maxSentences);
     }
 
     public SimplificationContent process(String text, ProcessingType type, boolean shuffleSentences, Integer maxSentenceLength, Integer maxSentences) {
