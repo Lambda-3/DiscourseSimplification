@@ -24,11 +24,11 @@ package org.lambda3.text.simplification.discourse.processing;
 
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
-import org.lambda3.text.simplification.discourse.runner.discourse_extraction.DiscourseExtractor;
 import org.lambda3.text.simplification.discourse.model.Element;
 import org.lambda3.text.simplification.discourse.model.OutSentence;
-import org.lambda3.text.simplification.discourse.runner.discourse_tree.DiscourseTreeCreator;
 import org.lambda3.text.simplification.discourse.model.SimplificationContent;
+import org.lambda3.text.simplification.discourse.runner.discourse_extraction.DiscourseExtractor;
+import org.lambda3.text.simplification.discourse.runner.discourse_tree.DiscourseTreeCreator;
 import org.lambda3.text.simplification.discourse.runner.sentence_simplification.SentenceSimplifier;
 import org.lambda3.text.simplification.discourse.utils.ConfigUtils;
 import org.lambda3.text.simplification.discourse.utils.parseTree.ParseTreeException;
@@ -37,7 +37,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
-import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 
@@ -49,10 +49,12 @@ public class DiscourseSimplifier {
     private final DiscourseExtractor discourseExtractor;
     private final SentenceSimplifier sentenceSimplifier;
     private final boolean withSentenceSimplification;
+
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
     public DiscourseSimplifier(Config config) {
-        this.discourseTreeCreator = new DiscourseTreeCreator(config);
+        SentencePreprocessor preprocessor = new SentencePreprocessor(config);
+        this.discourseTreeCreator = new DiscourseTreeCreator(config, preprocessor);
         this.discourseExtractor = new DiscourseExtractor(config);
         this.sentenceSimplifier = new SentenceSimplifier(config);
 
@@ -66,8 +68,12 @@ public class DiscourseSimplifier {
         this(ConfigFactory.load().getConfig("discourse-simplification"));
     }
 
-    public SimplificationContent doDiscourseSimplification(File file, ProcessingType type) throws FileNotFoundException {
-        List<String> sentences = SentencesUtils.splitIntoSentencesFromFile(file);
+    public SimplificationContent doDiscourseSimplification(File file, ProcessingType type) throws IOException {
+        return doDiscourseSimplification(file, type, false);
+    }
+
+    public SimplificationContent doDiscourseSimplification(File file, ProcessingType type, boolean separateLines) throws IOException {
+        List<String> sentences = SentencesUtils.splitIntoSentencesFromFile(file, separateLines);
         return doDiscourseSimplification(sentences, type);
     }
 
