@@ -22,6 +22,7 @@
 
 package org.lambda3.text.simplification.discourse.model;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import edu.stanford.nlp.trees.Tree;
 import org.lambda3.text.simplification.discourse.utils.IDGenerator;
 import org.lambda3.text.simplification.discourse.utils.parseTree.ParseTreeException;
@@ -85,6 +86,7 @@ public class Element {
         this.parseTree = parseTree;
     }
 
+    @JsonProperty("text")
     public String getText() {
         return WordsUtils.wordsToString(ParseTreeExtractionUtils.getContainingWords(parseTree));
     }

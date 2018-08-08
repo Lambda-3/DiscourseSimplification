@@ -22,6 +22,7 @@
 
 package org.lambda3.text.simplification.discourse.model;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import edu.stanford.nlp.trees.Tree;
 import org.lambda3.text.simplification.discourse.runner.discourse_tree.Relation;
 import org.lambda3.text.simplification.discourse.utils.parseTree.ParseTreeException;
@@ -67,10 +68,6 @@ public class SimpleContext {
         extractPhrase();
     }
 
-    public String getText() {
-        return WordsUtils.wordsToString(ParseTreeExtractionUtils.getContainingWords(parseTree));
-    }
-
     private void extractPhrase() {
         this.phrase = parseTree;
 
@@ -100,6 +97,16 @@ public class SimpleContext {
 
     public Tree getPhrase() {
         return phrase;
+    }
+
+    @JsonProperty("text")
+    public String getText() {
+        return WordsUtils.wordsToString(ParseTreeExtractionUtils.getContainingWords(parseTree));
+    }
+
+    @JsonProperty("phraseText")
+    public String getPhraseText()  {
+        return WordsUtils.wordsToString(ParseTreeExtractionUtils.getContainingWords(phrase));
     }
 
     public void setRelation(Relation relation) {
