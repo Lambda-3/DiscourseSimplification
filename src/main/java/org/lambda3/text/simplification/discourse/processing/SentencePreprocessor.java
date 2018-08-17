@@ -37,10 +37,14 @@ public class SentencePreprocessor {
 
     private static String WHITESPACE_PATTERN = "\\s+";
 
-    public final boolean removeBrackets;
+    public boolean removeBrackets;
 
     public SentencePreprocessor(Config config) {
         this.removeBrackets = config.getBoolean("remove-brackets");
+    }
+
+    public void setRemoveBrackets(boolean removeBrackets) {
+        this.removeBrackets = removeBrackets;
     }
 
     public String preprocessSentence(String sentence) {

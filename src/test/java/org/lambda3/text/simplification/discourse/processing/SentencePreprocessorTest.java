@@ -33,6 +33,8 @@ public class SentencePreprocessorTest {
 
     @Test
     void preprocessSentence() {
+        preprocessor.setRemoveBrackets(true);
+
         String sentence = "This is a test (in brackets) and [the last (one)].";
         String sentence2 = "This is -LRB- a second test -RRB-.";
 

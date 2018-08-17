@@ -22,6 +22,7 @@
 
 package org.lambda3.text.simplification.discourse.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import edu.stanford.nlp.trees.Tree;
 import org.lambda3.text.simplification.discourse.runner.discourse_tree.Relation;
@@ -34,6 +35,7 @@ import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class SimpleContext {
     private static final Pattern PHRASE_PATTERN = Pattern.compile("^\\W*this\\W+\\w+\\W+(?<phrase>.*\\w+.*)$", Pattern.CASE_INSENSITIVE);
     private static final Pattern ATTRIBUTION_PHRASE_PATTERN = Pattern.compile("^\\W*this\\W+\\w+\\W+what\\W+(?<phrase>.*\\w+.*)$", Pattern.CASE_INSENSITIVE);

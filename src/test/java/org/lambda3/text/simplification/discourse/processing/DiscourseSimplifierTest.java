@@ -62,6 +62,8 @@ class DiscourseSimplifierTest {
         log.info("LOAD FROM FILE...");
         SimplificationContent loaded = SimplificationContent.deserializeFromJSON(new File(filename), SimplificationContent.class);
 
+        log.info(loaded.prettyPrintJSON());
+        log.info("---------------------------------");
         log.info(loaded.defaultFormat(false));
 
         log.info("DELETE FILE...");
