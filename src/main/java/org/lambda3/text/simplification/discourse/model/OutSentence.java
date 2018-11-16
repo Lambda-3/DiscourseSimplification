@@ -24,10 +24,7 @@ package org.lambda3.text.simplification.discourse.model;
 
 import org.lambda3.text.simplification.discourse.AbstractElement;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
+import java.util.*;
 
 public class OutSentence<E extends AbstractElement> {
     private int sentenceIdx;
@@ -42,6 +39,16 @@ public class OutSentence<E extends AbstractElement> {
         this.sentenceIdx = sentenceIdx;
         this.originalSentence = originalSentence;
         this.elementMap = new LinkedHashMap<>();
+    }
+
+    public Optional<String> containsElement(E extraction) {
+        for (E e : elementMap.values()) {
+            if (e.equals(extraction)) {
+                return Optional.ofNullable(e.id);
+            }
+        }
+
+        return Optional.empty();
     }
 
     public void addElement(E element) {
