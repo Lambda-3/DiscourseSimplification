@@ -25,59 +25,31 @@ package org.lambda3.text.simplification.discourse.model;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import edu.stanford.nlp.trees.Tree;
-import org.lambda3.text.simplification.discourse.utils.IDGenerator;
+import org.lambda3.text.simplification.discourse.AbstractElement;
 import org.lambda3.text.simplification.discourse.utils.parseTree.ParseTreeException;
 import org.lambda3.text.simplification.discourse.utils.parseTree.ParseTreeExtractionUtils;
 import org.lambda3.text.simplification.discourse.utils.parseTree.ParseTreeParser;
 import org.lambda3.text.simplification.discourse.utils.words.WordsUtils;
 
-import java.util.ArrayList;
-import java.util.List;
-
 /**
  *
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class Element {
-    private String id;
+public class Element extends AbstractElement {
     private Tree parseTree;
-    private int sentenceIdx;
-    private int contextLayer;
-    private List<SimpleContext> simpleContexts;
-    private List<LinkedContext> linkedContexts;
 
     // for deserialization
     public Element() {
     }
 
     public Element(Tree parseTree, int sentenceIdx, int contextLayer) {
-        this.id = IDGenerator.generateUUID();
+        super(sentenceIdx, contextLayer);
         this.parseTree = parseTree;
-        this.sentenceIdx = sentenceIdx;
-        this.contextLayer = contextLayer;
-        this.simpleContexts = new ArrayList<>();
-        this.linkedContexts = new ArrayList<>();
     }
 
     // not efficient -> prefer to use constructor with tree
     public Element(String text, int sentenceIdx, int contextLayer) throws ParseTreeException {
         this(ParseTreeParser.parse(text), sentenceIdx, contextLayer);
-    }
-
-    public void addLinkedContext(LinkedContext context) {
-        if (!linkedContexts.contains(context)) {
-            linkedContexts.add(context);
-        }
-    }
-
-    public void addSimpleContext(SimpleContext context) {
-        if (!simpleContexts.contains(context)) {
-            simpleContexts.add(context);
-        }
-    }
-
-    public String getId() {
-        return id;
     }
 
     public Tree getParseTree() {
@@ -91,22 +63,6 @@ public class Element {
     @JsonProperty("text")
     public String getText() {
         return WordsUtils.wordsToString(ParseTreeExtractionUtils.getContainingWords(parseTree));
-    }
-
-    public int getSentenceIdx() {
-        return sentenceIdx;
-    }
-
-    public int getContextLayer() {
-        return contextLayer;
-    }
-
-    public List<SimpleContext> getSimpleContexts() {
-        return simpleContexts;
-    }
-
-    public List<LinkedContext> getLinkedContexts() {
-        return linkedContexts;
     }
 
     @Override
