@@ -69,7 +69,7 @@ public class SimplificationContent extends Content {
         for (OutSentence outSentence : getSentences()) {
             strb.append("\n# " + outSentence.getOriginalSentence() + "\n");
             for (Element element : outSentence.getElements()) {
-                strb.append("\n" + element.getId() + "\t" + element.getContextLayer() + "\t" + element.getText() + "\n");
+                strb.append("\n" + element.id + "\t" + element.getContextLayer() + "\t" + element.getText() + "\n");
                 for (SimpleContext simpleContext : element.getSimpleContexts()) {
                     strb.append("\t" + "S:" + simpleContext.getRelation() + "\t" + simpleContext.getText() + "\n");
                 }
@@ -90,7 +90,7 @@ public class SimplificationContent extends Content {
         StringBuilder strb = new StringBuilder();
         for (OutSentence outSentence : getSentences()) {
             for (Element element : outSentence.getElements()) {
-                strb.append(outSentence.getOriginalSentence() + "\t" + element.getId() + "\t" + element.getContextLayer() + "\t" + element.getText());
+                strb.append(outSentence.getOriginalSentence() + "\t" + element.id + "\t" + element.getContextLayer() + "\t" + element.getText());
                 for (SimpleContext simpleContext : element.getSimpleContexts()) {
                     strb.append("\t" + "S:" + simpleContext.getRelation() + "(" + simpleContext.getText() + ")");
                 }

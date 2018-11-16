@@ -90,7 +90,7 @@ public class DiscourseExtractor {
         } else {
             // linked context
             Element targetElement = processedLeaves.get(targetLeaf);
-            leafElement.addLinkedContext(new LinkedContext(targetElement.getId(), targetRelation));
+            leafElement.addLinkedContext(new LinkedContext(targetElement.id, targetRelation));
         }
     }
 

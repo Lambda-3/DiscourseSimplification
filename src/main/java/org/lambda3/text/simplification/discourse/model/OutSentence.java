@@ -49,7 +49,7 @@ public class OutSentence {
         if (sentenceIdx != element.getSentenceIdx()) {
             throw new AssertionError("Element should not be added to this sentence");
         }
-        elementMap.putIfAbsent(element.getId(), element);
+        elementMap.putIfAbsent(element.id, element);
     }
 
     public int getSentenceIdx() {
