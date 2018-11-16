@@ -22,30 +22,29 @@
 
 package org.lambda3.text.simplification.discourse.model;
 
+import org.lambda3.text.simplification.discourse.AbstractElement;
+
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.stream.Collectors;
 
-/**
- *
- */
-public class OutSentence {
+public class OutSentence<E extends AbstractElement> {
     private int sentenceIdx;
     private String originalSentence;
-    private HashMap<String, Element> elementMap; // all extractions extracted from this sentence
+    private HashMap<String, E> elementMap; // all extractions extracted from this sentence
 
     // for deserialization
     public OutSentence() {
     }
 
-    public OutSentence(int sentenceIdx,String originalSentence) {
+    public OutSentence(int sentenceIdx, String originalSentence) {
         this.sentenceIdx = sentenceIdx;
         this.originalSentence = originalSentence;
         this.elementMap = new LinkedHashMap<>();
     }
 
-    public void addElement(Element element) {
+    public void addElement(E element) {
         if (sentenceIdx != element.getSentenceIdx()) {
             throw new AssertionError("Element should not be added to this sentence");
         }
@@ -60,19 +59,25 @@ public class OutSentence {
         return originalSentence;
     }
 
-    public Element getElement(String id) {
+    public E getElement(String id) {
         return elementMap.getOrDefault(id, null);
     }
 
-    public List<Element> getElements() {
-        return elementMap.values().stream().collect(Collectors.toList());
+    public List<E> getElements() {
+        return new ArrayList<>(elementMap.values());
     }
 
     @Override
     public String toString() {
         StringBuilder strb = new StringBuilder();
-        strb.append("# " + originalSentence + "\n");
-        getElements().forEach(e -> strb.append("\n" + e));
+        strb.append("# ");
+        strb.append(originalSentence);
+        strb.append("\n");
+        getElements().forEach(e -> {
+            strb.append("\n");
+            strb.append(e);
+        });
+
         return strb.toString();
     }
 }

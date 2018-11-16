@@ -27,14 +27,14 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public class SimplificationContent extends Content {
-	private List<OutSentence> sentences;
+	private List<OutSentence<Element>> sentences;
 
 	// for deserialization
 	public SimplificationContent() {
 	    this.sentences = new ArrayList<>();
 	}
 
-	public void addSentence(OutSentence sentence) {
+	public void addSentence(OutSentence<Element> sentence) {
 	    this.sentences.add(sentence);
     }
 
@@ -42,12 +42,12 @@ public class SimplificationContent extends Content {
         sentences.get(element.getSentenceIdx()).addElement(element);
     }
 
-    public List<OutSentence> getSentences() {
+    public List<OutSentence<Element>> getSentences() {
         return sentences;
     }
 
     public Element getElement(String id) {
-        for (OutSentence sentence : sentences) {
+        for (OutSentence<Element> sentence : sentences) {
             Element e = sentence.getElement(id);
             if (e != null) {
                 return e;
@@ -66,18 +66,18 @@ public class SimplificationContent extends Content {
 
     public String defaultFormat(boolean resolve) {
 	    StringBuilder strb = new StringBuilder();
-        for (OutSentence outSentence : getSentences()) {
-            strb.append("\n# " + outSentence.getOriginalSentence() + "\n");
+        for (OutSentence<Element> outSentence : getSentences()) {
+            strb.append("\n# ").append(outSentence.getOriginalSentence()).append("\n");
             for (Element element : outSentence.getElements()) {
-                strb.append("\n" + element.id + "\t" + element.getContextLayer() + "\t" + element.getText() + "\n");
+                strb.append("\n").append(element.id).append("\t").append(element.getContextLayer()).append("\t").append(element.getText()).append("\n");
                 for (SimpleContext simpleContext : element.getSimpleContexts()) {
-                    strb.append("\t" + "S:" + simpleContext.getRelation() + "\t" + simpleContext.getText() + "\n");
+                    strb.append("\t" + "S:").append(simpleContext.getRelation()).append("\t").append(simpleContext.getText()).append("\n");
                 }
                 for (LinkedContext linkedContext : element.getLinkedContexts()) {
                     if (resolve) {
-                        strb.append("\t" + "L:" + linkedContext.getRelation() + "\t" + getElement(linkedContext.getTargetID()).getText() + "\n");
+                        strb.append("\t" + "L:").append(linkedContext.getRelation()).append("\t").append(getElement(linkedContext.getTargetID()).getText()).append("\n");
                     } else {
-                        strb.append("\t" + "L:" + linkedContext.getRelation() + "\t" + linkedContext.getTargetID() + "\n");
+                        strb.append("\t" + "L:").append(linkedContext.getRelation()).append("\t").append(linkedContext.getTargetID()).append("\n");
                     }
                 }
             }
@@ -88,17 +88,17 @@ public class SimplificationContent extends Content {
 
     public String flatFormat(boolean resolve) {
         StringBuilder strb = new StringBuilder();
-        for (OutSentence outSentence : getSentences()) {
+        for (OutSentence<Element> outSentence : getSentences()) {
             for (Element element : outSentence.getElements()) {
-                strb.append(outSentence.getOriginalSentence() + "\t" + element.id + "\t" + element.getContextLayer() + "\t" + element.getText());
+                strb.append(outSentence.getOriginalSentence()).append("\t").append(element.id).append("\t").append(element.getContextLayer()).append("\t").append(element.getText());
                 for (SimpleContext simpleContext : element.getSimpleContexts()) {
-                    strb.append("\t" + "S:" + simpleContext.getRelation() + "(" + simpleContext.getText() + ")");
+                    strb.append("\t" + "S:").append(simpleContext.getRelation()).append("(").append(simpleContext.getText()).append(")");
                 }
                 for (LinkedContext linkedContext : element.getLinkedContexts()) {
                     if (resolve) {
-                        strb.append("\t" + "L:" + linkedContext.getRelation() + "(" + getElement(linkedContext.getTargetID()).getText() + ")");
+                        strb.append("\t" + "L:").append(linkedContext.getRelation()).append("(").append(getElement(linkedContext.getTargetID()).getText()).append(")");
                     } else {
-                        strb.append("\t" + "L:" + linkedContext.getRelation() + "(" + linkedContext.getTargetID() + ")");
+                        strb.append("\t" + "L:").append(linkedContext.getRelation()).append("(").append(linkedContext.getTargetID()).append(")");
                     }
                 }
                 strb.append("\n");
@@ -110,6 +110,6 @@ public class SimplificationContent extends Content {
 
     @Override
     public String toString() {
-        return getSentences().stream().map(s -> s.toString()).collect(Collectors.joining("\n"));
+        return getSentences().stream().map(OutSentence::toString).collect(Collectors.joining("\n"));
     }
 }
