@@ -107,7 +107,7 @@ public enum Relation {
         return coordination;
     }
 
-    public Relation getRegulatRelation() {
+    public Relation getRegularRelation() {
         return regular;
     }
 
