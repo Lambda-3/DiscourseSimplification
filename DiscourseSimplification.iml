@@ -40,8 +40,8 @@
     <orderEntry type="library" name="Maven: ch.qos.logback:logback-classic:1.1.8" level="project" />
     <orderEntry type="library" name="Maven: ch.qos.logback:logback-core:1.1.8" level="project" />
     <orderEntry type="library" name="Maven: org.slf4j:slf4j-api:1.7.21" level="project" />
-    <orderEntry type="library" scope="TEST" name="Maven: org.junit.jupiter:junit-jupiter-api:5.0.0-M3" level="project" />
-    <orderEntry type="library" scope="TEST" name="Maven: org.opentest4j:opentest4j:1.0.0-M1" level="project" />
-    <orderEntry type="library" scope="TEST" name="Maven: org.junit.platform:junit-platform-commons:1.0.0-M3" level="project" />
+    <orderEntry type="library" scope="TEST" name="Maven: org.testng:testng:6.11" level="project" />
+    <orderEntry type="library" scope="TEST" name="Maven: com.beust:jcommander:1.64" level="project" />
+    <orderEntry type="library" scope="TEST" name="Maven: org.yaml:snakeyaml:1.17" level="project" />
   </component>
 </module>

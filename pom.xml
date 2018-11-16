@@ -26,7 +26,7 @@
 
     <groupId>org.lambda3.text.simplification</groupId>
     <artifactId>discourse-simplification</artifactId>
-    <version>8.1.1</version>
+    <version>8.1.2-snapshot</version>
     <packaging>jar</packaging>
 
     <name>Discourse Simplification</name>
@@ -48,8 +48,7 @@
         <corenlp.version>3.7.0</corenlp.version>
         <logback.version>1.1.8</logback.version>
 
-        <junit.platform.version>1.0.0-M3</junit.platform.version>
-        <junit.jupiter.version>5.0.0-M3</junit.jupiter.version>
+        <testng.version>6.11</testng.version>
 
         <jdk.version>1.8</jdk.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -109,15 +108,13 @@
             <version>${logback.version}</version>
         </dependency>
 
-        <!-- Test Dependencies -->
         <dependency>
-            <groupId>org.junit.jupiter</groupId>
-            <artifactId>junit-jupiter-api</artifactId>
-            <version>${junit.jupiter.version}</version>
+            <groupId>org.testng</groupId>
+            <artifactId>testng</artifactId>
+            <version>${testng.version}</version>
             <scope>test</scope>
         </dependency>
     </dependencies>
-
     <!-- Building (run: "mvn exec:java") -->
     <build>
         <plugins>
@@ -184,20 +181,18 @@
                 </executions>
             </plugin>
             <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
-                <version>2.19</version>
-                <dependencies>
-                    <dependency>
-                        <groupId>org.junit.platform</groupId>
-                        <artifactId>junit-platform-surefire-provider</artifactId>
-                        <version>${junit.platform.version}</version>
-                    </dependency>
-                    <dependency>
-                        <groupId>org.junit.jupiter</groupId>
-                        <artifactId>junit-jupiter-engine</artifactId>
-                        <version>${junit.jupiter.version}</version>
-                    </dependency>
-                </dependencies>
+                <version>2.20</version>
+                <configuration>
+                    <includes>
+                        <include>**/Test*.java</include>
+                        <include>**/*Test.java</include>
+                        <include>**/*Tests.java</include>
+                        <include>**/*TestCase.java</include>
+                    </includes>
+                    <forkCount>0</forkCount>
+                </configuration>
             </plugin>
         </plugins>
     </build>

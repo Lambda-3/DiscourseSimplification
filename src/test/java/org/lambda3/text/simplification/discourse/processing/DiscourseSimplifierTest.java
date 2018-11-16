@@ -22,19 +22,16 @@
 
 package org.lambda3.text.simplification.discourse.processing;
 
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
 import org.lambda3.text.simplification.discourse.model.OutSentence;
 import org.lambda3.text.simplification.discourse.model.SimplificationContent;
 import org.slf4j.LoggerFactory;
+import org.testng.Assert;
+import org.testng.annotations.Test;
 
 import java.io.File;
 import java.io.IOException;
 
-/**
- *
- */
-class DiscourseSimplifierTest {
+public class DiscourseSimplifierTest {
     private org.slf4j.Logger log = LoggerFactory.getLogger(this.getClass());
     private DiscourseSimplifier simplifier = new DiscourseSimplifier();
 
@@ -43,10 +40,10 @@ class DiscourseSimplifierTest {
         String text = "Peter went to Paris because he likes the city.";
         SimplificationContent c = simplifier.doDiscourseSimplification(text, ProcessingType.WHOLE);
 
-        Assertions.assertEquals(1, c.getSentences().size());
+        Assert.assertEquals(1, c.getSentences().size());
         OutSentence sent = c.getSentences().get(0);
 
-        Assertions.assertEquals(2, sent.getElements().size());
+        Assert.assertEquals(2, sent.getElements().size());
     }
 
     @Test
