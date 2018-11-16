@@ -44,7 +44,7 @@ public class OutSentence<E extends AbstractElement> {
     public Optional<String> containsElement(E extraction) {
         for (E e : elementMap.values()) {
             if (e.equals(extraction)) {
-                return Optional.ofNullable(e.id);
+                return Optional.of(e.id);
             }
         }
 
