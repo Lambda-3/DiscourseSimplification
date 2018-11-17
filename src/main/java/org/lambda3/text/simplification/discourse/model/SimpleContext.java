@@ -42,8 +42,6 @@ public class SimpleContext {
 
     private Tree parseTree;
     private Tree phrase;
-    private String text = null;
-    private String phraseText = null;
     private Relation relation;
     private TimeInformation timeInformation; // optional
 
@@ -105,19 +103,12 @@ public class SimpleContext {
 
     @JsonProperty("text")
     public String getText() {
-        if (text == null) {
-            text = WordsUtils.wordsToString(ParseTreeExtractionUtils.getContainingWords(parseTree));
-        }
-
-        return text;
+        return WordsUtils.wordsToString(ParseTreeExtractionUtils.getContainingWords(parseTree));
     }
 
     @JsonProperty("phraseText")
     public String getPhraseText()  {
-        if (phraseText == null) {
-            phraseText = WordsUtils.wordsToString(ParseTreeExtractionUtils.getContainingWords(phrase));
-        }
-        return phraseText;
+        return WordsUtils.wordsToString(ParseTreeExtractionUtils.getContainingWords(phrase));
     }
 
     public void setRelation(Relation relation) {
