@@ -22,9 +22,9 @@
 
 package org.lambda3.text.simplification.discourse;
 
+import org.lambda3.text.simplification.discourse.model.SimplificationContent;
 import org.lambda3.text.simplification.discourse.processing.DiscourseSimplifier;
 import org.lambda3.text.simplification.discourse.processing.ProcessingType;
-import org.lambda3.text.simplification.discourse.model.SimplificationContent;
 import org.slf4j.LoggerFactory;
 
 import java.io.BufferedWriter;

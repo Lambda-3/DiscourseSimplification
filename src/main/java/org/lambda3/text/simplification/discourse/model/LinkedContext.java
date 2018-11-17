@@ -29,7 +29,7 @@ public class LinkedContext {
 	private Relation relation;
 
 	// for deserialization
-	public LinkedContext() {
+	private LinkedContext() {
 	}
 
 	public LinkedContext(String targetID, Relation relation) {
@@ -39,10 +39,6 @@ public class LinkedContext {
 
 	public String getTargetID() {
 		return targetID;
-	}
-
-	public Element getTargetElement(SimplificationContent content) {
-		return content.getElement(targetID);
 	}
 
 	public Relation getRelation() {

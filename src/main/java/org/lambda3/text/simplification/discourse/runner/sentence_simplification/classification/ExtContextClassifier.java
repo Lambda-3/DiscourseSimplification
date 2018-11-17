@@ -99,7 +99,7 @@ public class ExtContextClassifier implements ContextClassifier {
             }
 
             simpleContext.setRelation(relation);
-            simpleContext.setTimeInformation(new TimeInformation(temporal.getTimexValue()));
+            simpleContext.setTimeInformation(temporal.getTimexValue());
 
             return true;
         }

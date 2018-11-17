@@ -25,26 +25,38 @@ package org.lambda3.text.simplification.discourse.model;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import edu.stanford.nlp.trees.Tree;
-import org.lambda3.text.simplification.discourse.AbstractElement;
+import org.lambda3.text.simplification.discourse.utils.IDGenerator;
 import org.lambda3.text.simplification.discourse.utils.parseTree.ParseTreeException;
 import org.lambda3.text.simplification.discourse.utils.parseTree.ParseTreeExtractionUtils;
 import org.lambda3.text.simplification.discourse.utils.parseTree.ParseTreeParser;
 import org.lambda3.text.simplification.discourse.utils.words.WordsUtils;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  *
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class Element extends AbstractElement {
+public class Element {
+
+    public final String id = IDGenerator.generateUUID();
+    private int sentenceIdx;
+    private int contextLayer;
     private Tree parseTree;
+    private List<SimpleContext> simpleContexts;
+    private List<LinkedContext> linkedContexts;
 
     // for deserialization
-    public Element() {
+    private Element() {
     }
 
     public Element(Tree parseTree, int sentenceIdx, int contextLayer) {
-        super(sentenceIdx, contextLayer);
+        this.sentenceIdx = sentenceIdx;
+        this.contextLayer = contextLayer;
         this.parseTree = parseTree;
+        this.simpleContexts = new ArrayList<>();
+        this.linkedContexts = new ArrayList<>();
     }
 
     // not efficient -> prefer to use constructor with tree
@@ -65,12 +77,42 @@ public class Element extends AbstractElement {
         return WordsUtils.wordsToString(ParseTreeExtractionUtils.getContainingWords(parseTree));
     }
 
+
+    public void addLinkedContext(LinkedContext context) {
+        if (!linkedContexts.contains(context)) {
+            linkedContexts.add(context);
+        }
+    }
+
+    public void addSimpleContext(SimpleContext context) {
+        if (!simpleContexts.contains(context)) {
+            simpleContexts.add(context);
+        }
+    }
+
+    public int getSentenceIdx() {
+        return sentenceIdx;
+    }
+
+    public int getContextLayer() {
+        return contextLayer;
+    }
+
+    public List<SimpleContext> getSimpleContexts() {
+        return simpleContexts;
+    }
+
+    public List<LinkedContext> getLinkedContexts() {
+        return linkedContexts;
+    }
+
     @Override
     public String toString() {
         StringBuilder strb = new StringBuilder();
-        strb.append(id + "     " + contextLayer + "     " + getText() + "\n");
-        getSimpleContexts().forEach(c -> strb.append("\tS:" + c.getRelation() + "    " + c.getText() + "\n"));
-        getLinkedContexts().forEach(c -> strb.append("\tL:" + c.getRelation() + "    " + c.getTargetID() + "\n"));
+
+        strb.append(String.format("%s     %d     %s\n", id, contextLayer, getText()));
+        getSimpleContexts().forEach(c -> strb.append(String.format("\tS:%s    %s\n", c.getRelation(), c.getText())));
+        getLinkedContexts().forEach(c -> strb.append(String.format("\tL:%s    %s\n", c.getRelation(), c.getTargetID())));
         return strb.toString();
     }
 }

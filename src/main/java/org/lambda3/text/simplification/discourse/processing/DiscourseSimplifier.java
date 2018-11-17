@@ -77,12 +77,12 @@ public class DiscourseSimplifier {
         return doDiscourseSimplification(sentences, type);
     }
 
-    public SimplificationContent doDiscourseSimplification(String text, ProcessingType type) {
+    public SimplificationContent<Element> doDiscourseSimplification(String text, ProcessingType type) {
         List<String> sentences = SentencesUtils.splitIntoSentences(text);
         return doDiscourseSimplification(sentences, type);
     }
 
-    public SimplificationContent doDiscourseSimplification(List<String> sentences, ProcessingType type) {
+    public SimplificationContent<Element> doDiscourseSimplification(List<String> sentences, ProcessingType type) {
         if (type.equals(ProcessingType.SEPARATE)) {
             return processSeparate(sentences);
         } else if (type.equals(ProcessingType.WHOLE)) {
@@ -94,7 +94,7 @@ public class DiscourseSimplifier {
 
     // creates one discourse discourse_tree over all sentences (investigates intra-sentential and inter-sentential relations)
     private SimplificationContent processWhole(List<String> sentences) {
-        SimplificationContent content = new SimplificationContent();
+        SimplificationContent<Element> content = new SimplificationContent<>();
 
         // Step 1) create document discourse discourse_tree
         logger.info("### STEP 1) CREATE DOCUMENT DISCOURSE TREE ###");
@@ -104,7 +104,7 @@ public class DiscourseSimplifier {
             logger.info("# Processing sentence {}/{} #", (idx + 1), sentences.size());
             logger.info("'" + sentence + "'");
 
-            content.addSentence(new OutSentence(idx, sentence));
+            content.addSentence(new OutSentence<>(idx, sentence));
 
             // extend discourse discourse_tree
             try {
@@ -127,7 +127,7 @@ public class DiscourseSimplifier {
         // Step 2) do discourse extraction
         logger.info("### STEP 2) DO DISCOURSE EXTRACTION ###");
         List<Element> elements = discourseExtractor.doDiscourseExtraction(discourseTreeCreator.getDiscourseTree());
-        elements.forEach(e -> content.addElement(e));
+        elements.forEach(content::addElement);
         if (logger.isDebugEnabled()) {
             logger.debug(content.toString());
         }
@@ -135,7 +135,7 @@ public class DiscourseSimplifier {
         // Step 3) do sentence simplification
         logger.info("### STEP 3) DO SENTENCE SIMPLIFICATION ###");
         if (withSentenceSimplification) {
-            content.getSentences().forEach(s -> sentenceSimplifier.doSentenceSimplification(s));
+            content.getSentences().forEach(sentenceSimplifier::doSentenceSimplification);
             if (logger.isDebugEnabled()) {
                 logger.debug(content.toString());
             }
@@ -148,12 +148,12 @@ public class DiscourseSimplifier {
     }
 
     // creates discourse trees for each individual sentence (investigates intra-sentential relations only)
-    private SimplificationContent processSeparate(List<String> sentences) {
-        SimplificationContent content = new SimplificationContent();
+    private SimplificationContent<Element> processSeparate(List<String> sentences) {
+        SimplificationContent<Element> content = new SimplificationContent<>();
 
         int idx = 0;
         for (String sentence : sentences) {
-            OutSentence outSentence = new OutSentence(idx, sentence);
+            OutSentence<Element> outSentence = new OutSentence<>(idx, sentence);
 
             logger.info("# Processing sentence {}/{} #", (idx + 1), sentences.size());
             logger.info("'" + sentence + "'");
@@ -171,7 +171,7 @@ public class DiscourseSimplifier {
                 // Step 2) do discourse extraction
                 logger.debug("### STEP 2) DO DISCOURSE EXTRACTION ###");
                 List<Element> elements = discourseExtractor.doDiscourseExtraction(discourseTreeCreator.getDiscourseTree());
-                elements.forEach(e -> outSentence.addElement(e));
+                elements.forEach(outSentence::addElement);
                 logger.debug(outSentence.toString());
 
                 // Step 3) do sentence simplification

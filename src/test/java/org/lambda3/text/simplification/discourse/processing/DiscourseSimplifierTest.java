@@ -22,6 +22,7 @@
 
 package org.lambda3.text.simplification.discourse.processing;
 
+import org.lambda3.text.simplification.discourse.model.Element;
 import org.lambda3.text.simplification.discourse.model.OutSentence;
 import org.lambda3.text.simplification.discourse.model.SimplificationContent;
 import org.slf4j.LoggerFactory;
@@ -38,7 +39,7 @@ public class DiscourseSimplifierTest {
     @Test
     void processSingleSentence() {
         String text = "Peter went to Paris because he likes the city.";
-        SimplificationContent c = simplifier.doDiscourseSimplification(text, ProcessingType.WHOLE);
+        SimplificationContent<Element> c = simplifier.doDiscourseSimplification(text, ProcessingType.WHOLE);
 
         Assert.assertEquals(1, c.getSentences().size());
         OutSentence sent = c.getSentences().get(0);

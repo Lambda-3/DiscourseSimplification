@@ -26,29 +26,29 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class SimplificationContent extends Content {
-	private List<OutSentence<Element>> sentences;
+public class SimplificationContent<E extends Element> extends Content {
+	private List<OutSentence<E>> sentences;
 
 	// for deserialization
 	public SimplificationContent() {
 	    this.sentences = new ArrayList<>();
 	}
 
-	public void addSentence(OutSentence<Element> sentence) {
+	public void addSentence(OutSentence<E> sentence) {
 	    this.sentences.add(sentence);
     }
 
-    public void addElement(Element element) {
+    public void addElement(E element) {
         sentences.get(element.getSentenceIdx()).addElement(element);
     }
 
-    public List<OutSentence<Element>> getSentences() {
+    public List<OutSentence<E>> getSentences() {
         return sentences;
     }
 
-    public Element getElement(String id) {
-        for (OutSentence<Element> sentence : sentences) {
-            Element e = sentence.getElement(id);
+    public E getElement(String id) {
+        for (OutSentence<E> sentence : sentences) {
+            E e = sentence.getElement(id);
             if (e != null) {
                 return e;
             }
@@ -57,8 +57,8 @@ public class SimplificationContent extends Content {
         return null;
     }
 
-    public List<Element> getElements() {
-        List<Element> res = new ArrayList<>();
+    public List<E> getElements() {
+        List<E> res = new ArrayList<>();
         sentences.forEach(s -> res.addAll(s.getElements()));
 
         return res;
@@ -66,9 +66,9 @@ public class SimplificationContent extends Content {
 
     public String defaultFormat(boolean resolve) {
 	    StringBuilder strb = new StringBuilder();
-        for (OutSentence<Element> outSentence : getSentences()) {
+        for (OutSentence<E> outSentence : getSentences()) {
             strb.append("\n# ").append(outSentence.getOriginalSentence()).append("\n");
-            for (Element element : outSentence.getElements()) {
+            for (E element : outSentence.getElements()) {
                 strb.append("\n").append(element.id).append("\t").append(element.getContextLayer()).append("\t").append(element.getText()).append("\n");
                 for (SimpleContext simpleContext : element.getSimpleContexts()) {
                     strb.append("\t" + "S:").append(simpleContext.getRelation()).append("\t").append(simpleContext.getText()).append("\n");
@@ -88,8 +88,8 @@ public class SimplificationContent extends Content {
 
     public String flatFormat(boolean resolve) {
         StringBuilder strb = new StringBuilder();
-        for (OutSentence<Element> outSentence : getSentences()) {
-            for (Element element : outSentence.getElements()) {
+        for (OutSentence<E> outSentence : getSentences()) {
+            for (E element : outSentence.getElements()) {
                 strb.append(outSentence.getOriginalSentence()).append("\t").append(element.id).append("\t").append(element.getContextLayer()).append("\t").append(element.getText());
                 for (SimpleContext simpleContext : element.getSimpleContexts()) {
                     strb.append("\t" + "S:").append(simpleContext.getRelation()).append("(").append(simpleContext.getText()).append(")");

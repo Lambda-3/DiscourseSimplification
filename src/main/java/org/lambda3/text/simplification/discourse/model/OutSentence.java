@@ -22,11 +22,9 @@
 
 package org.lambda3.text.simplification.discourse.model;
 
-import org.lambda3.text.simplification.discourse.AbstractElement;
-
 import java.util.*;
 
-public class OutSentence<E extends AbstractElement> {
+public class OutSentence<E extends Element> {
     private int sentenceIdx;
     private String originalSentence;
     private HashMap<String, E> elementMap; // all extractions extracted from this sentence

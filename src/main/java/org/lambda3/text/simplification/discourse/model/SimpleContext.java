@@ -43,7 +43,7 @@ public class SimpleContext {
     private Tree parseTree;
     private Tree phrase;
     private Relation relation;
-    private TimeInformation timeInformation; // optional
+    private String timeInformation; // optional
 
     // for deserialization
     public SimpleContext() {
@@ -120,11 +120,11 @@ public class SimpleContext {
         return relation;
     }
 
-    public void setTimeInformation(TimeInformation timeInformation) {
+    public void setTimeInformation(String timeInformation) {
         this.timeInformation = timeInformation;
     }
 
-	public Optional<TimeInformation> getTimeInformation() {
+	public Optional<String> getTimeInformation() {
 		return Optional.ofNullable(timeInformation);
 	}
 }

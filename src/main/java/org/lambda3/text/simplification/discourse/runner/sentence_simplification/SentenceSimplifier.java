@@ -106,10 +106,7 @@ public class SentenceSimplifier {
                 for (Tree c : r.getContexts()) {
                     SimpleContext sc = new SimpleContext(c);
 
-                    // classify
                     contextClassifier.classify(sc);
-
-                    // add only if it is noun based
                     if (sc.getRelation().equals(Relation.NOUN_BASED)) {
                         newSimpleContexts.add(sc);
                     }
@@ -119,7 +116,7 @@ public class SentenceSimplifier {
         newSimpleContexts.forEach(element::addSimpleContext);
     }
 
-    public void doSentenceSimplification(OutSentence<Element> sentence) {
+    public void doSentenceSimplification(OutSentence<? extends Element> sentence) {
         for (Element element : sentence.getElements()) {
             Result r = simplify(element.getParseTree());
 
@@ -129,10 +126,7 @@ public class SentenceSimplifier {
             for (Tree c : r.getContexts()) {
                 SimpleContext simpleContext = new SimpleContext(c);
 
-                // classify
                 contextClassifier.classify(simpleContext);
-
-                // add simple context
                 element.addSimpleContext(simpleContext);
             }
         }
