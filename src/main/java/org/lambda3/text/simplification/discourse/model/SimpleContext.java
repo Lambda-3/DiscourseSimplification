@@ -36,7 +36,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class SimpleContext {
+public class SimpleContext extends Extensible {
     private static final Pattern PHRASE_PATTERN = Pattern.compile("^\\W*this\\W+\\w+\\W+(?<phrase>.*\\w+.*)$", Pattern.CASE_INSENSITIVE);
     private static final Pattern ATTRIBUTION_PHRASE_PATTERN = Pattern.compile("^\\W*this\\W+\\w+\\W+what\\W+(?<phrase>.*\\w+.*)$", Pattern.CASE_INSENSITIVE);
 
@@ -80,7 +80,8 @@ public class SimpleContext {
                 try {
                     this.phrase = ParseTreeParser.parse(matcher.group("phrase"));
                     matched = true;
-                } catch (ParseTreeException e) {}
+                } catch (ParseTreeException e) {
+                }
             }
         } else {
             Matcher matcher = PHRASE_PATTERN.matcher(getText());
@@ -88,7 +89,8 @@ public class SimpleContext {
                 try {
                     this.phrase = ParseTreeParser.parse(matcher.group("phrase"));
                     matched = true;
-                } catch (ParseTreeException e) {}
+                } catch (ParseTreeException e) {
+                }
             }
         }
 
@@ -107,7 +109,7 @@ public class SimpleContext {
     }
 
     @JsonProperty("phraseText")
-    public String getPhraseText()  {
+    public String getPhraseText() {
         return WordsUtils.wordsToString(ParseTreeExtractionUtils.getContainingWords(phrase));
     }
 
@@ -124,7 +126,7 @@ public class SimpleContext {
         this.timeInformation = timeInformation;
     }
 
-	public Optional<String> getTimeInformation() {
-		return Optional.ofNullable(timeInformation);
-	}
+    public Optional<String> getTimeInformation() {
+        return Optional.ofNullable(timeInformation);
+    }
 }
