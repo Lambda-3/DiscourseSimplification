@@ -22,17 +22,52 @@
 
 package org.lambda3.text.simplification.discourse.model;
 
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.util.*;
 
 public abstract class Extensible {
-    private Map<Class<?>, Object> extensions = new LinkedHashMap<>();
+    private static final String LIST_KEY = "_list_";
 
-    public <O> void addExtension(Class<O> clazz, O o) {
-        this.extensions.put(clazz, o);
+    private Map<Object, Object> extensions = new LinkedHashMap<>();
+
+    public <O> void addListExtension(O o) {
+        List<O> list = (List<O>) this.extensions.putIfAbsent(getKey(LIST_KEY, o.getClass()), new LinkedList<O>());
+        list.add(o);
+    }
+
+    public <O> List<O> getListExtension(Class<O> clazz) {
+        return (List<O>) this.extensions.get(getKey(LIST_KEY, clazz));
+    }
+
+    public <O> void addExtension(O o) {
+        this.extensions.put(o.getClass(), o);
+    }
+
+    public void addExtension(String key, Object o) {
+        this.extensions.put(getKey(key, o.getClass()), o);
     }
 
     public <O> O getExtension(Class<O> clazz) {
         return (O) this.extensions.get(clazz);
+    }
+
+    public <O> O getExtension(Class<O> clazz, String key) {
+        return (O) this.extensions.get(getKey(key, clazz));
+    }
+
+    private String getKey(String key, Class<?> clazz) {
+        return String.format("%s$%s", key, clazz.getSimpleName());
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Extensible that = (Extensible) o;
+        return Objects.equals(extensions, that.extensions);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(extensions);
     }
 }
