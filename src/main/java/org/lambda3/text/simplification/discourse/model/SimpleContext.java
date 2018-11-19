@@ -25,7 +25,7 @@ package org.lambda3.text.simplification.discourse.model;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import edu.stanford.nlp.trees.Tree;
-import org.lambda3.text.simplification.discourse.runner.discourse_tree.Relation;
+import org.lambda3.text.simplification.discourse.runner.discourse_tree.RelationType;
 import org.lambda3.text.simplification.discourse.utils.parseTree.ParseTreeException;
 import org.lambda3.text.simplification.discourse.utils.parseTree.ParseTreeExtractionUtils;
 import org.lambda3.text.simplification.discourse.utils.parseTree.ParseTreeParser;
@@ -42,7 +42,7 @@ public class SimpleContext {
 
     private Tree parseTree;
     private Tree phrase;
-    private Relation relation;
+    private RelationType relation;
     private String timeInformation; // optional
 
     // for deserialization
@@ -51,7 +51,7 @@ public class SimpleContext {
 
     public SimpleContext(Tree parseTree) {
         this.parseTree = parseTree;
-        this.relation = Relation.UNKNOWN;
+        this.relation = RelationType.UNKNOWN;
         this.timeInformation = null;
         extractPhrase();
     }
@@ -74,7 +74,7 @@ public class SimpleContext {
         this.phrase = parseTree;
 
         boolean matched = false;
-        if (relation.equals(Relation.ATTRIBUTION)) {
+        if (relation.equals(RelationType.ATTRIBUTION)) {
             Matcher matcher = ATTRIBUTION_PHRASE_PATTERN.matcher(getText());
             if (matcher.matches()) {
                 try {
@@ -93,7 +93,7 @@ public class SimpleContext {
         }
 
         if (!matched) {
-            this.relation = Relation.NOUN_BASED;
+            this.relation = RelationType.NOUN_BASED;
         }
     }
 
@@ -111,12 +111,12 @@ public class SimpleContext {
         return WordsUtils.wordsToString(ParseTreeExtractionUtils.getContainingWords(phrase));
     }
 
-    public void setRelation(Relation relation) {
+    public void setRelation(RelationType relation) {
         this.relation = relation;
         extractPhrase();
     }
 
-    public Relation getRelation() {
+    public RelationType getRelation() {
         return relation;
     }
 

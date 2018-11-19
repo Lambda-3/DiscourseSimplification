@@ -25,7 +25,7 @@ package org.lambda3.text.simplification.discourse.runner.sentence_simplification
 import com.typesafe.config.Config;
 import edu.stanford.nlp.ling.Word;
 import org.lambda3.text.simplification.discourse.model.SimpleContext;
-import org.lambda3.text.simplification.discourse.runner.discourse_tree.Relation;
+import org.lambda3.text.simplification.discourse.runner.discourse_tree.RelationType;
 import org.lambda3.text.simplification.discourse.runner.discourse_tree.classification.CuePhraseClassifier;
 import org.lambda3.text.simplification.discourse.utils.ner.NERString;
 import org.lambda3.text.simplification.discourse.utils.ner.NERStringParser;
@@ -98,7 +98,7 @@ public class SimpleContextClassifier implements ContextClassifier {
                 || (cuePhrase.matches(CENTURY_PATTERN))
                 || (cuePhrase.matches(TIME_PATTERN))) {
 
-            simpleContext.setRelation(Relation.TEMPORAL);
+            simpleContext.setRelation(RelationType.TEMPORAL);
             return true;
         }
 
@@ -117,7 +117,7 @@ public class SimpleContextClassifier implements ContextClassifier {
         NERString ner = NERStringParser.parse(cuePhrase);
 
         if (ner.getTokens().stream().anyMatch(t -> t.getCategory().equals("LOCATION"))) {
-            simpleContext.setRelation(Relation.SPATIAL);
+            simpleContext.setRelation(RelationType.SPATIAL);
             return true;
         }
 
@@ -133,7 +133,7 @@ public class SimpleContextClassifier implements ContextClassifier {
         }
         String cuePhrase = WordsUtils.wordsToString(cuePhraseWords);
 
-        Optional<Relation> relation = cuePhraseClassifier.classifySubordinating(cuePhrase);
+        Optional<RelationType> relation = cuePhraseClassifier.classifySubordinating(cuePhrase);
         if (relation.isPresent()) {
             simpleContext.setRelation(relation.get());
             return true;

@@ -22,7 +22,7 @@
 
 package org.lambda3.text.simplification.discourse.runner.discourse_tree.model;
 
-import org.lambda3.text.simplification.discourse.runner.discourse_tree.Relation;
+import org.lambda3.text.simplification.discourse.runner.discourse_tree.RelationType;
 import org.lambda3.text.simplification.discourse.utils.PrettyTreePrinter;
 
 import java.util.ArrayList;
@@ -34,11 +34,11 @@ import java.util.stream.Collectors;
  *
  */
 public class Coordination extends DiscourseTree {
-    final Relation relation;
+    final RelationType relation;
     private final String cuePhrase; // optional
     private final List<DiscourseTree> coordinations;
 
-    public Coordination(String extractionRule, Relation relation, String cuePhrase, List<DiscourseTree> coordinations) {
+    public Coordination(String extractionRule, RelationType relation, String cuePhrase, List<DiscourseTree> coordinations) {
         super(extractionRule);
         this.relation = relation;
         this.cuePhrase = cuePhrase;
@@ -74,7 +74,7 @@ public class Coordination extends DiscourseTree {
         }
     }
 
-    public Relation getRelation() {
+    public RelationType getRelation() {
         return relation;
     }
 

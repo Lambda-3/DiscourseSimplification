@@ -27,7 +27,7 @@ import edu.stanford.nlp.trees.Tree;
 import org.lambda3.text.simplification.discourse.model.Element;
 import org.lambda3.text.simplification.discourse.model.OutSentence;
 import org.lambda3.text.simplification.discourse.model.SimpleContext;
-import org.lambda3.text.simplification.discourse.runner.discourse_tree.Relation;
+import org.lambda3.text.simplification.discourse.runner.discourse_tree.RelationType;
 import org.lambda3.text.simplification.discourse.runner.sentence_simplification.classification.ContextClassifier;
 import org.lambda3.text.simplification.discourse.runner.sentence_simplification.classification.SimpleContextClassifier;
 import org.lambda3.text.simplification.discourse.utils.parseTree.ParseTreeExtractionUtils;
@@ -100,14 +100,14 @@ public class SentenceSimplifier {
         for (SimpleContext simpleContext : element.getSimpleContexts()) {
 
             // INTRA SENT ATTR
-            if (simpleContext.getRelation().equals(Relation.ATTRIBUTION)) {
+            if (simpleContext.getRelation().equals(RelationType.ATTRIBUTION)) {
                 Result r = simplify(simpleContext.getParseTree());
                 simpleContext.setParseTree(r.getCore());
                 for (Tree c : r.getContexts()) {
                     SimpleContext sc = new SimpleContext(c);
 
                     contextClassifier.classify(sc);
-                    if (sc.getRelation().equals(Relation.NOUN_BASED)) {
+                    if (sc.getRelation().equals(RelationType.NOUN_BASED)) {
                         newSimpleContexts.add(sc);
                     }
                 }

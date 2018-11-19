@@ -22,32 +22,28 @@
 
 package org.lambda3.text.simplification.discourse.runner.sentence_simplification.classification;
 
-import org.lambda3.text.simplification.discourse.runner.discourse_tree.Relation;
-import org.lambda3.text.simplification.discourse.model.TimeInformation;
+import org.lambda3.text.simplification.discourse.runner.discourse_tree.RelationType;
 
 import java.util.Optional;
 
-/**
- *
- */
 public class ClassificationResult {
-    private Relation relation;
-    private TimeInformation timeInformation; // optional
+    private RelationType relation;
+    private String timeInformation; // optional
 
-    public ClassificationResult(Relation relation) {
+    public ClassificationResult(RelationType relation) {
         this.relation = relation;
         this.timeInformation = null;
     }
 
-    public void setTimeInformation(TimeInformation timeInformation) {
+    public void setTimeInformation(String timeInformation) {
         this.timeInformation = timeInformation;
     }
 
-    public Relation getRelation() {
+    public RelationType getRelation() {
         return relation;
     }
 
-    public Optional<TimeInformation> getTimeInformation() {
+    public Optional<String> getTimeInformation() {
         return Optional.ofNullable(timeInformation);
     }
 }

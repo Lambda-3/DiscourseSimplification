@@ -76,7 +76,7 @@ public class DiscourseTreeCreator {
     public void reset() {
         this.discourseTree = new Coordination(
                 "ROOT",
-                Relation.UNKNOWN_COORDINATION,
+                RelationType.UNKNOWN_COORDINATION,
                 null,
                 new ArrayList<>()
 

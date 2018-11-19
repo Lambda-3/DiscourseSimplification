@@ -33,8 +33,7 @@ import edu.stanford.nlp.time.TimeAnnotator;
 import edu.stanford.nlp.time.TimeExpression;
 import edu.stanford.nlp.util.CoreMap;
 import org.lambda3.text.simplification.discourse.model.SimpleContext;
-import org.lambda3.text.simplification.discourse.model.TimeInformation;
-import org.lambda3.text.simplification.discourse.runner.discourse_tree.Relation;
+import org.lambda3.text.simplification.discourse.runner.discourse_tree.RelationType;
 import org.lambda3.text.simplification.discourse.runner.discourse_tree.classification.CuePhraseClassifier;
 import org.lambda3.text.simplification.discourse.utils.ner.NERString;
 import org.lambda3.text.simplification.discourse.utils.ner.NERStringParser;
@@ -82,19 +81,19 @@ public class ExtContextClassifier implements ContextClassifier {
             CoreMap cm = timexAnnsAll.get(0);
             SUTime.Temporal temporal = cm.get(TimeExpression.Annotation.class).getTemporal();
 
-            Relation relation = Relation.TEMPORAL;
+            RelationType relation = RelationType.TEMPORAL;
             switch (temporal.getTimexType()) {
                 case TIME:
-                    relation = Relation.TEMPORAL_TIME;
+                    relation = RelationType.TEMPORAL_TIME;
                     break;
                 case DURATION:
-                    relation = Relation.TEMPORAL_DURATION;
+                    relation = RelationType.TEMPORAL_DURATION;
                     break;
                 case DATE:
-                    relation = Relation.TEMPORAL_DATE;
+                    relation = RelationType.TEMPORAL_DATE;
                     break;
                 case SET:
-                    relation = Relation.TEMPORAL_SET;
+                    relation = RelationType.TEMPORAL_SET;
                     break;
             }
 
@@ -119,7 +118,7 @@ public class ExtContextClassifier implements ContextClassifier {
         NERString ner = NERStringParser.parse(cuePhrase);
 
         if (ner.getTokens().stream().anyMatch(t -> t.getCategory().equals("LOCATION"))) {
-            simpleContext.setRelation(Relation.SPATIAL);
+            simpleContext.setRelation(RelationType.SPATIAL);
             return true;
         }
 
@@ -135,7 +134,7 @@ public class ExtContextClassifier implements ContextClassifier {
         }
         String cuePhrase = WordsUtils.wordsToString(cuePhraseWords);
 
-        Optional<Relation> relation = cuePhraseClassifier.classifySubordinating(cuePhrase);
+        Optional<RelationType> relation = cuePhraseClassifier.classifySubordinating(cuePhrase);
         if (relation.isPresent()) {
             simpleContext.setRelation(relation.get());
             return true;

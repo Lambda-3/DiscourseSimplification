@@ -22,7 +22,7 @@
 
 package org.lambda3.text.simplification.discourse.runner.discourse_tree.model;
 
-import org.lambda3.text.simplification.discourse.runner.discourse_tree.Relation;
+import org.lambda3.text.simplification.discourse.runner.discourse_tree.RelationType;
 import org.lambda3.text.simplification.discourse.utils.PrettyTreePrinter;
 
 import java.util.ArrayList;
@@ -76,7 +76,7 @@ public abstract class DiscourseTree implements PrettyTreePrinter.Node {
     }
 
     public boolean usableAsReference() {
-        return ((parent != null) && (parent instanceof Coordination) && (((Coordination) parent).relation.equals(Relation.UNKNOWN_COORDINATION)));
+        return ((parent != null) && (parent instanceof Coordination) && (((Coordination) parent).relation.equals(RelationType.UNKNOWN_COORDINATION)));
     }
 
     public void useAsReference() {

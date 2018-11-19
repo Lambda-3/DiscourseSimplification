@@ -22,17 +22,17 @@
 
 package org.lambda3.text.simplification.discourse.model;
 
-import org.lambda3.text.simplification.discourse.runner.discourse_tree.Relation;
+import org.lambda3.text.simplification.discourse.runner.discourse_tree.RelationType;
 
 public class LinkedContext {
 	private String targetID;
-	private Relation relation;
+	private RelationType relation;
 
 	// for deserialization
 	private LinkedContext() {
 	}
 
-	public LinkedContext(String targetID, Relation relation) {
+	public LinkedContext(String targetID, RelationType relation) {
 		this.targetID = targetID;
 		this.relation = relation;
 	}
@@ -41,7 +41,7 @@ public class LinkedContext {
 		return targetID;
 	}
 
-	public Relation getRelation() {
+	public RelationType getRelation() {
 		return relation;
 	}
 
