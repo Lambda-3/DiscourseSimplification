@@ -38,7 +38,7 @@ import java.util.List;
  *
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class Element {
+public class Element extends Extensible {
 
     public final String id = IDGenerator.generateUUID();
     private int sentenceIdx;
@@ -48,7 +48,7 @@ public class Element {
     private List<LinkedContext> linkedContexts;
 
     // for deserialization
-    private Element() {
+    protected Element() {
     }
 
     public Element(Tree parseTree, int sentenceIdx, int contextLayer) {

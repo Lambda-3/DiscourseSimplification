@@ -28,10 +28,12 @@ import java.util.stream.Collectors;
 
 public class SimplificationContent<E extends Element> extends Content {
 	private List<OutSentence<E>> sentences;
+    private boolean coreferenced;
 
 	// for deserialization
 	public SimplificationContent() {
 	    this.sentences = new ArrayList<>();
+	    coreferenced = false;
 	}
 
 	public void addSentence(OutSentence<E> sentence) {
@@ -62,6 +64,15 @@ public class SimplificationContent<E extends Element> extends Content {
         sentences.forEach(s -> res.addAll(s.getElements()));
 
         return res;
+    }
+
+
+    public boolean isCoreferenced() {
+        return coreferenced;
+    }
+
+    public void setCoreferenced(boolean coreferenced) {
+        this.coreferenced = coreferenced;
     }
 
     public String defaultFormat(boolean resolve) {
