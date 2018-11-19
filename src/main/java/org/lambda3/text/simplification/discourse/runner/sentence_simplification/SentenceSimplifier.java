@@ -25,7 +25,7 @@ package org.lambda3.text.simplification.discourse.runner.sentence_simplification
 import com.typesafe.config.Config;
 import edu.stanford.nlp.trees.Tree;
 import org.lambda3.text.simplification.discourse.model.Element;
-import org.lambda3.text.simplification.discourse.model.OutSentence;
+import org.lambda3.text.simplification.discourse.model.Sentence;
 import org.lambda3.text.simplification.discourse.model.SimpleContext;
 import org.lambda3.text.simplification.discourse.runner.discourse_tree.RelationType;
 import org.lambda3.text.simplification.discourse.runner.sentence_simplification.classification.ContextClassifier;
@@ -116,7 +116,7 @@ public class SentenceSimplifier {
         newSimpleContexts.forEach(element::addSimpleContext);
     }
 
-    public void doSentenceSimplification(OutSentence<? extends Element> sentence) {
+    public void doSentenceSimplification(Sentence sentence) {
         for (Element element : sentence.getElements()) {
             Result r = simplify(element.getParseTree());
 

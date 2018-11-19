@@ -25,7 +25,7 @@ package org.lambda3.text.simplification.discourse.processing;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 import org.lambda3.text.simplification.discourse.model.Element;
-import org.lambda3.text.simplification.discourse.model.OutSentence;
+import org.lambda3.text.simplification.discourse.model.Sentence;
 import org.lambda3.text.simplification.discourse.model.SimplificationContent;
 import org.lambda3.text.simplification.discourse.runner.discourse_extraction.DiscourseExtractor;
 import org.lambda3.text.simplification.discourse.runner.discourse_tree.DiscourseTreeCreator;
@@ -41,9 +41,6 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 
-/**
- *
- */
 public class DiscourseSimplifier {
     private final DiscourseTreeCreator discourseTreeCreator;
     private final DiscourseExtractor discourseExtractor;
@@ -77,12 +74,12 @@ public class DiscourseSimplifier {
         return doDiscourseSimplification(sentences, type);
     }
 
-    public SimplificationContent<Element> doDiscourseSimplification(String text, ProcessingType type) {
+    public SimplificationContent doDiscourseSimplification(String text, ProcessingType type) {
         List<String> sentences = SentencesUtils.splitIntoSentences(text);
         return doDiscourseSimplification(sentences, type);
     }
 
-    public SimplificationContent<Element> doDiscourseSimplification(List<String> sentences, ProcessingType type) {
+    public SimplificationContent doDiscourseSimplification(List<String> sentences, ProcessingType type) {
         if (type.equals(ProcessingType.SEPARATE)) {
             return processSeparate(sentences);
         } else if (type.equals(ProcessingType.WHOLE)) {
@@ -94,7 +91,7 @@ public class DiscourseSimplifier {
 
     // creates one discourse discourse_tree over all sentences (investigates intra-sentential and inter-sentential relations)
     private SimplificationContent processWhole(List<String> sentences) {
-        SimplificationContent<Element> content = new SimplificationContent<>();
+        SimplificationContent content = new SimplificationContent();
 
         // Step 1) create document discourse discourse_tree
         logger.info("### STEP 1) CREATE DOCUMENT DISCOURSE TREE ###");
@@ -104,7 +101,7 @@ public class DiscourseSimplifier {
             logger.info("# Processing sentence {}/{} #", (idx + 1), sentences.size());
             logger.info("'" + sentence + "'");
 
-            content.addSentence(new OutSentence<>(idx, sentence));
+            content.addSentence(new Sentence(idx, sentence));
 
             // extend discourse discourse_tree
             try {
@@ -148,12 +145,12 @@ public class DiscourseSimplifier {
     }
 
     // creates discourse trees for each individual sentence (investigates intra-sentential relations only)
-    private SimplificationContent<Element> processSeparate(List<String> sentences) {
-        SimplificationContent<Element> content = new SimplificationContent<>();
+    private SimplificationContent processSeparate(List<String> sentences) {
+        SimplificationContent content = new SimplificationContent();
 
         int idx = 0;
         for (String sentence : sentences) {
-            OutSentence<Element> outSentence = new OutSentence<>(idx, sentence);
+            Sentence outSentence = new Sentence(idx, sentence);
 
             logger.info("# Processing sentence {}/{} #", (idx + 1), sentences.size());
             logger.info("'" + sentence + "'");

@@ -1,6 +1,6 @@
 /*
  * ==========================License-Start=============================
- * DiscourseSimplification : OutSentence
+ * DiscourseSimplification : Sentence
  *
  * Copyright © 2017 Lambda³
  *
@@ -24,51 +24,43 @@ package org.lambda3.text.simplification.discourse.model;
 
 import java.util.*;
 
-public class OutSentence<E extends Element> {
-    private int sentenceIdx;
-    private String originalSentence;
-    private HashMap<String, E> elementMap; // all extractions extracted from this sentence
+public class Sentence {
+    public final int index;
+    public final String original;
+    private HashMap<String, Element> elementMap; // all extractions extracted from this sentence
 
-    // for deserialization
-    public OutSentence() {
+    public Sentence() {
+        // for deserialization
+        this(-1, "");
     }
 
-    public OutSentence(int sentenceIdx, String originalSentence) {
-        this.sentenceIdx = sentenceIdx;
-        this.originalSentence = originalSentence;
+    public Sentence(int index, String original) {
+        this.index = index;
+        this.original = original;
         this.elementMap = new LinkedHashMap<>();
     }
 
-    public Optional<String> containsElement(E extraction) {
-        for (E e : elementMap.values()) {
+    public Optional<String> containsElement(Element extraction) {
+        for (Element e : elementMap.values()) {
             if (e.equals(extraction)) {
                 return Optional.of(e.id);
             }
         }
-
         return Optional.empty();
     }
 
-    public void addElement(E element) {
-        if (sentenceIdx != element.getSentenceIdx()) {
+    public void addElement(Element element) {
+        if (index != element.getSentenceIdx()) {
             throw new AssertionError("Element should not be added to this sentence");
         }
         elementMap.putIfAbsent(element.id, element);
     }
 
-    public int getSentenceIdx() {
-        return sentenceIdx;
-    }
-
-    public String getOriginalSentence() {
-        return originalSentence;
-    }
-
-    public E getElement(String id) {
+    public Element getElement(String id) {
         return elementMap.getOrDefault(id, null);
     }
 
-    public List<E> getElements() {
+    public List<Element> getElements() {
         return new ArrayList<>(elementMap.values());
     }
 
@@ -76,7 +68,7 @@ public class OutSentence<E extends Element> {
     public String toString() {
         StringBuilder strb = new StringBuilder();
         strb.append("# ");
-        strb.append(originalSentence);
+        strb.append(original);
         strb.append("\n");
         getElements().forEach(e -> {
             strb.append("\n");
