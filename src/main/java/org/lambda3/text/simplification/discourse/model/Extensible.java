@@ -30,7 +30,7 @@ public abstract class Extensible {
     private Map<Object, Object> extensions = new LinkedHashMap<>();
 
     public <O> void addListExtension(O o) {
-        List<O> list = (List<O>) this.extensions.putIfAbsent(getKey(LIST_KEY, o.getClass()), new LinkedList<O>());
+        List<O> list = (List<O>) this.extensions.computeIfAbsent(getKey(LIST_KEY, o.getClass()), l -> new LinkedList<O>());
         list.add(o);
     }
 
@@ -55,7 +55,8 @@ public abstract class Extensible {
     }
 
     private String getKey(String key, Class<?> clazz) {
-        return String.format("%s$%s", key, clazz.getSimpleName());
+        String result = String.format("%s-%s", key, clazz.getSimpleName());
+        return result;
     }
 
     @Override
