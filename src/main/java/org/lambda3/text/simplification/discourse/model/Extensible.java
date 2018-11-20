@@ -35,7 +35,7 @@ public abstract class Extensible {
     }
 
     public <O> List<O> getListExtension(Class<O> clazz) {
-        return (List<O>) this.extensions.get(getKey(LIST_KEY, clazz));
+        return (List<O>) this.extensions.getOrDefault(getKey(LIST_KEY, clazz), Collections.EMPTY_LIST);
     }
 
     public <O> void addExtension(O o) {
