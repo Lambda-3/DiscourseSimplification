@@ -85,21 +85,18 @@ public class DiscourseSimplifierTest {
         String text = "After graduating from Columbia University in 1983, Barack Obama worked as a community organizer in Chicago.";
         SimplificationContent c = simplifier.doDiscourseSimplification(text, ProcessingType.WHOLE);
 
-        final String filename = "tmp-w8weg3q493ewqieh.json";
+        File temp = File.createTempFile("discourse-simplification-test", ".json");
+        temp.deleteOnExit();
 
         log.info("SAVE TO FILE...");
-        c.serializeToJSON(new File(filename));
+        c.serializeToJSON(temp);
 
         log.info("LOAD FROM FILE...");
-        SimplificationContent loaded = SimplificationContent.deserializeFromJSON(new File(filename), SimplificationContent.class);
+        SimplificationContent loaded = SimplificationContent.deserializeFromJSON(temp, SimplificationContent.class);
 
         log.info(loaded.prettyPrintJSON());
         log.info("---------------------------------");
         log.info(loaded.defaultFormat(false));
-
-        log.info("DELETE FILE...");
-        File file = new File(filename);
-        file.delete();
     }
 
 }
