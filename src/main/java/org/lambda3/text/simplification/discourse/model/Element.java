@@ -111,7 +111,7 @@ public class Element extends Extensible {
         StringBuilder strb = new StringBuilder();
 
         strb.append(String.format("%s     %d     %s\n", id, contextLayer, getText()));
-        getSimpleContexts().forEach(c -> strb.append(String.format("\tS:%s    %s\n", c.getRelation(), c.getText())));
+        getSimpleContexts().forEach(c -> strb.append(String.format("\tS:%s    %s\n", c.getRelation(), c.getAsFullSentence())));
         getLinkedContexts().forEach(c -> strb.append(String.format("\tL:%s    %s\n", c.getRelation(), c.getTargetID())));
         return strb.toString();
     }

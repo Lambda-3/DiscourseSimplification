@@ -22,14 +22,16 @@
 
 package org.lambda3.text.simplification.discourse.processing;
 
-import org.lambda3.text.simplification.discourse.model.Sentence;
-import org.lambda3.text.simplification.discourse.model.SimplificationContent;
+import org.lambda3.text.simplification.discourse.model.*;
+import org.lambda3.text.simplification.discourse.runner.discourse_tree.RelationType;
 import org.slf4j.LoggerFactory;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.LinkedList;
+import java.util.List;
 
 public class DiscourseSimplifierTest {
     private org.slf4j.Logger log = LoggerFactory.getLogger(this.getClass());
@@ -44,6 +46,38 @@ public class DiscourseSimplifierTest {
         Sentence sent = c.getSentences().get(0);
 
         Assert.assertEquals(2, sent.getElements().size());
+
+        List<Boolean> ok = new LinkedList<>();
+        for(Element e : sent.getElements()) {
+            if(e.getLinkedContexts().isEmpty()) {
+                Assert.assertEquals("he likes the city .", e.getText());
+                Assert.assertEquals(e.getSentenceIdx(), 0);
+                Assert.assertEquals(e.getContextLayer(), 1);
+                Assert.assertTrue(e.getSimpleContexts().isEmpty());
+                ok.add(true);
+            } else {
+                Assert.assertEquals(e.getText(), "Peter went .");
+                Assert.assertEquals(e.getSentenceIdx(), 0);
+                Assert.assertEquals(e.getContextLayer(), 0);
+                Assert.assertEquals(e.getSimpleContexts().size(), 1);
+
+                SimpleContext sc = e.getSimpleContexts().get(0);
+                Assert.assertEquals(sc.getAsFullSentence(), "This was to Paris .");
+                Assert.assertEquals(sc.getOriginalExcerptText(), "to Paris .");
+                Assert.assertEquals(sc.getRelation(), RelationType.SPATIAL);
+
+                Assert.assertEquals(e.getLinkedContexts().size(), 1);
+                LinkedContext lc = e.getLinkedContexts().get(0);
+
+                Assert.assertEquals(lc.getRelation(), RelationType.CAUSE);
+                Element target = sent.getElement(lc.getTargetID());
+                Assert.assertEquals(target.getText(), "he likes the city .");
+                ok.add(true);
+            }
+        }
+
+        Assert.assertEquals(2, ok.size());
+        ok.forEach(Assert::assertTrue);
     }
 
     @Test

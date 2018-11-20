@@ -82,7 +82,7 @@ public class SimplificationContent extends Content {
             for (Element element : sentence.getElements()) {
                 strb.append("\n").append(element.id).append("\t").append(element.getContextLayer()).append("\t").append(element.getText()).append("\n");
                 for (SimpleContext simpleContext : element.getSimpleContexts()) {
-                    strb.append("\t" + "S:").append(simpleContext.getRelation()).append("\t").append(simpleContext.getText()).append("\n");
+                    strb.append("\t" + "S:").append(simpleContext.getRelation()).append("\t").append(simpleContext.getAsFullSentence()).append("\n");
                 }
                 for (LinkedContext linkedContext : element.getLinkedContexts()) {
                     if (resolve) {
@@ -103,7 +103,7 @@ public class SimplificationContent extends Content {
             for (Element element : sentence.getElements()) {
                 strb.append(sentence.original).append("\t").append(element.id).append("\t").append(element.getContextLayer()).append("\t").append(element.getText());
                 for (SimpleContext simpleContext : element.getSimpleContexts()) {
-                    strb.append("\t" + "S:").append(simpleContext.getRelation()).append("(").append(simpleContext.getText()).append(")");
+                    strb.append("\t" + "S:").append(simpleContext.getRelation()).append("(").append(simpleContext.getAsFullSentence()).append(")");
                 }
                 for (LinkedContext linkedContext : element.getLinkedContexts()) {
                     if (resolve) {

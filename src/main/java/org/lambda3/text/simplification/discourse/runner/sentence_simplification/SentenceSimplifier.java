@@ -101,8 +101,8 @@ public class SentenceSimplifier {
 
             // INTRA SENT ATTR
             if (simpleContext.getRelation().equals(RelationType.ATTRIBUTION)) {
-                Result r = simplify(simpleContext.getParseTree());
-                simpleContext.setParseTree(r.getCore());
+                Result r = simplify(simpleContext.getFullSentenceTree());
+                simpleContext.setFullSentenceTree(r.getCore());
                 for (Tree c : r.getContexts()) {
                     SimpleContext sc = new SimpleContext(c);
 

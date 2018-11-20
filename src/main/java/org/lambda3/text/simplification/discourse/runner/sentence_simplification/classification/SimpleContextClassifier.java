@@ -85,7 +85,7 @@ public class SimpleContextClassifier implements ContextClassifier {
     private boolean checkTemporal(SimpleContext simpleContext) {
 
         // use first 10 words as cue phrase
-        List<Word> cuePhraseWords = ParseTreeExtractionUtils.getContainingWords(simpleContext.getPhrase());
+        List<Word> cuePhraseWords = ParseTreeExtractionUtils.getContainingWords(simpleContext.getOriginalExcerpt());
         if (cuePhraseWords.size() > 10) {
             cuePhraseWords = cuePhraseWords.subList(0, 10);
         }
@@ -108,7 +108,7 @@ public class SimpleContextClassifier implements ContextClassifier {
     private boolean checkSpatial(SimpleContext simpleContext) {
 
         // use first 10 words as cue phrase
-        List<Word> cuePhraseWords = ParseTreeExtractionUtils.getContainingWords(simpleContext.getPhrase());
+        List<Word> cuePhraseWords = ParseTreeExtractionUtils.getContainingWords(simpleContext.getOriginalExcerpt());
         if (cuePhraseWords.size() > 10) {
             cuePhraseWords = cuePhraseWords.subList(0, 10);
         }
@@ -127,7 +127,7 @@ public class SimpleContextClassifier implements ContextClassifier {
     private boolean checkCues(SimpleContext simpleContext) {
 
         // use first 3 words as cue phrase
-        List<Word> cuePhraseWords = ParseTreeExtractionUtils.getContainingWords(simpleContext.getPhrase());
+        List<Word> cuePhraseWords = ParseTreeExtractionUtils.getContainingWords(simpleContext.getOriginalExcerpt());
         if (cuePhraseWords.size() > 3) {
             cuePhraseWords = cuePhraseWords.subList(0, 3);
         }
