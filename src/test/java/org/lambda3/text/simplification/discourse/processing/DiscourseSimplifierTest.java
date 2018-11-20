@@ -81,6 +81,55 @@ public class DiscourseSimplifierTest {
     }
 
     @Test
+    void testLongerSentence() {
+        String text = "After graduating from Columbia University in 1983, Barack Obama worked as a community organizer in Chicago.";
+        SimplificationContent c = simplifier.doDiscourseSimplification(text, ProcessingType.WHOLE);
+
+        Assert.assertEquals(1, c.getSentences().size());
+        Sentence sent = c.getSentences().get(0);
+
+        Assert.assertEquals(2, sent.getElements().size());
+
+        List<Boolean> ok = new LinkedList<>();
+        for(Element e : sent.getElements()) {
+            if(e.getLinkedContexts().isEmpty()) {
+                Assert.assertEquals("Barack Obama was graduating from Columbia University .", e.getText());
+                Assert.assertEquals(e.getSentenceIdx(), 0);
+                Assert.assertEquals(e.getContextLayer(), 1);
+                Assert.assertEquals(e.getSimpleContexts().size(), 1);
+
+                SimpleContext sc = e.getSimpleContexts().get(0);
+                Assert.assertEquals(sc.getAsFullSentence(), "This was in 1983 .");
+                Assert.assertEquals(sc.getOriginalExcerptText(), "in 1983 .");
+                Assert.assertEquals(sc.getRelation(), RelationType.TEMPORAL);
+
+                ok.add(true);
+            } else {
+                Assert.assertEquals(e.getText(), "Barack Obama worked as a community organizer .");
+                Assert.assertEquals(e.getSentenceIdx(), 0);
+                Assert.assertEquals(e.getContextLayer(), 0);
+                Assert.assertEquals(e.getSimpleContexts().size(), 1);
+
+                SimpleContext sc = e.getSimpleContexts().get(0);
+                Assert.assertEquals(sc.getAsFullSentence(), "This was in Chicago .");
+                Assert.assertEquals(sc.getOriginalExcerptText(), "in Chicago .");
+                Assert.assertEquals(sc.getRelation(), RelationType.SPATIAL);
+
+                Assert.assertEquals(e.getLinkedContexts().size(), 1);
+                LinkedContext lc = e.getLinkedContexts().get(0);
+
+                Assert.assertEquals(lc.getRelation(), RelationType.TEMPORAL_BEFORE);
+                Element target = sent.getElement(lc.getTargetID());
+                Assert.assertEquals(target.getText(), "Barack Obama was graduating from Columbia University .");
+                ok.add(true);
+            }
+        }
+
+        Assert.assertEquals(2, ok.size());
+        ok.forEach(Assert::assertTrue);
+    }
+
+    @Test
     void serializationTest() throws IOException {
         String text = "After graduating from Columbia University in 1983, Barack Obama worked as a community organizer in Chicago.";
         SimplificationContent c = simplifier.doDiscourseSimplification(text, ProcessingType.WHOLE);
@@ -98,5 +147,4 @@ public class DiscourseSimplifierTest {
         log.info("---------------------------------");
         log.info(loaded.defaultFormat(false));
     }
-
 }
