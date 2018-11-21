@@ -25,6 +25,7 @@ package org.lambda3.text.simplification.discourse.model.serializer;
 import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.ObjectCodec;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
@@ -43,46 +44,51 @@ public class ExtensionsDeserializer extends StdDeserializer<Map> {
     public Map deserialize(JsonParser parser, DeserializationContext deserializationContext)
             throws IOException, JsonProcessingException {
 
-        JsonNode node = parser.getCodec().readTree(parser);
-        Iterator<JsonNode> iter = node.iterator();
-
         Map<Object, Object> map = new HashMap<>();
 
-        while (iter.hasNext()) {
-            JsonNode en = iter.next();
-            try {
-                Class<?> clazz = Class.forName(en.get("class").asText());
-                String key = en.has("key") ? en.get("key").asText() : null;
-                JsonNode nodeContent = en.get("content");
+        ObjectCodec codec = parser.getCodec();
+        if (codec != null) {
+            JsonNode node = parser.getCodec().readTree(parser);
+            Iterator<JsonNode> iter = node.iterator();
 
-                Object mapKey;
-                Object content;
+            while (iter.hasNext()) {
+                JsonNode en = iter.next();
+                try {
+                    Class<?> clazz = Class.forName(en.get("class").asText());
+                    String key = en.has("key") ? en.get("key").asText() : null;
+                    JsonNode nodeContent = en.get("content");
 
-                if (nodeContent.isArray()) {
-                    content = new LinkedList<>();
-                    for (JsonNode aNodeContent : nodeContent) {
-                        JsonParser panc = aNodeContent.traverse();
-                        panc.nextToken();
-                        Object co = deserializationContext.readValue(panc, clazz);
-                        ((List) content).add(co);
+                    Object mapKey;
+                    Object content;
+
+                    if (nodeContent.isArray()) {
+                        content = new LinkedList<>();
+                        for (JsonNode aNodeContent : nodeContent) {
+                            JsonParser panc = aNodeContent.traverse();
+                            panc.nextToken();
+                            Object co = deserializationContext.readValue(panc, clazz);
+                            ((List) content).add(co);
+                        }
+                    } else {
+                        JsonParser cjp = nodeContent.traverse();
+                        cjp.nextToken();
+                        content = deserializationContext.readValue(cjp, clazz);
                     }
-                } else {
-                    JsonParser cjp = nodeContent.traverse();
-                    cjp.nextToken();
-                    content = deserializationContext.readValue(cjp, clazz);
+
+                    if (key == null) {
+                        mapKey = clazz;
+                    } else {
+                        mapKey = new Extensible.Key(clazz, key);
+                    }
+
+                    map.put(mapKey, content);
+
+                } catch (ClassNotFoundException e) {
+                    throw new JsonGenerationException(e);
                 }
-
-                if (key == null) {
-                    mapKey = clazz;
-                } else {
-                    mapKey = new Extensible.Key(clazz, key);
-                }
-
-                map.put(mapKey, content);
-
-            } catch (ClassNotFoundException e) {
-                throw new JsonGenerationException(e);
             }
+        } else {
+            parser.nextToken();
         }
 
         return map;

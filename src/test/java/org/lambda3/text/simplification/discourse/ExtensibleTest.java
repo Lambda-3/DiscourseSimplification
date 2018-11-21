@@ -88,9 +88,9 @@ public class ExtensibleTest {
         e.addListExtension(new LinkedContext("bla bla", RelationType.UNKNOWN));
         e.addListExtension(new LinkedContext("bla bla 2", RelationType.UNKNOWN));
         e.addExtension("key", 7);
+        e.addExtension(new SimpleExtensible());
 
         File temp = File.createTempFile("ext-discourse-simplification", ".json");
-        System.out.println(temp);
         temp.deleteOnExit();
 
         ObjectMapper mapper = new ObjectMapper();
