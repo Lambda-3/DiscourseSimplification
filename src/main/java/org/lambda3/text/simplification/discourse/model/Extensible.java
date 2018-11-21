@@ -22,20 +22,27 @@
 
 package org.lambda3.text.simplification.discourse.model;
 
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import org.lambda3.text.simplification.discourse.model.serializer.ExtensionsDeserializer;
+import org.lambda3.text.simplification.discourse.model.serializer.ExtensionsSerializer;
+
 import java.util.*;
 
 public abstract class Extensible {
-    private static final String LIST_KEY = "_list_";
+    public static final String LIST_KEY = "_list_";
 
-    private Map<Object, Object> extensions = new LinkedHashMap<>();
+    @JsonSerialize(using = ExtensionsSerializer.class)
+    @JsonDeserialize(using = ExtensionsDeserializer.class)
+    private Map<Object, Object> extensions = new HashMap<>();
 
     public <O> void addListExtension(O o) {
-        List<O> list = (List<O>) this.extensions.computeIfAbsent(getKey(LIST_KEY, o.getClass()), l -> new LinkedList<O>());
+        List<O> list = (List<O>) this.extensions.computeIfAbsent(new Key(o.getClass(), LIST_KEY), l -> new LinkedList<O>());
         list.add(o);
     }
 
     public <O> List<O> getListExtension(Class<O> clazz) {
-        return (List<O>) this.extensions.getOrDefault(getKey(LIST_KEY, clazz), Collections.EMPTY_LIST);
+        return (List<O>) this.extensions.getOrDefault(new Key(clazz, LIST_KEY), Collections.EMPTY_LIST);
     }
 
     public <O> void addExtension(O o) {
@@ -43,7 +50,7 @@ public abstract class Extensible {
     }
 
     public void addExtension(String key, Object o) {
-        this.extensions.put(getKey(key, o.getClass()), o);
+        this.extensions.put(new Key(o.getClass(), key), o);
     }
 
     public <O> O getExtension(Class<O> clazz) {
@@ -51,12 +58,11 @@ public abstract class Extensible {
     }
 
     public <O> O getExtension(Class<O> clazz, String key) {
-        return (O) this.extensions.get(getKey(key, clazz));
+        return (O) this.extensions.get(new Key(clazz, key));
     }
 
-    private String getKey(String key, Class<?> clazz) {
-        String result = String.format("%s-%s", key, clazz.getSimpleName());
-        return result;
+    public Map<Object, Object> getAllExtensions() {
+        return this.extensions;
     }
 
     @Override
@@ -70,5 +76,38 @@ public abstract class Extensible {
     @Override
     public int hashCode() {
         return Objects.hash(extensions);
+    }
+
+    public static class Key {
+        public final Class<?> clazz;
+        public final String desc;
+
+        public Key(Class<?> clazz, String desc) {
+            this.clazz = clazz;
+            this.desc = desc;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            Key key = (Key) o;
+            return Objects.equals(clazz, key.clazz) &&
+                    Objects.equals(desc, key.desc);
+        }
+
+        @Override
+        public int hashCode() {
+
+            return Objects.hash(clazz, desc);
+        }
+
+        @Override
+        public String toString() {
+            return "Key{" +
+                    "clazz=" + clazz +
+                    ", desc='" + desc + '\'' +
+                    '}';
+        }
     }
 }
