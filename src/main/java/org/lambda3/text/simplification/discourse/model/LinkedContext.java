@@ -24,6 +24,8 @@ package org.lambda3.text.simplification.discourse.model;
 
 import org.lambda3.text.simplification.discourse.runner.discourse_tree.RelationType;
 
+import java.util.Objects;
+
 public class LinkedContext {
 	private String targetID;
 	private RelationType relation;
@@ -47,8 +49,15 @@ public class LinkedContext {
 
 	@Override
 	public boolean equals(Object o) {
-		return ((o instanceof LinkedContext)
-			&& (((LinkedContext) o).targetID.equals(targetID))
-			&& (((LinkedContext) o).relation.equals(relation)));
+		if (this == o) return true;
+		if (o == null || getClass() != o.getClass()) return false;
+		LinkedContext that = (LinkedContext) o;
+		return Objects.equals(targetID, that.targetID) &&
+				relation == that.relation;
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(targetID, relation);
 	}
 }

@@ -22,6 +22,7 @@
 
 package org.lambda3.text.simplification.discourse.model.serializer;
 
+import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationContext;
@@ -30,10 +31,8 @@ import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 import org.lambda3.text.simplification.discourse.model.Extensible;
 
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.lang.reflect.Array;
+import java.util.*;
 
 public class ExtensionsDeserializer extends StdDeserializer<Map> {
 
@@ -52,19 +51,28 @@ public class ExtensionsDeserializer extends StdDeserializer<Map> {
 
         while (iter.hasNext()) {
             JsonNode en = iter.next();
-            Class<?> clazz = deserializationContext.readValue(en.get("class").traverse(), Class.class);
-            String key = en.get("key").asText();
+            try {
+                Class<?> clazz = Class.forName(en.get("class").asText());
+                String key = en.has("key") ? en.get("key").asText() : null;
+                JsonParser cjp = en.get("content").traverse();
+                Class<?> contentClazz = clazz;
+                Object mapKey;
 
-            if (key == null) {
-                Object content = deserializationContext.readValue(en.get("content").traverse(), clazz);
-                map.put(clazz, content);
+                if (key == null) {
+                    mapKey = clazz;
+                } else {
+                    mapKey = new Extensible.Key(clazz, key);
+                    if (key.equals(Extensible.LIST_KEY)) {
+                        contentClazz = ArrayList.class;
+                    }
+                }
 
-            } else if (key.equals(Extensible.LIST_KEY)) {
-                Object content = deserializationContext.readValue(en.get("content").traverse(), List.class);
-                map.put(new Extensible.Key(clazz, key), content);
-            } else {
-                Object content = deserializationContext.readValue(en.get("content").traverse(), clazz);
-                map.put(new Extensible.Key(clazz, key), content);
+                cjp.nextToken();
+                Object content = deserializationContext.readValue(cjp, contentClazz);
+                map.put(mapKey, content);
+
+            } catch (ClassNotFoundException e) {
+                throw new JsonGenerationException(e);
             }
         }
 

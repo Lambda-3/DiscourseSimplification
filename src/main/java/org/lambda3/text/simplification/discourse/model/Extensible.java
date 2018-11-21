@@ -61,10 +61,6 @@ public abstract class Extensible {
         return (O) this.extensions.get(new Key(clazz, key));
     }
 
-    public Map<Object, Object> getAllExtensions() {
-        return this.extensions;
-    }
-
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
