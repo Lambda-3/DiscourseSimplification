@@ -85,7 +85,8 @@ public class ExtensibleTest {
     public void testDeSerialization() throws IOException {
         Extensible e = new SimpleExtensible();
         Arrays.asList("Switzerland", "Brazil", "Germany").forEach(e::addListExtension);
-        e.addExtension(new LinkedContext("bla bla", RelationType.UNKNOWN));
+        e.addListExtension(new LinkedContext("bla bla", RelationType.UNKNOWN));
+        e.addListExtension(new LinkedContext("bla bla 2", RelationType.UNKNOWN));
         e.addExtension("key", 7);
 
         File temp = File.createTempFile("ext-discourse-simplification", ".json");

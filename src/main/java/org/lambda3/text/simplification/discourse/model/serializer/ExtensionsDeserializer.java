@@ -31,7 +31,6 @@ import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 import org.lambda3.text.simplification.discourse.model.Extensible;
 
 import java.io.IOException;
-import java.lang.reflect.Array;
 import java.util.*;
 
 public class ExtensionsDeserializer extends StdDeserializer<Map> {
@@ -54,21 +53,31 @@ public class ExtensionsDeserializer extends StdDeserializer<Map> {
             try {
                 Class<?> clazz = Class.forName(en.get("class").asText());
                 String key = en.has("key") ? en.get("key").asText() : null;
-                JsonParser cjp = en.get("content").traverse();
-                Class<?> contentClazz = clazz;
+                JsonNode nodeContent = en.get("content");
+
                 Object mapKey;
+                Object content;
+
+                if (nodeContent.isArray()) {
+                    content = new LinkedList<>();
+                    for (JsonNode aNodeContent : nodeContent) {
+                        JsonParser panc = aNodeContent.traverse();
+                        panc.nextToken();
+                        Object co = deserializationContext.readValue(panc, clazz);
+                        ((List) content).add(co);
+                    }
+                } else {
+                    JsonParser cjp = nodeContent.traverse();
+                    cjp.nextToken();
+                    content = deserializationContext.readValue(cjp, clazz);
+                }
 
                 if (key == null) {
                     mapKey = clazz;
                 } else {
                     mapKey = new Extensible.Key(clazz, key);
-                    if (key.equals(Extensible.LIST_KEY)) {
-                        contentClazz = ArrayList.class;
-                    }
                 }
 
-                cjp.nextToken();
-                Object content = deserializationContext.readValue(cjp, contentClazz);
                 map.put(mapKey, content);
 
             } catch (ClassNotFoundException e) {
