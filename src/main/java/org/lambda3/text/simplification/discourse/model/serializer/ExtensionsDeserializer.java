@@ -90,7 +90,6 @@ public class ExtensionsDeserializer extends StdDeserializer<Map> {
         } else {
             parser.nextToken();
         }
-
         return map;
     }
 }
