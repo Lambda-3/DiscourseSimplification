@@ -185,6 +185,7 @@ public abstract class ExtractionRule {
 
         return res;
     }
+
     
     protected static String rephraseApposition(Tree vp, String np) {
         String res = "";
@@ -230,6 +231,7 @@ public abstract class ExtractionRule {
         
         return res;
     }
+
 
     protected static List<Word> getRephrasedParticipalS(Tree np, Tree vp, Tree s, Tree vbgn) {
         Number number = getNumber(np);

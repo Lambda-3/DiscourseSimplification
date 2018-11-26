@@ -1,0 +1,14 @@
+language: java
+script: mvn test -B
+jdk: oraclejdk8
+cache:
+  directories:
+    - "$HOME/.m2"
+before_install:
+  - "./install-SentenceSimplification.sh"
+notifications:
+  slack:
+    on_success: always
+    on_failure: always
+    rooms:
+      secure: Qm58N3+AWkVzecoZgtI6FuQoQOVEfEr6+dOUkCjB6VzUt0ZzkKn+tkdE60nqPJIHAzLFCH5Fm8njyQgNZqv027V8nL12x/b45KLYDZjEauaMLV9Wh7K5QkQuV31/u1hX46Dkkb6sUR8viXKQZ042xFRqWKR0bDaxA3Fzu2NEJuaPgc5lUriCTe27BqQsBxg+ti2jyseHfWHw8qc6ANgk/gkq3v3mg08o46xD2cY5BFEsfUji7RS3bgiUh4H0vuwmVBzf3ZFUpBpcCbpN5E7RMnNInDAxEVUueBmlQfCRFyLnxbdmIFBmyYpFzv6eZtDNCLWXO0lbX+uFhD8Id0Yr0rKADdYtPb2Mrx8PwrxQ00XPSRaqXDL3AODkXL4SODPHDtJ766ATUBO1JCcO26p0PuAaqEaNf3UBlWrtg4mQpN3GV4lQT0F1O609U0vQy1/SAbWRBTmXahY3X+0Hkugs65Ui7Rd87wpTJhGuuVbqXZx1iWvFqDB3SYhTt4TzCJLaY2HlQumtr0+vcjfaxet4owS3myilOctHw8bMnnqpdMwwuwKWrI3PTQWuzcsMdfaIYx60GHQi8tKZEiu24RBpsuKmT0drYbR2RCkAmRFavkCgSn1aBxXdEdXnXawZPzddDMmqzCRpnVbGw+7WE/AT9ZZaCDJjwukVNuFmxc9+OMQ=

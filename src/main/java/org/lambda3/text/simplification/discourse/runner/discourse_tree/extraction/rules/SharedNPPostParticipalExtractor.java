@@ -54,9 +54,14 @@ public class SharedNPPostParticipalExtractor extends ExtractionRule {
         while (matcher.findAt(leaf.getParseTree())) {
             List<Word> cuePhraseWords = ParseTreeExtractionUtils.getPrecedingWords(matcher.getNode("node"), matcher.getNode("s"), false);
 
+
             // the left, superordinate constituent
             List<Word> leftConstituentWords = new ArrayList<>();
-            leftConstituentWords.addAll(ParseTreeExtractionUtils.getPrecedingWords(leaf.getParseTree(), matcher.getNode("node"), false));
+           // leftConstituentWords.addAll(ParseTreeExtractionUtils.getPrecedingWords(leaf.getParseTree(), matcher.getNode("node"), false));
+
+
+            // the left, superordinate constituent
+            leftConstituentWords.addAll(ParseTreeExtractionUtils.getPrecedingWords(leaf.getParseTree(), matcher.getNode("s"), false));
             leftConstituentWords.addAll(ParseTreeExtractionUtils.getFollowingWords(leaf.getParseTree(), matcher.getNode("s"), false));
             Leaf leftConstituent = new Leaf(getClass().getSimpleName(), WordsUtils.wordsToProperSentenceString(leftConstituentWords));
 

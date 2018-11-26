@@ -57,7 +57,11 @@ public enum Relation {
     TEMPORAL_TIME, // indicating a particular instance on a time scale (e.g. “Next Sunday 2 pm”).
     TEMPORAL_DURATION, // the amount of time between the two end-points of a time interval (e.g. “2 weeks").
     TEMPORAL_DATE, // particular date (e.g. “On 7 April 2013”).
+<<<<<<< HEAD
     TEMPORAL_SET, IDENTIFYING_DEFINITION, DESCRIBING_DEFINITION; // periodic temporal sets representing times that occur with some frequency (“Every Tuesday”).
+=======
+    TEMPORAL_SET; // periodic temporal sets representing times that occur with some frequency (“Every Tuesday”).
+>>>>>>> d4d938f9778712a34ecc3e3335094b9e92a9c746
 
     static {
         UNKNOWN_COORDINATION.coordination = true;
