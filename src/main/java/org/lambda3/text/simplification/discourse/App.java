@@ -51,7 +51,6 @@ public class App {
     }
 
     public static void main(String[] args) throws IOException {
-
         SimplificationContent content = DISCOURSE_SIMPLIFIER.doDiscourseSimplification(new File("input.txt"), ProcessingType.SEPARATE, true);
         content.serializeToJSON(new File("output.json"));
         saveLines(new File("output_default.txt"), Arrays.asList(content.defaultFormat(false)));

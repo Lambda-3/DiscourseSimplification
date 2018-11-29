@@ -3,21 +3,12 @@
 # Discourse Simplification
 
 A project for simplifying sentences wrt. discourse/rhetorical structures.
-This works as a wrapper for the [SentenceSimplification](https://github.com/Lambda-3/SentenceSimplification) project.
 
-## Dependencies
+This is the core component of the [Graphene](https://github.com/Lambda-3/Graphene) project.
 
-### SentenceSimplification
+## Setup
 
-Clone and install locally
-    
-    git clone --branch v5.0.0 https://github.com/Lambda-3/SentenceSimplification.git 
-    cd SentenceSimplification
-    mvn install
-
-## Building and Running
-
-    mvn package
+    mvn clean install -DskipTests
 
 ### Run the program
 Create a new text file with the input

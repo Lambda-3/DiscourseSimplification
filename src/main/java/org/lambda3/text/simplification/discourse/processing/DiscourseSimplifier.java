@@ -29,7 +29,6 @@ import org.lambda3.text.simplification.discourse.model.OutSentence;
 import org.lambda3.text.simplification.discourse.model.SimplificationContent;
 import org.lambda3.text.simplification.discourse.runner.discourse_extraction.DiscourseExtractor;
 import org.lambda3.text.simplification.discourse.runner.discourse_tree.DiscourseTreeCreator;
-import org.lambda3.text.simplification.discourse.runner.sentence_simplification.SentenceSimplifier;
 import org.lambda3.text.simplification.discourse.utils.ConfigUtils;
 import org.lambda3.text.simplification.discourse.utils.parseTree.ParseTreeException;
 import org.lambda3.text.simplification.discourse.utils.sentences.SentencesUtils;
@@ -47,8 +46,6 @@ import java.util.Optional;
 public class DiscourseSimplifier {
     private final DiscourseTreeCreator discourseTreeCreator;
     private final DiscourseExtractor discourseExtractor;
-    private final SentenceSimplifier sentenceSimplifier;
-    private final boolean withSentenceSimplification;
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -56,9 +53,6 @@ public class DiscourseSimplifier {
         SentencePreprocessor preprocessor = new SentencePreprocessor(config);
         this.discourseTreeCreator = new DiscourseTreeCreator(config, preprocessor);
         this.discourseExtractor = new DiscourseExtractor(config);
-        this.sentenceSimplifier = new SentenceSimplifier(config);
-
-        this.withSentenceSimplification = config.getBoolean("with-sentence-simplification");
 
         logger.debug("DiscourseSimplifier initialized");
         logger.debug("\n{}", ConfigUtils.prettyPrint(config));
@@ -132,17 +126,6 @@ public class DiscourseSimplifier {
             logger.debug(content.toString());
         }
 
-        // Step 3) do sentence simplification
-        logger.info("### STEP 3) DO SENTENCE SIMPLIFICATION ###");
-        if (withSentenceSimplification) {
-            content.getSentences().forEach(s -> sentenceSimplifier.doSentenceSimplification(s));
-            if (logger.isDebugEnabled()) {
-                logger.debug(content.toString());
-            }
-        } else {
-            logger.info("DEACTIVATED");
-        }
-
         logger.info("### FINISHED");
         return content;
     }
@@ -174,14 +157,6 @@ public class DiscourseSimplifier {
                 elements.forEach(e -> outSentence.addElement(e));
                 logger.debug(outSentence.toString());
 
-                // Step 3) do sentence simplification
-                logger.debug("### STEP 3) DO SENTENCE SIMPLIFICATION ###");
-                if (withSentenceSimplification) {
-                    sentenceSimplifier.doSentenceSimplification(outSentence);
-                    logger.debug(outSentence.toString());
-                } else {
-                    logger.info("DEACTIVATED");
-                }
             } catch (ParseTreeException e) {
                 logger.error("Failed to process sentence: {}", sentence);
             }

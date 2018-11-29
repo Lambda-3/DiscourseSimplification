@@ -32,6 +32,7 @@ import org.lambda3.text.simplification.discourse.runner.discourse_tree.model.Lea
 import org.lambda3.text.simplification.discourse.utils.parseTree.ParseTreeException;
 import org.lambda3.text.simplification.discourse.utils.parseTree.ParseTreeExtractionUtils;
 import org.lambda3.text.simplification.discourse.utils.parseTree.ParseTreeParser;
+import org.lambda3.text.simplification.discourse.utils.pos.POSToken;
 import org.lambda3.text.simplification.discourse.utils.words.WordsUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -184,6 +185,53 @@ public abstract class ExtractionRule {
 
         return res;
     }
+
+    
+    protected static String rephraseApposition(Tree vp, String np) {
+        String res = "";
+
+        Tense tense = getTense(vp);
+        //Number number = getNumber(np);
+        if (tense.equals(Tense.PRESENT)) {
+        	if (np.equals("NN") || np.equals("NNP")) {
+        		res = " is ";
+        	} else {
+        		res = " are ";
+        	}
+        } else {
+        	if (np.equals("NN") || np.equals("NNP")) {
+        		res = " was ";
+        	} else {
+        		res = " were ";
+        	}
+        }
+        
+        return res;
+    }
+    
+    protected static List<Word> rephraseAppositionNonRes(Tree vp, Tree np, Tree np2) {
+        List<Word> res = new ArrayList<>();
+
+        Tense tense = getTense(vp);
+        Number number = getNumber(np);
+        if (tense.equals(Tense.PRESENT)) {
+        	if (number.equals(Number.SINGULAR)) {
+        		 res.add(new Word("is"));
+        	} else {
+        		 res.add(new Word("are"));
+        	}
+        } else {
+        	if (number.equals(Number.SINGULAR)) {
+        		 res.add(new Word("was"));
+        	} else {
+        		 res.add(new Word("were"));
+        	}
+        }
+        res = appendWordsFromTree(res, np2);
+        
+        return res;
+    }
+
 
     protected static List<Word> getRephrasedParticipalS(Tree np, Tree vp, Tree s, Tree vbgn) {
         Number number = getNumber(np);

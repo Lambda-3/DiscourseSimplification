@@ -1,6 +1,6 @@
 /*
  * ==========================License-Start=============================
- * DiscourseSimplification : SharedNPPostParticipalExtractor
+ * DiscourseSimplification : SubordinationPostExtractor
  *
  * Copyright © 2017 Lambda³
  *
@@ -26,8 +26,8 @@ import edu.stanford.nlp.ling.Word;
 import edu.stanford.nlp.trees.tregex.TregexMatcher;
 import edu.stanford.nlp.trees.tregex.TregexPattern;
 import org.lambda3.text.simplification.discourse.runner.discourse_tree.Relation;
-import org.lambda3.text.simplification.discourse.runner.discourse_tree.extraction.ExtractionRule;
 import org.lambda3.text.simplification.discourse.runner.discourse_tree.extraction.Extraction;
+import org.lambda3.text.simplification.discourse.runner.discourse_tree.extraction.ExtractionRule;
 import org.lambda3.text.simplification.discourse.runner.discourse_tree.model.Leaf;
 import org.lambda3.text.simplification.discourse.utils.parseTree.ParseTreeException;
 import org.lambda3.text.simplification.discourse.utils.parseTree.ParseTreeExtractionUtils;
@@ -41,44 +41,47 @@ import java.util.Optional;
 /**
  *
  */
-public class SharedNPPostParticipalExtractor extends ExtractionRule {
-
-    @Override
+public class ParticipialMiddleExtractor extends ExtractionRule {
+	
+	@Override
     public Optional<Extraction> extract(Leaf leaf) throws ParseTreeException {
-
-        String participalNode = "(__=node [== S=s | == (PP|ADVP <+(PP|ADVP) S=s)]) : (=s <: (VP <<, VBG|VBN=vbgn))";
-        TregexPattern p = TregexPattern.compile("ROOT <<: (S < (NP=np $.. (VP=vp <+(VP) (NP|PP $.. " + participalNode + "))))");
-
+        TregexPattern p = TregexPattern.compile("ROOT <<: (S=s < VP=mainverb &<< (NP|PP <, (NP=np ?$+ PP=pp & $++ (/,/=comma $+ (VP=vp [<, (ADVP|PP $+ VBG|VBN=vbgn) | <, VBG|VBN=vbgn] & ?$+ /,/=comma2))))) ");
         TregexMatcher matcher = p.matcher(leaf.getParseTree());
 
-        while (matcher.findAt(leaf.getParseTree())) {
-            List<Word> cuePhraseWords = ParseTreeExtractionUtils.getPrecedingWords(matcher.getNode("node"), matcher.getNode("s"), false);
-
-
+        while (matcher.findAt(leaf.getParseTree())) { 
+        	//System.out.println("******************");
+            
             // the left, superordinate constituent
             List<Word> leftConstituentWords = new ArrayList<>();
-           // leftConstituentWords.addAll(ParseTreeExtractionUtils.getPrecedingWords(leaf.getParseTree(), matcher.getNode("node"), false));
-
-
-            // the left, superordinate constituent
-            leftConstituentWords.addAll(ParseTreeExtractionUtils.getPrecedingWords(leaf.getParseTree(), matcher.getNode("s"), false));
-            leftConstituentWords.addAll(ParseTreeExtractionUtils.getFollowingWords(leaf.getParseTree(), matcher.getNode("s"), false));
+            leftConstituentWords.addAll(ParseTreeExtractionUtils.getPrecedingWords(leaf.getParseTree(), matcher.getNode("comma"), false));
+            
+            if (matcher.getNode("comma2") != null) {
+            	leftConstituentWords.addAll(ParseTreeExtractionUtils.getFollowingWords(leaf.getParseTree(), matcher.getNode("comma2"), false));
+            } else {
+            	leftConstituentWords.addAll(ParseTreeExtractionUtils.getFollowingWords(leaf.getParseTree(), matcher.getNode("vp"), false));
+            }
+            
             Leaf leftConstituent = new Leaf(getClass().getSimpleName(), WordsUtils.wordsToProperSentenceString(leftConstituentWords));
-
-            // the right, subordinate constituent
+            
+            // the right, subordinate constituent 
             List<Word> rightConstituentWords = new ArrayList<>();
-            rightConstituentWords.addAll(ParseTreeExtractionUtils.getPrecedingWords(leaf.getParseTree(), matcher.getNode("vp"), false));
-            rightConstituentWords.addAll(getRephrasedParticipalS(matcher.getNode("np"), matcher.getNode("vp"), matcher.getNode("s"), matcher.getNode("vbgn")));
-            rightConstituentWords.addAll(ParseTreeExtractionUtils.getFollowingWords(leaf.getParseTree(), matcher.getNode("s"), false));
+            rightConstituentWords.addAll(ParseTreeExtractionUtils.getContainingWords(matcher.getNode("np")));
+            if (matcher.getNode("pp") != null) {
+            	rightConstituentWords.addAll(ParseTreeExtractionUtils.getContainingWords(matcher.getNode("pp")));
+            }
+            rightConstituentWords.addAll(rephraseAppositionNonRes(matcher.getNode("mainverb"), matcher.getNode("np"), matcher.getNode("vp")));
             Leaf rightConstituent = new Leaf(getClass().getSimpleName(), WordsUtils.wordsToProperSentenceString(rightConstituentWords));
-
+            
+       
             // relation
-            Relation relation = classifer.classifySubordinating(cuePhraseWords).orElse(Relation.UNKNOWN_COORDINATION);
+            List<Word> cuePhraseWords = ParseTreeExtractionUtils.getPrecedingWords(matcher.getNode("vbgn"), matcher.getNode("s"), false);
+            Relation relation = classifer.classifySubordinating(cuePhraseWords).orElse(Relation.UNKNOWN_SUBORDINATION);
 
+            //TODO not always doDiscourseExtraction?
             Extraction res = new Extraction(
                 getClass().getSimpleName(),
                 false,
-                null,
+                cuePhraseWords,
                 relation,
                 true,
                 Arrays.asList(leftConstituent, rightConstituent)
