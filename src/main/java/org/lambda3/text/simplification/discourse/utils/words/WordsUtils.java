@@ -28,7 +28,6 @@ import edu.stanford.nlp.ling.Word;
 import edu.stanford.nlp.process.CoreLabelTokenFactory;
 import edu.stanford.nlp.process.PTBTokenizer;
 import edu.stanford.nlp.simple.Sentence;
-import org.lambda3.text.simplification.sentence.transformation.Core;
 
 import java.io.StringReader;
 import java.util.ArrayList;
