@@ -24,7 +24,7 @@ package org.lambda3.text.simplification.discourse.runner.discourse_tree.extracti
 
 import edu.stanford.nlp.ling.Word;
 import edu.stanford.nlp.trees.Tree;
-import org.lambda3.text.simplification.discourse.runner.discourse_tree.Relation;
+import org.lambda3.text.simplification.discourse.runner.discourse_tree.RelationType;
 import org.lambda3.text.simplification.discourse.utils.parseTree.ParseTreeExtractionUtils;
 import org.slf4j.LoggerFactory;
 
@@ -46,9 +46,9 @@ public class ListNPSplitter {
         private final List<Word> introductionWords; //optional
         private final List<List<Word>> elementsWords;
 
-        private final Relation relation;
+        private final RelationType relation;
 
-        public Result(List<Word> introductionWords, List<List<Word>> elementsWords, Relation relation) {
+        public Result(List<Word> introductionWords, List<List<Word>> elementsWords, RelationType relation) {
             this.introductionWords = introductionWords;
             this.elementsWords = elementsWords;
             this.relation = relation;
@@ -62,7 +62,7 @@ public class ListNPSplitter {
             return elementsWords;
         }
 
-        public Relation getRelation() {
+        public RelationType getRelation() {
             return relation;
         }
 
@@ -114,7 +114,7 @@ public class ListNPSplitter {
         return false;
     }
 
-    private static Optional<Result> check(Tree anchorTree, Tree np, ParseTreeExtractionUtils.INodeChecker conjDisjChecker, ParseTreeExtractionUtils.INodeChecker separatorChecker, Relation relation) {
+    private static Optional<Result> check(Tree anchorTree, Tree np, ParseTreeExtractionUtils.INodeChecker conjDisjChecker, ParseTreeExtractionUtils.INodeChecker separatorChecker, RelationType relation) {
         List<Tree> checkLeaves = ParseTreeExtractionUtils.getContainingLeaves(np);
 
         // find introduction
@@ -204,26 +204,26 @@ public class ListNPSplitter {
         if (containsSemicolon) {
 
             // check for conjunction with elements separated by ;
-            Optional<Result> r = check(anchorTree, np, new ConjunctionLeafChecker("and"), new ValueLeafChecker(";"), Relation.LIST);
+            Optional<Result> r = check(anchorTree, np, new ConjunctionLeafChecker("and"), new ValueLeafChecker(";"), RelationType.LIST);
             if (r.isPresent()) {
                 return r;
             }
 
             // check for disjunction with elements separated by ;
-            r = check(anchorTree, np, new ConjunctionLeafChecker("or"), new ValueLeafChecker(";"), Relation.DISJUNCTION);
+            r = check(anchorTree, np, new ConjunctionLeafChecker("or"), new ValueLeafChecker(";"), RelationType.DISJUNCTION);
             if (r.isPresent()) {
                 return r;
             }
         } else {
 
             // check for conjunction with elements separated by ,
-            Optional<Result> r = check(anchorTree, np, new ConjunctionLeafChecker("and"), new ValueLeafChecker(","), Relation.LIST);
+            Optional<Result> r = check(anchorTree, np, new ConjunctionLeafChecker("and"), new ValueLeafChecker(","), RelationType.LIST);
             if (r.isPresent()) {
                 return r;
             }
 
             // check for disjunction with elements separated by ,
-            r = check(anchorTree, np, new ConjunctionLeafChecker("or"), new ValueLeafChecker(","), Relation.DISJUNCTION);
+            r = check(anchorTree, np, new ConjunctionLeafChecker("or"), new ValueLeafChecker(","), RelationType.DISJUNCTION);
             if (r.isPresent()) {
                 return r;
             }

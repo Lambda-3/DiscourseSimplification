@@ -25,7 +25,7 @@ package org.lambda3.text.simplification.discourse.processing;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 import org.lambda3.text.simplification.discourse.model.Element;
-import org.lambda3.text.simplification.discourse.model.OutSentence;
+import org.lambda3.text.simplification.discourse.model.Sentence;
 import org.lambda3.text.simplification.discourse.model.SimplificationContent;
 import org.lambda3.text.simplification.discourse.runner.discourse_extraction.DiscourseExtractor;
 import org.lambda3.text.simplification.discourse.runner.discourse_tree.DiscourseTreeCreator;
@@ -98,7 +98,7 @@ public class DiscourseSimplifier {
             logger.info("# Processing sentence {}/{} #", (idx + 1), sentences.size());
             logger.info("'" + sentence + "'");
 
-            content.addSentence(new OutSentence(idx, sentence));
+            content.addSentence(new Sentence(idx, sentence));
 
             // extend discourse discourse_tree
             try {
@@ -121,7 +121,7 @@ public class DiscourseSimplifier {
         // Step 2) do discourse extraction
         logger.info("### STEP 2) DO DISCOURSE EXTRACTION ###");
         List<Element> elements = discourseExtractor.doDiscourseExtraction(discourseTreeCreator.getDiscourseTree());
-        elements.forEach(e -> content.addElement(e));
+        elements.forEach(content::addElement);
         if (logger.isDebugEnabled()) {
             logger.debug(content.toString());
         }
@@ -136,7 +136,7 @@ public class DiscourseSimplifier {
 
         int idx = 0;
         for (String sentence : sentences) {
-            OutSentence outSentence = new OutSentence(idx, sentence);
+            Sentence outSentence = new Sentence(idx, sentence);
 
             logger.info("# Processing sentence {}/{} #", (idx + 1), sentences.size());
             logger.info("'" + sentence + "'");
@@ -154,7 +154,7 @@ public class DiscourseSimplifier {
                 // Step 2) do discourse extraction
                 logger.debug("### STEP 2) DO DISCOURSE EXTRACTION ###");
                 List<Element> elements = discourseExtractor.doDiscourseExtraction(discourseTreeCreator.getDiscourseTree());
-                elements.forEach(e -> outSentence.addElement(e));
+                elements.forEach(outSentence::addElement);
                 logger.debug(outSentence.toString());
 
             } catch (ParseTreeException e) {

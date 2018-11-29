@@ -24,8 +24,8 @@ package org.lambda3.text.simplification.discourse.processing;
 
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
+import org.testng.Assert;
+import org.testng.annotations.Test;
 
 public class SentencePreprocessorTest {
     private final Config config = ConfigFactory.load().getConfig("discourse-simplification");
@@ -39,9 +39,9 @@ public class SentencePreprocessorTest {
         String sentence2 = "This is -LRB- a second test -RRB-.";
 
         String psentence = preprocessor.preprocessSentence(sentence);
-        Assertions.assertEquals("This is a test and .", psentence);
+        Assert.assertEquals("This is a test and .", psentence);
 
         String psentence2 = preprocessor.preprocessSentence(sentence2);
-        Assertions.assertEquals("This is .", psentence2);
+        Assert.assertEquals("This is .", psentence2);
     }
 }

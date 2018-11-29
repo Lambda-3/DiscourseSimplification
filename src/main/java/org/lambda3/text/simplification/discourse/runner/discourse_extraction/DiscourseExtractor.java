@@ -24,7 +24,7 @@ package org.lambda3.text.simplification.discourse.runner.discourse_extraction;
 
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigException;
-import org.lambda3.text.simplification.discourse.runner.discourse_tree.Relation;
+import org.lambda3.text.simplification.discourse.runner.discourse_tree.RelationType;
 import org.lambda3.text.simplification.discourse.model.Element;
 import org.lambda3.text.simplification.discourse.model.LinkedContext;
 import org.lambda3.text.simplification.discourse.runner.discourse_tree.model.Coordination;
@@ -45,7 +45,7 @@ import java.util.stream.Collectors;
  */
 public class DiscourseExtractor {
     private final Logger logger = LoggerFactory.getLogger(getClass());
-    private final List<Relation> ignoredRelations;
+    private final List<RelationType> ignoredRelations;
 
     private final Config config;
     private LinkedHashMap<Leaf, Element> processedLeaves;
@@ -57,7 +57,7 @@ public class DiscourseExtractor {
         this.ignoredRelations = new ArrayList<>();
         for (String valueName : this.config.getStringList("ignored-relations")) {
             try {
-                Relation relation = Relation.valueOf(valueName);
+                RelationType relation = RelationType.valueOf(valueName);
                 ignoredRelations.add(relation);
             } catch (IllegalArgumentException e) {
                 logger.error("Failed to create enum value of {}", valueName);
@@ -76,7 +76,7 @@ public class DiscourseExtractor {
         return processedLeaves.values().stream().collect(Collectors.toList());
     }
 
-    private void addAsContext(Leaf leaf, Leaf targetLeaf, Relation targetRelation) {
+    private void addAsContext(Leaf leaf, Leaf targetLeaf, RelationType targetRelation) {
         if (leaf.isToSimpleContext()) {
             return;
         }
@@ -90,7 +90,7 @@ public class DiscourseExtractor {
         } else {
             // linked context
             Element targetElement = processedLeaves.get(targetLeaf);
-            leafElement.addLinkedContext(new LinkedContext(targetElement.getId(), targetRelation));
+            leafElement.addLinkedContext(new LinkedContext(targetElement.id, targetRelation));
         }
     }
 

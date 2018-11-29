@@ -25,7 +25,7 @@ package org.lambda3.text.simplification.discourse.runner.discourse_tree.extracti
 import edu.stanford.nlp.ling.Word;
 import edu.stanford.nlp.trees.tregex.TregexMatcher;
 import edu.stanford.nlp.trees.tregex.TregexPattern;
-import org.lambda3.text.simplification.discourse.runner.discourse_tree.Relation;
+import org.lambda3.text.simplification.discourse.runner.discourse_tree.RelationType;
 import org.lambda3.text.simplification.discourse.runner.discourse_tree.extraction.Extraction;
 import org.lambda3.text.simplification.discourse.runner.discourse_tree.extraction.ExtractionRule;
 import org.lambda3.text.simplification.discourse.runner.discourse_tree.model.Leaf;
@@ -64,7 +64,7 @@ public class LeadNPExtractor extends ExtractionRule {
             Leaf rightConstituent = new Leaf(getClass().getSimpleName(), WordsUtils.wordsToProperSentenceString(rightConstituentWords));
 
             // relation
-            Relation relation = Relation.UNKNOWN_SUBORDINATION; //TODO
+            RelationType relation = RelationType.UNKNOWN_SUBORDINATION; //TODO
 
             Extraction res = new Extraction(
                 getClass().getSimpleName(),

@@ -1,6 +1,6 @@
 /*
  * ==========================License-Start=============================
- * DiscourseSimplification : OutSentence
+ * DiscourseSimplification : Sentence
  *
  * Copyright © 2017 Lambda³
  *
@@ -22,42 +22,38 @@
 
 package org.lambda3.text.simplification.discourse.model;
 
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.stream.Collectors;
+import java.util.*;
 
-/**
- *
- */
-public class OutSentence {
-    private int sentenceIdx;
-    private String originalSentence;
+public class Sentence {
+    public final int index;
+    public final String original;
     private HashMap<String, Element> elementMap; // all extractions extracted from this sentence
 
-    // for deserialization
-    public OutSentence() {
+    public Sentence() {
+        // for deserialization
+        this(-1, "");
     }
 
-    public OutSentence(int sentenceIdx,String originalSentence) {
-        this.sentenceIdx = sentenceIdx;
-        this.originalSentence = originalSentence;
+    public Sentence(int index, String original) {
+        this.index = index;
+        this.original = original;
         this.elementMap = new LinkedHashMap<>();
     }
 
+    public Optional<String> containsElement(Element extraction) {
+        for (Element e : elementMap.values()) {
+            if (e.equals(extraction)) {
+                return Optional.of(e.id);
+            }
+        }
+        return Optional.empty();
+    }
+
     public void addElement(Element element) {
-        if (sentenceIdx != element.getSentenceIdx()) {
+        if (index != element.getSentenceIdx()) {
             throw new AssertionError("Element should not be added to this sentence");
         }
-        elementMap.putIfAbsent(element.getId(), element);
-    }
-
-    public int getSentenceIdx() {
-        return sentenceIdx;
-    }
-
-    public String getOriginalSentence() {
-        return originalSentence;
+        elementMap.putIfAbsent(element.id, element);
     }
 
     public Element getElement(String id) {
@@ -65,14 +61,20 @@ public class OutSentence {
     }
 
     public List<Element> getElements() {
-        return elementMap.values().stream().collect(Collectors.toList());
+        return new ArrayList<>(elementMap.values());
     }
 
     @Override
     public String toString() {
         StringBuilder strb = new StringBuilder();
-        strb.append("# " + originalSentence + "\n");
-        getElements().forEach(e -> strb.append("\n" + e));
+        strb.append("# ");
+        strb.append(original);
+        strb.append("\n");
+        getElements().forEach(e -> {
+            strb.append("\n");
+            strb.append(e);
+        });
+
         return strb.toString();
     }
 }
