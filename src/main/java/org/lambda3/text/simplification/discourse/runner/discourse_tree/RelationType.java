@@ -1,6 +1,6 @@
 /*
  * ==========================License-Start=============================
- * DiscourseSimplification : Relation
+ * DiscourseSimplification : RelationType
  *
  * Copyright © 2017 Lambda³
  *
@@ -24,7 +24,7 @@ package org.lambda3.text.simplification.discourse.runner.discourse_tree;
 
 import java.util.Optional;
 
-public enum Relation {
+public enum RelationType {
 
     UNKNOWN,
 
@@ -90,12 +90,12 @@ public enum Relation {
     }
 
     private boolean coordination;
-    private Relation regular; // class of context span (in subordination) or right span (coordination)
-    private Relation inverse; // class of core span (in subordination) or left span (coordination)
-    private Relation coordinateVersion; // optional
-    private Relation subordinateVersion; // optional
+    private RelationType regular; // class of context span (in subordination) or right span (coordination)
+    private RelationType inverse; // class of core span (in subordination) or left span (coordination)
+    private RelationType coordinateVersion; // optional
+    private RelationType subordinateVersion; // optional
 
-    Relation() {
+    RelationType() {
         this.coordination = false;
         this.regular = this;
         this.inverse = this; // only used in coordinations
@@ -107,19 +107,19 @@ public enum Relation {
         return coordination;
     }
 
-    public Relation getRegulatRelation() {
+    public RelationType getRegularRelation() {
         return regular;
     }
 
-    public Relation getInverseRelation() {
+    public RelationType getInverseRelation() {
         return inverse;
     }
 
-    public Optional<Relation> getCoordinateVersion() {
+    public Optional<RelationType> getCoordinateVersion() {
         return Optional.ofNullable(coordinateVersion);
     }
 
-    public Optional<Relation> getSubordinateVersion() {
+    public Optional<RelationType> getSubordinateVersion() {
         return Optional.ofNullable(subordinateVersion);
     }
 }

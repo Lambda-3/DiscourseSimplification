@@ -22,19 +22,18 @@
 
 package org.lambda3.text.simplification.discourse.processing;
 
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
-import org.lambda3.text.simplification.discourse.model.OutSentence;
-import org.lambda3.text.simplification.discourse.model.SimplificationContent;
+import org.lambda3.text.simplification.discourse.model.*;
+import org.lambda3.text.simplification.discourse.runner.discourse_tree.RelationType;
 import org.slf4j.LoggerFactory;
+import org.testng.Assert;
+import org.testng.annotations.Test;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.LinkedList;
+import java.util.List;
 
-/**
- *
- */
-class DiscourseSimplifierTest {
+public class DiscourseSimplifierTest {
     private org.slf4j.Logger log = LoggerFactory.getLogger(this.getClass());
     private DiscourseSimplifier simplifier = new DiscourseSimplifier();
 
@@ -43,10 +42,86 @@ class DiscourseSimplifierTest {
         String text = "Peter went to Paris because he likes the city.";
         SimplificationContent c = simplifier.doDiscourseSimplification(text, ProcessingType.WHOLE);
 
-        Assertions.assertEquals(1, c.getSentences().size());
-        OutSentence sent = c.getSentences().get(0);
+        Assert.assertEquals(1, c.getSentences().size());
+        Sentence sent = c.getSentences().get(0);
 
-        Assertions.assertEquals(2, sent.getElements().size());
+        Assert.assertEquals(2, sent.getElements().size());
+
+        List<Boolean> ok = new LinkedList<>();
+        for(Element e : sent.getElements()) {
+            if(e.getLinkedContexts().isEmpty()) {
+                Assert.assertEquals(e.getText().toLowerCase(), "he likes the city .");
+                Assert.assertEquals(e.getSentenceIdx(), 0);
+                Assert.assertEquals(e.getContextLayer(), 1);
+                Assert.assertTrue(e.getSimpleContexts().isEmpty());
+                ok.add(true);
+            } else {
+                Assert.assertEquals(e.getText().toLowerCase(), "peter went to paris .");
+                Assert.assertEquals(e.getSentenceIdx(), 0);
+                Assert.assertEquals(e.getContextLayer(), 0);
+                Assert.assertEquals(e.getSimpleContexts().size(), 0);
+
+                Assert.assertEquals(e.getLinkedContexts().size(), 1);
+                LinkedContext lc = e.getLinkedContexts().get(0);
+
+                Assert.assertEquals(lc.getRelation(), RelationType.CAUSE);
+                Element target = sent.getElement(lc.getTargetID());
+                Assert.assertEquals(target.getText().toLowerCase(), "he likes the city .");
+                ok.add(true);
+            }
+        }
+
+        Assert.assertEquals(2, ok.size());
+        ok.forEach(Assert::assertTrue);
+    }
+
+    @Test
+    void testLongerSentence() {
+        String text = "After graduating from Columbia University in 1983, Barack Obama worked as a community organizer in Chicago.";
+        SimplificationContent c = simplifier.doDiscourseSimplification(text, ProcessingType.WHOLE);
+
+        Assert.assertEquals(1, c.getSentences().size());
+        Sentence sent = c.getSentences().get(0);
+
+        Assert.assertEquals(2, sent.getElements().size());
+
+        List<Boolean> ok = new LinkedList<>();
+        for(Element e : sent.getElements()) {
+            if(e.getLinkedContexts().isEmpty()) {
+                Assert.assertEquals(e.getText().toLowerCase(), "barack obama was graduating from columbia university .");
+                Assert.assertEquals(e.getSentenceIdx(), 0);
+                Assert.assertEquals(e.getContextLayer(), 1);
+                Assert.assertEquals(e.getSimpleContexts().size(), 1);
+
+                SimpleContext sc = e.getSimpleContexts().get(0);
+                Assert.assertEquals(sc.getAsFullSentence().toLowerCase(), "this was in 1983 .");
+                Assert.assertEquals(sc.getOriginalExcerptText().toLowerCase(), "in 1983 .");
+                Assert.assertEquals(sc.getRelation(), RelationType.TEMPORAL);
+
+                ok.add(true);
+            } else {
+                Assert.assertEquals(e.getText().toLowerCase(), "barack obama worked as a community organizer .");
+                Assert.assertEquals(e.getSentenceIdx(), 0);
+                Assert.assertEquals(e.getContextLayer(), 0);
+                Assert.assertEquals(e.getSimpleContexts().size(), 1);
+
+                SimpleContext sc = e.getSimpleContexts().get(0);
+                Assert.assertEquals(sc.getAsFullSentence().toLowerCase(), "this was in chicago .");
+                Assert.assertEquals(sc.getOriginalExcerptText().toLowerCase(), "in chicago .");
+                Assert.assertEquals(sc.getRelation(), RelationType.SPATIAL);
+
+                Assert.assertEquals(e.getLinkedContexts().size(), 1);
+                LinkedContext lc = e.getLinkedContexts().get(0);
+
+                Assert.assertEquals(lc.getRelation(), RelationType.TEMPORAL_BEFORE);
+                Element target = sent.getElement(lc.getTargetID());
+                Assert.assertEquals(target.getText().toLowerCase(), "barack obama was graduating from columbia university .");
+                ok.add(true);
+            }
+        }
+
+        Assert.assertEquals(2, ok.size());
+        ok.forEach(Assert::assertTrue);
     }
 
     @Test
@@ -54,21 +129,17 @@ class DiscourseSimplifierTest {
         String text = "After graduating from Columbia University in 1983, Barack Obama worked as a community organizer in Chicago.";
         SimplificationContent c = simplifier.doDiscourseSimplification(text, ProcessingType.WHOLE);
 
-        final String filename = "tmp-w8weg3q493ewqieh.json";
+        File temp = File.createTempFile("discourse-simplification-test", ".json");
+        temp.deleteOnExit();
 
         log.info("SAVE TO FILE...");
-        c.serializeToJSON(new File(filename));
+        c.serializeToJSON(temp);
 
         log.info("LOAD FROM FILE...");
-        SimplificationContent loaded = SimplificationContent.deserializeFromJSON(new File(filename), SimplificationContent.class);
+        SimplificationContent loaded = SimplificationContent.deserializeFromJSON(temp, SimplificationContent.class);
 
         log.info(loaded.prettyPrintJSON());
         log.info("---------------------------------");
         log.info(loaded.defaultFormat(false));
-
-        log.info("DELETE FILE...");
-        File file = new File(filename);
-        file.delete();
     }
-
 }

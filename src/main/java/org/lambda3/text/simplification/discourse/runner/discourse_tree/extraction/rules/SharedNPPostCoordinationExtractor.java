@@ -26,7 +26,7 @@ import edu.stanford.nlp.ling.Word;
 import edu.stanford.nlp.trees.Tree;
 import edu.stanford.nlp.trees.tregex.TregexMatcher;
 import edu.stanford.nlp.trees.tregex.TregexPattern;
-import org.lambda3.text.simplification.discourse.runner.discourse_tree.Relation;
+import org.lambda3.text.simplification.discourse.runner.discourse_tree.RelationType;
 import org.lambda3.text.simplification.discourse.runner.discourse_tree.extraction.ExtractionRule;
 import org.lambda3.text.simplification.discourse.runner.discourse_tree.extraction.Extraction;
 import org.lambda3.text.simplification.discourse.runner.discourse_tree.model.Leaf;
@@ -69,10 +69,10 @@ public class SharedNPPostCoordinationExtractor extends ExtractionRule {
             }
 
             List<Word> cuePhraseWords = null;
-            Relation relation = Relation.UNKNOWN_COORDINATION;
+            RelationType relation = RelationType.UNKNOWN_COORDINATION;
             if (constituents.size() == 2) {
                 cuePhraseWords = ParseTreeExtractionUtils.getWordsInBetween(leaf.getParseTree(), siblings.get(0), siblings.get(siblings.size() - 1), false, false);
-                relation = classifer.classifyCoordinating(cuePhraseWords).orElse(Relation.UNKNOWN_COORDINATION);
+                relation = classifer.classifyCoordinating(cuePhraseWords).orElse(RelationType.UNKNOWN_COORDINATION);
             }
 
             Extraction res = new Extraction(

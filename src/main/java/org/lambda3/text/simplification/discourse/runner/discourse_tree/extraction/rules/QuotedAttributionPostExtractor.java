@@ -26,7 +26,7 @@ import edu.stanford.nlp.ling.Word;
 import edu.stanford.nlp.trees.Tree;
 import edu.stanford.nlp.trees.tregex.TregexMatcher;
 import edu.stanford.nlp.trees.tregex.TregexPattern;
-import org.lambda3.text.simplification.discourse.runner.discourse_tree.Relation;
+import org.lambda3.text.simplification.discourse.runner.discourse_tree.RelationType;
 import org.lambda3.text.simplification.discourse.runner.discourse_tree.extraction.ExtractionRule;
 import org.lambda3.text.simplification.discourse.runner.discourse_tree.extraction.Extraction;
 import org.lambda3.text.simplification.discourse.runner.discourse_tree.model.Leaf;
@@ -78,7 +78,7 @@ public class QuotedAttributionPostExtractor extends ExtractionRule {
 
             // only extract if verb matches
             if (headVerb.isPresent() && classifer.checkAttribution(headVerb.get())) {
-                Relation relation = Relation.ATTRIBUTION;
+                RelationType relation = RelationType.ATTRIBUTION;
 
                 Extraction res = new Extraction(
                     getClass().getSimpleName(),

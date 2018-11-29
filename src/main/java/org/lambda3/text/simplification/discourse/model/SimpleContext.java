@@ -25,7 +25,7 @@ package org.lambda3.text.simplification.discourse.model;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import edu.stanford.nlp.trees.Tree;
-import org.lambda3.text.simplification.discourse.runner.discourse_tree.Relation;
+import org.lambda3.text.simplification.discourse.runner.discourse_tree.RelationType;
 import org.lambda3.text.simplification.discourse.utils.parseTree.ParseTreeException;
 import org.lambda3.text.simplification.discourse.utils.parseTree.ParseTreeExtractionUtils;
 import org.lambda3.text.simplification.discourse.utils.parseTree.ParseTreeParser;
@@ -36,22 +36,22 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class SimpleContext {
+public class SimpleContext extends Extensible {
     private static final Pattern PHRASE_PATTERN = Pattern.compile("^\\W*this\\W+\\w+\\W+(?<phrase>.*\\w+.*)$", Pattern.CASE_INSENSITIVE);
     private static final Pattern ATTRIBUTION_PHRASE_PATTERN = Pattern.compile("^\\W*this\\W+\\w+\\W+what\\W+(?<phrase>.*\\w+.*)$", Pattern.CASE_INSENSITIVE);
 
-    private Tree parseTree;
-    private Tree phrase;
-    private Relation relation;
-    private TimeInformation timeInformation; // optional
+    private Tree fullSentenceTree;
+    private Tree originalExcerptTree;
+    private RelationType relation;
+    private String timeInformation; // optional
 
     // for deserialization
     public SimpleContext() {
     }
 
-    public SimpleContext(Tree parseTree) {
-        this.parseTree = parseTree;
-        this.relation = Relation.UNKNOWN;
+    public SimpleContext(Tree fullSentenceTree) {
+        this.fullSentenceTree = fullSentenceTree;
+        this.relation = RelationType.UNKNOWN;
         this.timeInformation = null;
         extractPhrase();
     }
@@ -61,70 +61,72 @@ public class SimpleContext {
         this(ParseTreeParser.parse(text));
     }
 
-    public Tree getParseTree() {
-        return parseTree;
+    public Tree getFullSentenceTree() {
+        return fullSentenceTree;
     }
 
-    public void setParseTree(Tree parseTree) {
-        this.parseTree = parseTree;
+    public void setFullSentenceTree(Tree fullSentenceTree) {
+        this.fullSentenceTree = fullSentenceTree;
         extractPhrase();
     }
 
     private void extractPhrase() {
-        this.phrase = parseTree;
+        this.originalExcerptTree = fullSentenceTree;
 
         boolean matched = false;
-        if (relation.equals(Relation.ATTRIBUTION)) {
-            Matcher matcher = ATTRIBUTION_PHRASE_PATTERN.matcher(getText());
+        if (relation.equals(RelationType.ATTRIBUTION)) {
+            Matcher matcher = ATTRIBUTION_PHRASE_PATTERN.matcher(getAsFullSentence());
             if (matcher.matches()) {
                 try {
-                    this.phrase = ParseTreeParser.parse(matcher.group("phrase"));
+                    this.originalExcerptTree = ParseTreeParser.parse(matcher.group("phrase"));
                     matched = true;
-                } catch (ParseTreeException e) {}
+                } catch (ParseTreeException e) {
+                }
             }
         } else {
-            Matcher matcher = PHRASE_PATTERN.matcher(getText());
+            Matcher matcher = PHRASE_PATTERN.matcher(getAsFullSentence());
             if (matcher.matches()) {
                 try {
-                    this.phrase = ParseTreeParser.parse(matcher.group("phrase"));
+                    this.originalExcerptTree = ParseTreeParser.parse(matcher.group("phrase"));
                     matched = true;
-                } catch (ParseTreeException e) {}
+                } catch (ParseTreeException e) {
+                }
             }
         }
 
         if (!matched) {
-            this.relation = Relation.NOUN_BASED;
+            this.relation = RelationType.NOUN_BASED;
         }
     }
 
-    public Tree getPhrase() {
-        return phrase;
+    public Tree getOriginalExcerpt() {
+        return originalExcerptTree;
     }
 
-    @JsonProperty("text")
-    public String getText() {
-        return WordsUtils.wordsToString(ParseTreeExtractionUtils.getContainingWords(parseTree));
+    @JsonProperty("asFullSentence")
+    public String getAsFullSentence() {
+        return WordsUtils.wordsToString(ParseTreeExtractionUtils.getContainingWords(fullSentenceTree));
     }
 
-    @JsonProperty("phraseText")
-    public String getPhraseText()  {
-        return WordsUtils.wordsToString(ParseTreeExtractionUtils.getContainingWords(phrase));
+    @JsonProperty("originalExcerptText")
+    public String getOriginalExcerptText() {
+        return WordsUtils.wordsToString(ParseTreeExtractionUtils.getContainingWords(originalExcerptTree));
     }
 
-    public void setRelation(Relation relation) {
+    public void setRelation(RelationType relation) {
         this.relation = relation;
         extractPhrase();
     }
 
-    public Relation getRelation() {
+    public RelationType getRelation() {
         return relation;
     }
 
-    public void setTimeInformation(TimeInformation timeInformation) {
+    public void setTimeInformation(String timeInformation) {
         this.timeInformation = timeInformation;
     }
 
-	public Optional<TimeInformation> getTimeInformation() {
-		return Optional.ofNullable(timeInformation);
-	}
+    public Optional<String> getTimeInformation() {
+        return Optional.ofNullable(timeInformation);
+    }
 }

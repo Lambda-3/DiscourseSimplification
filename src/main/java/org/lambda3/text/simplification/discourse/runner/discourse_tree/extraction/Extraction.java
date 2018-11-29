@@ -23,7 +23,7 @@
 package org.lambda3.text.simplification.discourse.runner.discourse_tree.extraction;
 
 import edu.stanford.nlp.ling.Word;
-import org.lambda3.text.simplification.discourse.runner.discourse_tree.Relation;
+import org.lambda3.text.simplification.discourse.runner.discourse_tree.RelationType;
 import org.lambda3.text.simplification.discourse.runner.discourse_tree.model.Coordination;
 import org.lambda3.text.simplification.discourse.runner.discourse_tree.model.DiscourseTree;
 import org.lambda3.text.simplification.discourse.runner.discourse_tree.model.Leaf;
@@ -42,11 +42,11 @@ public class Extraction {
     private String extractionRule;
     private boolean referring;
     private String cuePhrase; // optional
-    private Relation relation;
+    private RelationType relation;
     private boolean contextRight; // only for subordinate relations
     private List<Leaf> constituents;
 
-    public Extraction(String extractionRule, boolean referring, List<Word> cuePhraseWords, Relation relation, boolean contextRight, List<Leaf> constituents) {
+    public Extraction(String extractionRule, boolean referring, List<Word> cuePhraseWords, RelationType relation, boolean contextRight, List<Leaf> constituents) {
         if ((referring) && (constituents.size() != 1)) {
             throw new AssertionError("Referring relations should have one constituent");
         }

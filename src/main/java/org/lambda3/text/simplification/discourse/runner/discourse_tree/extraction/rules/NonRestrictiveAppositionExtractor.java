@@ -26,7 +26,7 @@ import edu.stanford.nlp.ling.Word;
 import edu.stanford.nlp.trees.Tree;
 import edu.stanford.nlp.trees.tregex.TregexMatcher;
 import edu.stanford.nlp.trees.tregex.TregexPattern;
-import org.lambda3.text.simplification.discourse.runner.discourse_tree.Relation;
+import org.lambda3.text.simplification.discourse.runner.discourse_tree.RelationType;
 import org.lambda3.text.simplification.discourse.runner.discourse_tree.extraction.Extraction;
 import org.lambda3.text.simplification.discourse.runner.discourse_tree.extraction.ExtractionRule;
 import org.lambda3.text.simplification.discourse.runner.discourse_tree.model.Leaf;
@@ -136,7 +136,7 @@ public class NonRestrictiveAppositionExtractor extends ExtractionRule {
             Leaf rightConstituent = new Leaf(getClass().getSimpleName(), WordsUtils.wordsToProperSentenceString(rightConstituentWords));
 
             // relation
-            Relation relation = Relation.ELABORATION; //TODO
+			RelationType relation = RelationType.ELABORATION; //TODO
 
             Extraction res = new Extraction(
                 getClass().getSimpleName(),

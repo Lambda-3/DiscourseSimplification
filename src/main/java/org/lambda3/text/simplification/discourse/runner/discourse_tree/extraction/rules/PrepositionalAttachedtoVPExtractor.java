@@ -26,7 +26,7 @@ import edu.stanford.nlp.ling.Word;
 import edu.stanford.nlp.trees.Tree;
 import edu.stanford.nlp.trees.tregex.TregexMatcher;
 import edu.stanford.nlp.trees.tregex.TregexPattern;
-import org.lambda3.text.simplification.discourse.runner.discourse_tree.Relation;
+import org.lambda3.text.simplification.discourse.runner.discourse_tree.RelationType;
 import org.lambda3.text.simplification.discourse.runner.discourse_tree.extraction.Extraction;
 import org.lambda3.text.simplification.discourse.runner.discourse_tree.extraction.ExtractionRule;
 import org.lambda3.text.simplification.discourse.runner.discourse_tree.model.Leaf;
@@ -72,15 +72,15 @@ public class PrepositionalAttachedtoVPExtractor extends ExtractionRule {
 
             // relation
             Tree t = leftConstituent.getParseTree();
-            Relation relation = Relation.UNKNOWN_SUBORDINATION;
+            RelationType relation = RelationType.UNKNOWN_SUBORDINATION;
             List<POSToken> pos = POSTagger.parse(leftConstituent.getText());
     		try {
 				TNERString ner = NERStringParser.parse(t);
 				for (int i = 0; i < ner.getTokens().size(); i++) {
 					if (ner.getTokens().get(i).getCategory().equals("LOCATION")) {
-						relation = Relation.SPATIAL;
+						relation = RelationType.SPATIAL;
 					} else if (ner.getTokens().get(i).getCategory().equals("DATE") || pos.get(i).getPos().equals("CD")) {
-						relation = Relation.TEMPORAL;
+						relation = RelationType.TEMPORAL;
 					}
 				}
 			} catch (NERStringParseException e) {

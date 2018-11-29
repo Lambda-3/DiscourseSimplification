@@ -22,7 +22,7 @@
 
 package org.lambda3.text.simplification.discourse.runner.discourse_tree.model;
 
-import org.lambda3.text.simplification.discourse.runner.discourse_tree.Relation;
+import org.lambda3.text.simplification.discourse.runner.discourse_tree.RelationType;
 import org.lambda3.text.simplification.discourse.utils.PrettyTreePrinter;
 
 import java.util.ArrayList;
@@ -33,13 +33,13 @@ import java.util.List;
  *
  */
 public class Subordination extends DiscourseTree {
-    private final Relation relation;
+    private final RelationType relation;
     private final String cuePhrase; // optional
     private final boolean contextRight;
     private DiscourseTree leftConstituent;
     private DiscourseTree rightConstituent;
 
-    public Subordination(String extractionRule, Relation relation, String cuePhrase, DiscourseTree leftConstituent, DiscourseTree rightConstituent, boolean contextRight) {
+    public Subordination(String extractionRule, RelationType relation, String cuePhrase, DiscourseTree leftConstituent, DiscourseTree rightConstituent, boolean contextRight) {
         super(extractionRule);
         this.relation = relation;
         this.cuePhrase = cuePhrase;
@@ -81,7 +81,7 @@ public class Subordination extends DiscourseTree {
         }
     }
 
-    public Relation getRelation() {
+    public RelationType getRelation() {
         return relation;
     }
 

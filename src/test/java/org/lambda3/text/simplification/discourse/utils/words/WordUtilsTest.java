@@ -23,17 +23,13 @@
 package org.lambda3.text.simplification.discourse.utils.words;
 
 import edu.stanford.nlp.ling.Word;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
-import org.lambda3.text.simplification.discourse.utils.words.WordsUtils;
+import org.testng.Assert;
+import org.testng.annotations.Test;
 
 import java.util.Arrays;
 import java.util.List;
 
-/**
- *
- */
-class WordUtilsTest {
+public class WordUtilsTest {
 
     @Test
     void wordsToProperSentence() throws Exception {
@@ -52,6 +48,6 @@ class WordUtilsTest {
         );
 
         String sentence = WordsUtils.wordsToProperSentenceString(words);
-        Assertions.assertEquals("Hello , this is a test .", sentence);
+        Assert.assertEquals("Hello , this is a test .", sentence);
     }
 }

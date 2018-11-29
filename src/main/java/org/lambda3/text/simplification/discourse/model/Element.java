@@ -38,23 +38,23 @@ import java.util.List;
  *
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class Element {
-    private String id;
-    private Tree parseTree;
+public class Element extends Extensible {
+
+    public final String id = IDGenerator.generateUUID();
     private int sentenceIdx;
     private int contextLayer;
+    private Tree parseTree;
     private List<SimpleContext> simpleContexts;
     private List<LinkedContext> linkedContexts;
 
     // for deserialization
-    public Element() {
+    protected Element() {
     }
 
     public Element(Tree parseTree, int sentenceIdx, int contextLayer) {
-        this.id = IDGenerator.generateUUID();
-        this.parseTree = parseTree;
         this.sentenceIdx = sentenceIdx;
         this.contextLayer = contextLayer;
+        this.parseTree = parseTree;
         this.simpleContexts = new ArrayList<>();
         this.linkedContexts = new ArrayList<>();
     }
@@ -62,22 +62,6 @@ public class Element {
     // not efficient -> prefer to use constructor with tree
     public Element(String text, int sentenceIdx, int contextLayer) throws ParseTreeException {
         this(ParseTreeParser.parse(text), sentenceIdx, contextLayer);
-    }
-
-    public void addLinkedContext(LinkedContext context) {
-        if (!linkedContexts.contains(context)) {
-            linkedContexts.add(context);
-        }
-    }
-
-    public void addSimpleContext(SimpleContext context) {
-        if (!simpleContexts.contains(context)) {
-            simpleContexts.add(context);
-        }
-    }
-
-    public String getId() {
-        return id;
     }
 
     public Tree getParseTree() {
@@ -91,6 +75,19 @@ public class Element {
     @JsonProperty("text")
     public String getText() {
         return WordsUtils.wordsToString(ParseTreeExtractionUtils.getContainingWords(parseTree));
+    }
+
+
+    public void addLinkedContext(LinkedContext context) {
+        if (!linkedContexts.contains(context)) {
+            linkedContexts.add(context);
+        }
+    }
+
+    public void addSimpleContext(SimpleContext context) {
+        if (!simpleContexts.contains(context)) {
+            simpleContexts.add(context);
+        }
     }
 
     public int getSentenceIdx() {
@@ -112,9 +109,10 @@ public class Element {
     @Override
     public String toString() {
         StringBuilder strb = new StringBuilder();
-        strb.append(id + "     " + contextLayer + "     " + getText() + "\n");
-        getSimpleContexts().forEach(c -> strb.append("\tS:" + c.getRelation() + "    " + c.getText() + "\n"));
-        getLinkedContexts().forEach(c -> strb.append("\tL:" + c.getRelation() + "    " + c.getTargetID() + "\n"));
+
+        strb.append(String.format("%s     %d     %s\n", id, contextLayer, getText()));
+        getSimpleContexts().forEach(c -> strb.append(String.format("\tS:%s    %s\n", c.getRelation(), c.getAsFullSentence())));
+        getLinkedContexts().forEach(c -> strb.append(String.format("\tL:%s    %s\n", c.getRelation(), c.getTargetID())));
         return strb.toString();
     }
 }

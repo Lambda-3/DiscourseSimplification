@@ -25,7 +25,7 @@ package org.lambda3.text.simplification.discourse.runner.discourse_tree.extracti
 import edu.stanford.nlp.ling.Word;
 import edu.stanford.nlp.trees.tregex.TregexMatcher;
 import edu.stanford.nlp.trees.tregex.TregexPattern;
-import org.lambda3.text.simplification.discourse.runner.discourse_tree.Relation;
+import org.lambda3.text.simplification.discourse.runner.discourse_tree.RelationType;
 import org.lambda3.text.simplification.discourse.runner.discourse_tree.extraction.Extraction;
 import org.lambda3.text.simplification.discourse.runner.discourse_tree.extraction.ExtractionRule;
 import org.lambda3.text.simplification.discourse.runner.discourse_tree.model.Leaf;
@@ -78,7 +78,7 @@ public class RestrictiveRelativeClauseWhoseExtractor extends ExtractionRule {
             //List<Word> cuePhraseWords = ParseTreeExtractionUtils.getPrecedingWords(matcher.getNode("sbar"), matcher.getNode("s"), false);
             //Relation relation = classifer.classifySubordinating(cuePhraseWords).orElse(Relation.UNKNOWN_SUBORDINATION);
 
-            Relation relation = Relation.IDENTIFYING_DEFINITION;
+            RelationType relation = RelationType.IDENTIFYING_DEFINITION;
             
             //TODO not always doDiscourseExtraction?
             Extraction res = new Extraction(
