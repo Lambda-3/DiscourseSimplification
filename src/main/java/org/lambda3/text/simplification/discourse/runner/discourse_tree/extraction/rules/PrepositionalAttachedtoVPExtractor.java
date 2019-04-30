@@ -79,7 +79,7 @@ public class PrepositionalAttachedtoVPExtractor extends ExtractionRule {
 				for (int i = 0; i < ner.getTokens().size(); i++) {
 					if (ner.getTokens().get(i).getCategory().equals("LOCATION")) {
 						relation = Relation.SPATIAL;
-					} else if (ner.getTokens().get(i).getCategory().equals("DATE") || pos.get(i).getPos().equals("CD")) {
+					} else if (ner.getTokens().get(i).getCategory().equals("DATE")) {
 						relation = Relation.TEMPORAL;
 					}
 				}
