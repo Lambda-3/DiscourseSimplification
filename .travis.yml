@@ -39,13 +39,13 @@ matrix:
       jdk: openjdk12
   allow_failures:
       - env: JDK="Oracle JDK 9"
-      - env: JDK="OpenJDK JDK 9"
+      - env: JDK="OpenJDK 9"
       - env: JDK="Oracle JDK 10"
-      - env: JDK="OpenJDK JDK 10"
+      - env: JDK="OpenJDK 10"
       - env: JDK="Oracle JDK 11"
-      - env: JDK="OpenJDK JDK 11"
+      - env: JDK="OpenJDK 11"
       - env: JDK="Oracle JDK 12"
-      - env: JDK="OpenJDK JDK 12"
+      - env: JDK="OpenJDK 12"
 
 script:
   - echo PATH = ${PATH}
