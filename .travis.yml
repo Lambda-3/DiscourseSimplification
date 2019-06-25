@@ -22,11 +22,6 @@ matrix:
       jdk: oraclejdk9
     - env: JDK='OpenJDK 9'
       jdk: openjdk9
-    # Java 10
-    - env: JDK='Oracle JDK 10'
-      jdk: oraclejdk10
-    - env: JDK='OpenJDK 10'
-      jdk: openjdk10
     # Java 11
     - env: JDK='Oracle JDK 11'
       jdk: oraclejdk11
