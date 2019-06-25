@@ -8,44 +8,44 @@ before_install:
 
 cache:
   directories:
-    - "$HOME/.m2"
+    - '$HOME/.m2'
 
 matrix:
   include:
     # Java 8
-    - env: JDK="Oracle JDK 8"
+    - env: JDK='Oracle JDK 8'
       jdk: oraclejdk8
     - env: JDK='OpenJDK 8'
       jdk: openjdk8
     # Java 9
-    - env: JDK="Oracle JDK 9"
+    - env: JDK='Oracle JDK 9'
       jdk: oraclejdk9
     - env: JDK='OpenJDK 9'
       jdk: openjdk9
     # Java 10
-    - env: JDK="Oracle JDK 10"
+    - env: JDK='Oracle JDK 10'
       jdk: oraclejdk10
     - env: JDK='OpenJDK 10'
       jdk: openjdk10
     # Java 11
-    - env: JDK="Oracle JDK 11"
+    - env: JDK='Oracle JDK 11'
       jdk: oraclejdk11
     - env: JDK='OpenJDK 11'
       jdk: openjdk11
     # Java 12
-    - env: JDK="Oracle JDK 12"
+    - env: JDK='Oracle JDK 12'
       jdk: oraclejdk12
     - env: JDK='OpenJDK 12'
       jdk: openjdk12
   allow_failures:
-      - env: JDK="Oracle JDK 9"
-      - env: JDK="OpenJDK 9"
-      - env: JDK="Oracle JDK 10"
-      - env: JDK="OpenJDK 10"
-      - env: JDK="Oracle JDK 11"
-      - env: JDK="OpenJDK 11"
-      - env: JDK="Oracle JDK 12"
-      - env: JDK="OpenJDK 12"
+      - env: JDK='Oracle JDK 9'
+      - env: JDK='OpenJDK 9'
+      - env: JDK='Oracle JDK 10'
+      - env: JDK='OpenJDK 10'
+      - env: JDK='Oracle JDK 11'
+      - env: JDK='OpenJDK 11'
+      - env: JDK='Oracle JDK 12'
+      - env: JDK='OpenJDK 12'
 
 script:
   - echo PATH = ${PATH}
