@@ -64,6 +64,7 @@ public abstract class ExtractionRule {
         this.classifer = new CuePhraseClassifier(config);
     }
 
+
     public abstract Optional<Extraction> extract(Leaf leaf) throws ParseTreeException;
 
     protected static List<Tree> getSiblings(Tree parseTree, List<String> tags) {
@@ -186,49 +187,49 @@ public abstract class ExtractionRule {
         return res;
     }
 
-    
+
     protected static String rephraseApposition(Tree vp, String np) {
         String res = "";
 
         Tense tense = getTense(vp);
         //Number number = getNumber(np);
         if (tense.equals(Tense.PRESENT)) {
-        	if (np.equals("NN") || np.equals("NNP")) {
-        		res = " is ";
-        	} else {
-        		res = " are ";
-        	}
+            if (np.equals("NN") || np.equals("NNP")) {
+                res = " is ";
+            } else {
+                res = " are ";
+            }
         } else {
-        	if (np.equals("NN") || np.equals("NNP")) {
-        		res = " was ";
-        	} else {
-        		res = " were ";
-        	}
+            if (np.equals("NN") || np.equals("NNP")) {
+                res = " was ";
+            } else {
+                res = " were ";
+            }
         }
-        
+
         return res;
     }
-    
+
     protected static List<Word> rephraseAppositionNonRes(Tree vp, Tree np, Tree np2) {
         List<Word> res = new ArrayList<>();
 
         Tense tense = getTense(vp);
         Number number = getNumber(np);
         if (tense.equals(Tense.PRESENT)) {
-        	if (number.equals(Number.SINGULAR)) {
-        		 res.add(new Word("is"));
-        	} else {
-        		 res.add(new Word("are"));
-        	}
+            if (number.equals(Number.SINGULAR)) {
+                res.add(new Word("is"));
+            } else {
+                res.add(new Word("are"));
+            }
         } else {
-        	if (number.equals(Number.SINGULAR)) {
-        		 res.add(new Word("was"));
-        	} else {
-        		 res.add(new Word("were"));
-        	}
+            if (number.equals(Number.SINGULAR)) {
+                res.add(new Word("was"));
+            } else {
+                res.add(new Word("were"));
+            }
         }
         res = appendWordsFromTree(res, np2);
-        
+
         return res;
     }
 
@@ -245,7 +246,7 @@ public abstract class ExtractionRule {
         if (matcher.findAt(s)) {
             List<Word> res = new ArrayList<>();
 
-            res.add(new Word((number.equals(Number.SINGULAR))? "has" : "have"));
+            res.add(new Word((number.equals(Number.SINGULAR)) ? "has" : "have"));
             res.add(new Word("been"));
             List<Word> next = ParseTreeExtractionUtils.getFollowingWords(s, matcher.getNode("vbn"), true);
             if (next.size() > 0) {
@@ -260,7 +261,7 @@ public abstract class ExtractionRule {
         if (matcher.findAt(s)) {
             List<Word> res = new ArrayList<>();
 
-            res.add(new Word((number.equals(Number.SINGULAR))? "has" : "have"));
+            res.add(new Word((number.equals(Number.SINGULAR)) ? "has" : "have"));
             List<Word> next = ParseTreeExtractionUtils.getFollowingWords(s, matcher.getNode("vbn"), true);
             if (next.size() > 0) {
                 next.set(0, WordsUtils.lowercaseWord(next.get(0)));

@@ -57,6 +57,10 @@ public class Leaf extends DiscourseTree {
         this(extractionRule, ParseTreeParser.parse(text));
     }
 
+//    public void saveTree() {
+//
+//    }
+
     public void dontAllowSplit() {
         this.allowSplit = false;
     }
@@ -72,6 +76,7 @@ public class Leaf extends DiscourseTree {
     public String getText() {
         return WordsUtils.wordsToString(ParseTreeExtractionUtils.getContainingWords(parseTree));
     }
+
 
     public void setToSimpleContext(boolean toSimpleContext) {
         this.toSimpleContext = toSimpleContext;

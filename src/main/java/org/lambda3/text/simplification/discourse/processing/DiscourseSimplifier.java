@@ -29,6 +29,8 @@ import org.lambda3.text.simplification.discourse.model.OutSentence;
 import org.lambda3.text.simplification.discourse.model.SimplificationContent;
 import org.lambda3.text.simplification.discourse.runner.discourse_extraction.DiscourseExtractor;
 import org.lambda3.text.simplification.discourse.runner.discourse_tree.DiscourseTreeCreator;
+import org.lambda3.text.simplification.discourse.runner.discourse_tree.Relation;
+import org.lambda3.text.simplification.discourse.runner.discourse_tree.extraction.ExtractionRule;
 import org.lambda3.text.simplification.discourse.utils.ConfigUtils;
 import org.lambda3.text.simplification.discourse.utils.parseTree.ParseTreeException;
 import org.lambda3.text.simplification.discourse.utils.sentences.SentencesUtils;
@@ -44,15 +46,16 @@ import java.util.Optional;
  *
  */
 public class DiscourseSimplifier {
-    private final DiscourseTreeCreator discourseTreeCreator;
-    private final DiscourseExtractor discourseExtractor;
+    private final List<Relation> ignoredRelations;
+    private final List<ExtractionRule> extractionRules;
+    private final SentencePreprocessor preprocessor;
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
     public DiscourseSimplifier(Config config) {
-        SentencePreprocessor preprocessor = new SentencePreprocessor(config);
-        this.discourseTreeCreator = new DiscourseTreeCreator(config, preprocessor);
-        this.discourseExtractor = new DiscourseExtractor(config);
+        this.preprocessor = new SentencePreprocessor(config);
+        this.ignoredRelations = DiscourseExtractor.extractIgnoredRelationsFromConfig(config);
+        this.extractionRules = DiscourseTreeCreator.extractRulesFromConfig(config);
 
         logger.debug("DiscourseSimplifier initialized");
         logger.debug("\n{}", ConfigUtils.prettyPrint(config));
@@ -89,7 +92,7 @@ public class DiscourseSimplifier {
     // creates one discourse discourse_tree over all sentences (investigates intra-sentential and inter-sentential relations)
     private SimplificationContent processWhole(List<String> sentences) {
         SimplificationContent content = new SimplificationContent();
-
+        DiscourseTreeCreator discourseTreeCreator = new DiscourseTreeCreator(extractionRules, preprocessor);
         // Step 1) create document discourse discourse_tree
         logger.info("### STEP 1) CREATE DOCUMENT DISCOURSE TREE ###");
         discourseTreeCreator.reset();
@@ -120,6 +123,8 @@ public class DiscourseSimplifier {
 
         // Step 2) do discourse extraction
         logger.info("### STEP 2) DO DISCOURSE EXTRACTION ###");
+
+        DiscourseExtractor discourseExtractor = new DiscourseExtractor(ignoredRelations);
         List<Element> elements = discourseExtractor.doDiscourseExtraction(discourseTreeCreator.getDiscourseTree());
         elements.forEach(e -> content.addElement(e));
         if (logger.isDebugEnabled()) {
@@ -133,6 +138,7 @@ public class DiscourseSimplifier {
     // creates discourse trees for each individual sentence (investigates intra-sentential relations only)
     private SimplificationContent processSeparate(List<String> sentences) {
         SimplificationContent content = new SimplificationContent();
+        DiscourseTreeCreator discourseTreeCreator = new DiscourseTreeCreator(extractionRules, preprocessor);
 
         int idx = 0;
         for (String sentence : sentences) {
@@ -153,6 +159,7 @@ public class DiscourseSimplifier {
 
                 // Step 2) do discourse extraction
                 logger.debug("### STEP 2) DO DISCOURSE EXTRACTION ###");
+                DiscourseExtractor discourseExtractor = new DiscourseExtractor(ignoredRelations);
                 List<Element> elements = discourseExtractor.doDiscourseExtraction(discourseTreeCreator.getDiscourseTree());
                 elements.forEach(e -> outSentence.addElement(e));
                 logger.debug(outSentence.toString());
