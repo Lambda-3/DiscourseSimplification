@@ -174,3 +174,4 @@ buildNumber.properties
 !/.mvn/wrapper/maven-wrapper.jar
 
 # End of https://www.gitignore.io/api/intellij,jetbrains,java,maven,eclipse
+.idea
