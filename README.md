@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/Lambda-3/DiscourseSimplification.svg?branch=master)](https://travis-ci.org/Lambda-3/DiscourseSimplification)
+[![Build Status](https://travis-ci.org/Lambda-3/DiscourseSimplification.svg?branch=master)](https://travis-ci.com/Lambda-3/DiscourseSimplification)
 
 # Discourse Simplification
 
