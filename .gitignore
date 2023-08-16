@@ -1,7 +1,7 @@
 log
 
-.idea/misc.xml
-.idea/dictionaries
+.idea
+*.iml
 
 # Created by https://www.gitignore.io/api/intellij,jetbrains,java,maven,eclipse
 
