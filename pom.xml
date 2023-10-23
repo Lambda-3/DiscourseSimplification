@@ -40,7 +40,7 @@
     </scm>
 
     <properties>
-        <config.version>1.4.2</config.version>
+        <config.version>1.4.3</config.version>
         <jackson.version>2.15.3</jackson.version>
 
         <simplification.version>5.0.0</simplification.version>
