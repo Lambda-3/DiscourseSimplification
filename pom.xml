@@ -41,7 +41,7 @@
 
     <properties>
         <config.version>1.4.3</config.version>
-        <jackson.version>2.16.0</jackson.version>
+        <jackson.version>2.16.1</jackson.version>
 
         <simplification.version>5.0.0</simplification.version>
 
