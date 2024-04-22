@@ -45,7 +45,7 @@
 
         <simplification.version>5.0.0</simplification.version>
 
-        <corenlp.version>4.5.6</corenlp.version>
+        <corenlp.version>4.5.7</corenlp.version>
         <logback.version>1.5.5</logback.version>
 
         <junit.platform.version>1.3.2</junit.platform.version>
