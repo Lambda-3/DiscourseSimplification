@@ -45,11 +45,11 @@
 
         <simplification.version>5.0.0</simplification.version>
 
-        <corenlp.version>4.5.7</corenlp.version>
-        <logback.version>1.5.12</logback.version>
+        <corenlp.version>4.5.8</corenlp.version>
+        <logback.version>1.5.16</logback.version>
 
         <junit.platform.version>1.3.2</junit.platform.version>
-        <junit.jupiter.version>5.11.3</junit.jupiter.version>
+        <junit.jupiter.version>5.11.4</junit.jupiter.version>
 
         <jdk.version>1.8</jdk.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
