@@ -43,20 +43,17 @@ import java.util.Optional;
  *
  */
 public class DiscourseTreeCreator {
-    private final Config config;
+    //private final Config config;
     private final SentencePreprocessor preprocessor;
     private final List<ExtractionRule> rules;
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
     private Coordination discourseTree;
 
-    public DiscourseTreeCreator(Config config, SentencePreprocessor preprocessor) {
-        this.config = config;
-        this.preprocessor = preprocessor;
-
-        // create rules from config
-        this.rules = new ArrayList<>();
-        for (String className : this.config.getStringList("rules")) {
+    public static List<ExtractionRule> extractRulesFromConfig(Config config) {
+        Logger logger = LoggerFactory.getLogger(DiscourseTreeCreator.class);
+        List<ExtractionRule> rules = new ArrayList<>();
+        for (String className : config.getStringList("rules")) {
             try {
                 Class<?> clazz = Class.forName(className);
                 Constructor<?> constructor = clazz.getConstructor();
@@ -69,7 +66,23 @@ public class DiscourseTreeCreator {
                 throw new ConfigException.BadValue("rules." + className, "Failed to create instance.");
             }
         }
+        return rules;
+    }
 
+
+    public DiscourseTreeCreator(Config config, SentencePreprocessor preprocessor) {
+        //this.config = config;
+        //this.preprocessor = preprocessor;
+
+        // create rules from config
+        //this.rules = ;
+        this(DiscourseTreeCreator.extractRulesFromConfig(config), preprocessor);
+        reset();
+    }
+
+    public DiscourseTreeCreator(List<ExtractionRule> rules, SentencePreprocessor preprocessor) {
+        this.preprocessor = preprocessor;
+        this.rules = rules;
         reset();
     }
 

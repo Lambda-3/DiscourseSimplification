@@ -47,15 +47,12 @@ public class DiscourseExtractor {
     private final Logger logger = LoggerFactory.getLogger(getClass());
     private final List<Relation> ignoredRelations;
 
-    private final Config config;
     private LinkedHashMap<Leaf, Element> processedLeaves;
 
-    public DiscourseExtractor(Config config) {
-        this.config = config;
-
-        // create ignored relations from config
-        this.ignoredRelations = new ArrayList<>();
-        for (String valueName : this.config.getStringList("ignored-relations")) {
+    public static List<Relation> extractIgnoredRelationsFromConfig(Config config) {
+        Logger logger = LoggerFactory.getLogger(DiscourseExtractor.class);
+        List<Relation> ignoredRelations = new ArrayList<>();
+        for (String valueName : config.getStringList("ignored-relations")) {
             try {
                 Relation relation = Relation.valueOf(valueName);
                 ignoredRelations.add(relation);
@@ -64,8 +61,19 @@ public class DiscourseExtractor {
                 throw new ConfigException.BadValue("ignored-relations." + valueName, "Failed to create enum value.");
             }
         }
+        return ignoredRelations;
+    }
 
+    public DiscourseExtractor(List<Relation> ignoredRelations) {
+        this.ignoredRelations = ignoredRelations;
         this.processedLeaves = new LinkedHashMap<Leaf, Element>();
+    }
+
+    public DiscourseExtractor(Config config) {
+
+        // create ignored relations from config
+        this(extractIgnoredRelationsFromConfig(config));
+
     }
 
     public List<Element> doDiscourseExtraction(DiscourseTree discourseTree) {
@@ -97,7 +105,7 @@ public class DiscourseExtractor {
     private void extractRec(DiscourseTree node, int contextLayer) {
 
         if (node instanceof Leaf) {
-            Leaf leaf = (Leaf)node;
+            Leaf leaf = (Leaf) node;
             if (!leaf.isToSimpleContext()) {
 
                 // create new element
