@@ -49,7 +49,7 @@
         <logback.version>1.5.16</logback.version>
 
         <junit.platform.version>1.3.2</junit.platform.version>
-        <junit.jupiter.version>5.11.4</junit.jupiter.version>
+        <junit.jupiter.version>5.12.0</junit.jupiter.version>
 
         <jdk.version>1.8</jdk.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -123,7 +123,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.13.0</version>
+                <version>3.14.0</version>
                 <inherited>true</inherited>
                 <configuration>
                     <source>${jdk.version}</source>
